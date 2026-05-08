@@ -1,0 +1,92 @@
+<script lang="ts" module>
+	type BreadcrumbData =
+		| {
+				type: "ellipsis";
+		  }
+		| {
+				type: "link";
+				text: string;
+				href: string;
+		  }
+		| {
+				type: "page";
+				text: string;
+		  };
+
+	export const BREADCRUMB_ELL: BreadcrumbData = { type: "ellipsis" };
+</script>
+
+<script lang="ts">
+	import {
+		Breadcrumb,
+		BreadcrumbItem,
+		BreadcrumbLink,
+		BreadcrumbList,
+		BreadcrumbPage,
+		BreadcrumbSeparator,
+	} from "$lib/components/ui/breadcrumb";
+	import BreadcrumbEllipsis from "$lib/components/ui/breadcrumb/breadcrumb-ellipsis.svelte";
+
+	import { Button } from "$lib/components/ui/button";
+	import { useSidebar } from "$lib/components/ui/sidebar";
+	import { LucidePanelLeft } from "@lucide/svelte";
+	import type { Snippet } from "svelte";
+
+	type Props = {
+		actions?: Snippet;
+		breadcrumbs?: BreadcrumbData[];
+	};
+
+	let { actions, breadcrumbs }: Props = $props();
+
+	let sidebar_ctx = useSidebar();
+</script>
+
+<div
+	class="@container flex h-14 w-full shrink-0 flex-row items-center gap-3 overflow-hidden border-b px-2.5"
+>
+	<div class="flex shrink-0 flex-row items-center gap-3">
+		<Button
+			class="text-muted-foreground"
+			onclick={() => sidebar_ctx.toggle()}
+			size="icon-sm"
+			variant="ghost"
+		>
+			<LucidePanelLeft />
+		</Button>
+
+		{#if breadcrumbs && breadcrumbs.length > 0}
+			<Breadcrumb>
+				<BreadcrumbList>
+					{#each breadcrumbs as breadcrumb, index}
+						{@const is_last = index == breadcrumbs.length - 1}
+
+						{#if breadcrumb.type == "link"}
+							<BreadcrumbItem>
+								<BreadcrumbLink href={breadcrumb.href}>{breadcrumb.text}</BreadcrumbLink>
+							</BreadcrumbItem>
+						{:else if breadcrumb.type == "page"}
+							<BreadcrumbItem>
+								<BreadcrumbPage>{breadcrumb.text}</BreadcrumbPage>
+							</BreadcrumbItem>
+						{:else}
+							<BreadcrumbItem>
+								<BreadcrumbEllipsis />
+							</BreadcrumbItem>
+						{/if}
+
+						{#if !is_last}
+							<BreadcrumbSeparator />
+						{/if}
+					{/each}
+				</BreadcrumbList>
+			</Breadcrumb>
+		{/if}
+	</div>
+
+	{#if actions}
+		<div class="hidden flex-1 flex-row items-center justify-end gap-1.5 @lg:flex">
+			{@render actions()}
+		</div>
+	{/if}
+</div>

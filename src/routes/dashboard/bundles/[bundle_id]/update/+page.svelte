@@ -1,0 +1,451 @@
+<script lang="ts" module>
+	function ConvertItemTypes(items: BundleItem[]): NewFormBundleItem[] {
+		return items.map((item) => ({
+			id: item.id,
+			name: item.name,
+			price: item.price,
+			parent_id: item.parent_id,
+		}));
+	}
+</script>
+
+<script lang="ts">
+	import { goto } from "$app/navigation";
+	import { BundleItemsCollection, BundlesCollection } from "$lib/collections/def.svelte";
+	import NewBundleItemField from "$lib/components/bundles/create/NewBundleItemField.svelte";
+	import SeriesInsertTool from "$lib/components/bundles/create/tools/SeriesInsertTool.svelte";
+	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
+	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
+	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";
+	import FormCard from "$lib/components/settings/form/FormCard.svelte";
+	import FormCardSection from "$lib/components/settings/form/FormCardSection.svelte";
+	import {
+		SettingsDescription,
+		SettingsHeader,
+		SettingsLayout,
+		SettingsTitle,
+	} from "$lib/components/settings/layout";
+	import AlertDialogTitle from "$lib/components/ui/alert-dialog/alert-dialog-title.svelte";
+	import { Button } from "$lib/components/ui/button";
+	import { ButtonGroup } from "$lib/components/ui/button-group";
+	import CurrencyInput from "$lib/components/ui/currency-input/CurrencyInput.svelte";
+	import {
+		Dialog,
+		DialogContent,
+		DialogDescription,
+		DialogFooter,
+		DialogHeader,
+		DialogTitle,
+	} from "$lib/components/ui/dialog";
+	import {
+		DropdownMenu,
+		DropdownMenuContent,
+		DropdownMenuItem,
+		DropdownMenuTrigger,
+	} from "$lib/components/ui/dropdown-menu";
+	import {
+		Field,
+		FieldContent,
+		FieldDescription,
+		FieldError,
+		FieldGroup,
+		FieldLabel,
+	} from "$lib/components/ui/field";
+	import FieldControl from "$lib/components/ui/field/field-control.svelte";
+	import { Input } from "$lib/components/ui/input";
+	import {
+		Item,
+		ItemActions,
+		ItemContent,
+		ItemDescription,
+		ItemTitle,
+	} from "$lib/components/ui/item";
+	import { ScrollArea } from "$lib/components/ui/scroll-area";
+	import Plural from "$lib/components/utils/Plural.svelte";
+	import { ApplyTsDbMutation } from "$lib/utils/ts-db/trpc-map";
+	import {
+		LucideCheck,
+		LucideChevronDown,
+		LucideLoaderCircle,
+		LucidePlus,
+	} from "@lucide/svelte";
+	import { createTransaction } from "@tanstack/svelte-db";
+	import { createForm, useStore } from "@tanstack/svelte-form";
+	import { toast } from "svelte-sonner";
+	import { CreateNewFormBundleItem, type NewFormBundleItem } from "../../new/+page.svelte";
+	import type { BundleItem } from "$lib/server/db/schema";
+	import { session_state } from "$lib/utils/session.svelte.js";
+
+	let { data } = $props();
+
+	let show_multiline_dialog = $state(false);
+	let show_series_tool = $state(false);
+
+	let multiline_item_id = $state("");
+	let multiline_parent_id = $state<string | null>(null);
+	let multiline_content = $state<string[]>([]);
+
+	let multiline_dialog_res: ((val: boolean) => void) | null = null;
+
+	const form = createForm(() => ({
+		defaultValues: {
+			name: data.bundle.name,
+			price: data.bundle.completed_price,
+			items: ConvertItemTypes(data.bundle.items),
+		},
+		onSubmit: async ({ value }) => {
+			try {
+				const tx = createTransaction({
+					autoCommit: false,
+					mutationFn: async ({ transaction }) => {
+						await ApplyTsDbMutation(transaction);
+					},
+				});
+
+				const inserted_items = value.items;
+				const changed_items: { id: string; changes: Partial<NewFormBundleItem> }[] = [];
+				const deleted_item_ids: string[] = [];
+
+				for (const item of data.bundle.items) {
+					const new_item = value.items.find((i) => i.id == item.id);
+
+					// Item removed from updated item array
+					if (!new_item) {
+						deleted_item_ids.push(item.id);
+						continue;
+					}
+
+					const item_diff = CalculateItemDiff(item, new_item);
+
+					console.log(item, new_item, item_diff);
+
+					// If item has changed, push diff
+					if (Object.keys(item_diff).length > 0) {
+						changed_items.push({ id: item.id, changes: item_diff });
+					}
+
+					const insertion_index = inserted_items.findIndex((i) => i.id == item.id);
+
+					// Item already existed, remove from insertion
+					inserted_items.splice(insertion_index, 1);
+				}
+
+				if (inserted_items.length > 0) {
+					tx.mutate(() => {
+						BundleItemsCollection.insert(
+							inserted_items.map((insertion) => ({
+								...insertion,
+								bundle_id: data.bundle.id,
+								workspace_id: session_state.workspace_id,
+							})),
+						);
+					});
+				}
+
+				if (changed_items.length > 0) {
+					tx.mutate(() => {
+						for (const change of changed_items) {
+							BundleItemsCollection.update(change.id, (item) => {
+								for (const [key, value] of Object.entries(change.changes)) {
+									// @ts-expect-error ffs object.entries
+									item[key] = value;
+								}
+							});
+						}
+					});
+				}
+
+				if (deleted_item_ids.length > 0) {
+					tx.mutate(() => {
+						for (const id of deleted_item_ids) {
+							BundleItemsCollection.delete(id);
+						}
+					});
+				}
+
+				tx.commit();
+
+				await tx.isPersisted.promise;
+
+				toast.success("Bundle updated successfully");
+
+				goto(`/dashboard/bundles/${data.bundle.id}`);
+			} catch (e) {
+				console.error(e);
+
+				toast.error("Failed to create bundle");
+			}
+		},
+	}));
+
+	const base_name = useStore(form.store, (state) => state.values.name);
+
+	function CalculateItemDiff(old_item: NewFormBundleItem, new_item: NewFormBundleItem) {
+		let diff: Partial<NewFormBundleItem> = {};
+
+		const relevant_fields = ["name", "price", "parent_id"];
+
+		for (const [key, value] of Object.entries(old_item)) {
+			if (!relevant_fields.includes(key)) continue;
+
+			// @ts-expect-error fuck object.entries typing
+			if (new_item[key] != value) {
+				// @ts-expect-error fuck object.entries typing
+				diff[key] = new_item[key];
+			}
+		}
+
+		return diff;
+	}
+
+	function HandleMultilineInput(
+		content: string[],
+		item_id: string,
+		parent_id: string | null = null,
+	) {
+		show_multiline_dialog = true;
+
+		multiline_item_id = item_id;
+		multiline_parent_id = parent_id;
+		multiline_content = content;
+
+		return new Promise<boolean>((res) => {
+			multiline_dialog_res = res;
+		});
+	}
+
+	function HandleMultilineInputResponse(paste_as_multi: boolean) {
+		// NOTE: This is all kind of messy but it does work ig. Maybe redo one day
+
+		if (!multiline_dialog_res) return;
+
+		show_multiline_dialog = false;
+
+		multiline_dialog_res(paste_as_multi);
+
+		if (paste_as_multi == true) {
+			const item_arr = [...form.getFieldValue("items")];
+
+			const item_index = item_arr.findIndex((i) => i.id == multiline_item_id);
+			if (item_index == -1) return;
+
+			item_arr[item_index] = { ...item_arr[item_index], name: multiline_content[0] };
+
+			for (let i = 1; i < multiline_content.length; i++) {
+				let item = CreateNewFormBundleItem(multiline_parent_id);
+				item.name = multiline_content[i];
+
+				item_arr.splice(item_index + i, 0, item);
+			}
+
+			form.setFieldValue("items", item_arr);
+		}
+
+		multiline_content = [];
+		multiline_parent_id = null;
+		multiline_item_id = "";
+	}
+</script>
+
+<DashboardLayoutRoot>
+	<DashboardHeader
+		breadcrumbs={[
+			{ type: "link", text: "Dashboard", href: "/dashboard" },
+			{ type: "link", text: "Bundles", href: "/dashboard/bundles" },
+			{ type: "link", text: data.bundle.name, href: `/dashboard/bundles/${data.bundle.id}` },
+			{ type: "page", text: "Update" },
+		]}
+	></DashboardHeader>
+	<DashboardContent>
+		<SettingsLayout size="lg">
+			<FormCard>
+				<FormCardSection>
+					<FieldGroup>
+						<form.Field name="name">
+							{#snippet children(field)}
+								<Field orientation="responsive">
+									<FieldContent>
+										<FieldLabel>Bundle Name</FieldLabel>
+
+										{#if field.state.meta.errors.length > 0}
+											<FieldError errors={field.state.meta.errors} />
+										{:else}
+											<FieldDescription class="hidden @md:block"
+												>The name of the completed bundle</FieldDescription
+											>
+										{/if}
+									</FieldContent>
+
+									<FieldControl>
+										<Input
+											onblur={() => field.handleBlur()}
+											onchange={(ev) => field.handleChange(ev.currentTarget.value)}
+											placeholder="eg. Friends Complete Series"
+											value={field.state.value}
+										/>
+									</FieldControl>
+								</Field>
+							{/snippet}
+						</form.Field>
+
+						<form.Field name="price">
+							{#snippet children(field)}
+								<Field orientation="responsive">
+									<FieldContent>
+										<FieldLabel>Bundle Price</FieldLabel>
+
+										{#if field.state.meta.errors.length > 0}
+											<FieldError errors={field.state.meta.errors} />
+										{:else}
+											<FieldDescription class="hidden @md:block"
+												>The target sale price of the completed bundle</FieldDescription
+											>
+										{/if}
+									</FieldContent>
+
+									<FieldControl>
+										<CurrencyInput
+											onblur={() => field.handleBlur()}
+											onValueChange={(val) => field.handleChange(val)}
+											value={field.state.value}
+										/>
+									</FieldControl>
+								</Field>
+							{/snippet}
+						</form.Field>
+					</FieldGroup>
+				</FormCardSection>
+				<FormCardSection class="flex flex-row items-center justify-end">
+					<form.Subscribe selector={(state) => state.isSubmitting}>
+						{#snippet children(is_submitting)}
+							<Button disabled={is_submitting} onclick={() => form.handleSubmit()}>
+								{#if is_submitting}
+									<LucideLoaderCircle class="animate-spin" />
+								{:else}
+									<LucideCheck />
+								{/if}
+								Update Bundle</Button
+							>
+						{/snippet}
+					</form.Subscribe>
+				</FormCardSection>
+			</FormCard>
+
+			<form.Field name="items" mode="array">
+				{#snippet children(field)}
+					{@const main_items = field.state.value.filter((i) => i.parent_id == null)}
+
+					<FormCard>
+						<FormCardSection>
+							<Item class="p-0">
+								<ItemContent>
+									<ItemTitle>Included Items</ItemTitle>
+									<ItemDescription class="text-xs"
+										>The items included inside this bundle</ItemDescription
+									>
+								</ItemContent>
+
+								<ItemActions>
+									<ButtonGroup>
+										<Button
+											onclick={() => {
+												field.pushValue(CreateNewFormBundleItem());
+											}}
+											size="sm"
+											variant="outline"><LucidePlus /> Add Item</Button
+										>
+										<DropdownMenu>
+											<DropdownMenuTrigger>
+												{#snippet child({ props })}
+													<Button {...props} size="icon-sm" variant="outline"
+														><LucideChevronDown /></Button
+													>
+												{/snippet}
+											</DropdownMenuTrigger>
+											<DropdownMenuContent align="end">
+												<DropdownMenuItem onSelect={() => (show_series_tool = true)}
+													>Series Tool</DropdownMenuItem
+												>
+											</DropdownMenuContent>
+										</DropdownMenu>
+									</ButtonGroup>
+								</ItemActions>
+							</Item>
+						</FormCardSection>
+						<ScrollArea>
+							<div class="flex flex-col divide-y">
+								{#each main_items as item, index (item.id)}
+									{@const sub_items = field.state.value.filter((i) => i.parent_id == item.id)}
+
+									<FormCardSection class="gap-0 p-0">
+										<NewBundleItemField
+											{index}
+											{item}
+											{sub_items}
+											onItemChange={(new_item) => {
+												const index = field.state.value.findIndex((i) => i.id == item.id);
+												if (index == -1) return;
+
+												field.replaceValue(index, new_item);
+											}}
+											onItemDelete={() => {
+												const index = field.state.value.findIndex((i) => i.id == item.id);
+												if (index == -1) return;
+
+												field.removeValue(index);
+											}}
+											onSubItemsInsert={(item) => {
+												field.pushValue(item);
+											}}
+											onSubItemChange={(item_id, new_item) => {
+												const index = field.state.value.findIndex((i) => i.id == item_id);
+												if (index == -1) return;
+
+												field.replaceValue(index, new_item);
+											}}
+											onSubItemDelete={(item_id) => {
+												const index = field.state.value.findIndex((i) => i.id == item_id);
+												if (index == -1) return;
+
+												field.removeValue(index);
+											}}
+											onMultiLinePaste={HandleMultilineInput}
+										/>
+									</FormCardSection>
+								{/each}
+							</div>
+						</ScrollArea>
+					</FormCard>
+				{/snippet}
+			</form.Field>
+		</SettingsLayout>
+	</DashboardContent>
+</DashboardLayoutRoot>
+
+<Dialog bind:open={show_multiline_dialog}>
+	<DialogContent>
+		<DialogHeader>
+			<DialogTitle>Multiline Input Detected</DialogTitle>
+			<DialogDescription
+				>Would you like to enter this as one or multiple entries?</DialogDescription
+			>
+		</DialogHeader>
+
+		<DialogFooter>
+			<Button onclick={() => HandleMultilineInputResponse(false)} variant="outline"
+				>Paste as 1 Entry</Button
+			>
+
+			<Button onclick={() => HandleMultilineInputResponse(true)}
+				>Paste as {multiline_content.length}
+				<Plural count={multiline_content.length} singular="Entry" plural="Entries" /></Button
+			>
+		</DialogFooter>
+	</DialogContent>
+</Dialog>
+
+<SeriesInsertTool
+	bind:open={show_series_tool}
+	base_name={base_name.current}
+	onItemsInsert={(items) => form.setFieldValue("items", items)}
+/>
