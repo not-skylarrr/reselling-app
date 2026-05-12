@@ -73,7 +73,7 @@
 
 	const table_state = new TableState({
 		key: "feedback-table",
-		default_column_visiblity: DefaultColumnVisibility,
+		default_column_visibility: DefaultColumnVisibility,
 	});
 
 	const feedback_query = useLiveQuery((q) =>
@@ -104,6 +104,13 @@
 	/>
 
 	<DashboardContent class="gap-0 p-0 md:gap-0 md:p-0" disableScroll>
-		<TableBase onRowFocus={() => {}} {table} />
+		<TableBase {table} getRowId={(row) => row.feedback.id} mobile_row_height={96}>
+			{#snippet mobile_row({ row })}
+				<div class="flex h-24 flex-col p-4">
+					<p class="font-medium">{row.original.feedback.title}</p>
+					<p class="text-sm text-muted-foreground">{row.original.feedback.content}</p>
+				</div>
+			{/snippet}
+		</TableBase>
 	</DashboardContent>
 </DashboardLayoutRoot>

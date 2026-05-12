@@ -1,10 +1,47 @@
+<script lang="ts" module>
+	const column = createColumnHelper<ServerWorkspaceMember>();
+
+	const MemberTableColumns = [
+		column.accessor("user", {
+			header: "User",
+			cell: (info) => renderComponent(CellUser, { user: info.getValue() }),
+			meta: {
+				align: "left",
+				flex: true,
+			},
+			minSize: 200,
+		}),
+		column.accessor("role", {
+			header: "Role",
+			cell: (info) => GetRoleFriendlyName(info.getValue()),
+			meta: {
+				align: "left",
+			},
+			minSize: 160,
+		}),
+		column.accessor((row) => row, {
+			id: "actions",
+			header: "Actions",
+			cell: (row) => renderComponent(ManageMemberOptions, { member: row.getValue() }),
+			minSize: 80,
+		}),
+	];
+
+	const DefaultColumnVisibility = {
+		user: true,
+		role: true,
+	};
+</script>
+
 <script lang="ts">
 	import { auth_client } from "$lib/auth-client";
 	import type { AuthOrganizationRole } from "$lib/auth/permissions";
+	import { GetRoleFriendlyName } from "$lib/auth/roles.js";
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
 	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";
 	import InviteMemberDialog from "$lib/components/settings/components/InviteMemberDialog.svelte";
+	import ManageMemberOptions from "$lib/components/settings/components/ManageMemberOptions.svelte";
 	import {
 		SettingsDescription,
 		SettingsHeader,
@@ -12,6 +49,8 @@
 		SettingsLayout,
 		SettingsTitle,
 	} from "$lib/components/settings/layout";
+	import { TableBase } from "$lib/components/table";
+	import { CellUser } from "$lib/components/table/cells";
 	import { Button } from "$lib/components/ui/button";
 	import {
 		DropdownMenu,
@@ -24,6 +63,9 @@
 		DropdownMenuTrigger,
 	} from "$lib/components/ui/dropdown-menu";
 	import { query_client } from "$lib/queries/client.svelte.js";
+	import type { ServerWorkspaceMember } from "$lib/server/auth";
+	import { DefaultTableProps, SetTableContext, TableState } from "$lib/table/init.svelte";
+	import { CreateMediaQueryBreakpoint } from "$lib/utils/reactivity";
 	import { Alphabet, GenerateRandomString } from "$lib/utils/web-crypto.js";
 	import {
 		LucideCheck,
@@ -36,6 +78,7 @@
 		LucideX,
 	} from "@lucide/svelte";
 	import { createQuery } from "@tanstack/svelte-query";
+	import { createColumnHelper, createTable, renderComponent } from "@tanstack/svelte-table";
 	import { toast } from "svelte-sonner";
 
 	let { data } = $props();
@@ -54,6 +97,23 @@
 			return member_list.members;
 		},
 	}));
+
+	const is_mobile = CreateMediaQueryBreakpoint("md");
+
+	const table_state = new TableState({
+		key: "member-table",
+		default_column_visibility: DefaultColumnVisibility,
+		selection_enabled: false,
+	});
+
+	const table = createTable<ServerWorkspaceMember>({
+		columns: MemberTableColumns,
+		get data() {
+			return org_members_query.data ?? [];
+		},
+		getRowId: (row) => row.id,
+		...DefaultTableProps(table_state),
+	});
 
 	function CanMemberManageRole(role: AuthOrganizationRole) {
 		if (role == "owner") return false;
@@ -102,6 +162,8 @@
 			toast.error("Failed to remove member", { id: toast_id });
 		}
 	}
+
+	SetTableContext(table_state);
 </script>
 
 <DashboardLayoutRoot>
@@ -126,91 +188,12 @@
 				</SettingsHeaderActions>
 			</SettingsHeader>
 
-			<div class="flex flex-1 flex-col overflow-hidden">
-				{#if org_members_query.status == "pending"}
-					<div class="m-auto flex flex-col items-center justify-center gap-2">
-						<LucideLoaderCircle class="size-8 animate-spin" />
-						<p class="text-sm text-muted-foreground">Loading Members</p>
-					</div>
-				{:else if org_members_query.status == "error"}
-					<div class="m-auto flex flex-col items-center justify-center gap-2">
-						<LucideX class="size-8" />
-						<p class="text-sm text-muted-foreground">Failed to load members</p>
-					</div>
-				{:else}
-					<div class="flex flex-col gap-3">
-						<div class="group grid grid-cols-3 items-center gap-4 border-b px-4 py-3">
-							<p class="text-sm text-muted-foreground">Name</p>
+			<TableBase getRowId={(row) => row.id} {table} />
 
-							<div class="flex flex-row justify-center">
-								<p class="w-24 text-sm text-muted-foreground">Role</p>
-							</div>
-						</div>
-						{#each org_members_query.data as member (member.id)}
-							<div
-								class="group grid h-9 grid-cols-3 items-center gap-4 px-4 hover:bg-accent/50"
-							>
-								<p class="text-sm">{member.user.name}</p>
-
-								<div class="flex flex-row justify-center">
-									<p class="w-24 text-sm leading-none capitalize">
-										{member.role}
-									</p>
-								</div>
-
-								{#if CanMemberManageRole(member.role)}
-									<div class="flex flex-row items-center justify-end">
-										<DropdownMenu>
-											<DropdownMenuTrigger>
-												{#snippet child({ props })}
-													<Button {...props} size="icon-sm" variant="ghost"
-														><LucideEllipsisVertical /></Button
-													>
-												{/snippet}
-											</DropdownMenuTrigger>
-											<DropdownMenuContent align="end">
-												<DropdownMenuSub>
-													<DropdownMenuSubTrigger
-														><LucideUserCog /> Change Role</DropdownMenuSubTrigger
-													>
-													<DropdownMenuSubContent align="start" class="w-56">
-														<DropdownMenuItem
-															onSelect={() => UpdateMemberRole(member.id, "admin")}
-														>
-															<LucideShield />
-															<p class="flex-1">Admin</p>
-															{#if member.role == "admin"}
-																<LucideCheck />
-															{/if}
-														</DropdownMenuItem>
-
-														<DropdownMenuItem
-															onSelect={() => UpdateMemberRole(member.id, "member")}
-														>
-															<LucideUser />
-															<p class="flex-1">Member</p>
-															{#if member.role == "member"}
-																<LucideCheck />
-															{/if}</DropdownMenuItem
-														>
-													</DropdownMenuSubContent>
-												</DropdownMenuSub>
-
-												<DropdownMenuSeparator />
-
-												<DropdownMenuItem
-													onSelect={() => KickMember(member.id)}
-													variant="destructive"><LucideX /> Remove Member</DropdownMenuItem
-												>
-											</DropdownMenuContent>
-										</DropdownMenu>
-									</div>
-								{/if}
-							</div>
-						{/each}
-					</div>
-				{/if}
-			</div>
+			{#if is_mobile.current}
+				<Button onclick={() => (show_invite_dialog = true)}><LucidePlus /> Invite Member</Button
+				>
+			{/if}
 		</SettingsLayout>
 	</DashboardContent>
 </DashboardLayoutRoot>

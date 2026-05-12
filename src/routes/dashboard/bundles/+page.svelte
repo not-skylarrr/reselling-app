@@ -63,8 +63,10 @@
 	import TableFilterDisplay from "$lib/components/items/table/components/TableFilterDisplay.svelte";
 	import { CreateTableFilter } from "$lib/components/items/table/lib/filters/lib/utils";
 	import { Button } from "$lib/components/ui/button";
+	import { InputGroup, InputGroupAddon, InputGroupInput } from "$lib/components/ui/input-group";
 	import type { BundleItem, Item, ItemAssociation, ItemBundle } from "$lib/server/db/schema";
 	import { SetTableContext, TableState } from "$lib/table/init.svelte";
+	import { CreateMediaQueryBreakpoint } from "$lib/utils/reactivity";
 	import { LucidePlus, LucideSearch } from "@lucide/svelte";
 	import {
 		eq,
@@ -83,9 +85,13 @@
 
 	const table_state = new TableState({
 		key: "bundle-table",
-		default_column_visiblity: BundleTableDefaultColumnVis,
+		default_column_visibility: BundleTableDefaultColumnVis,
 		sorting: [{ id: "name", desc: false }],
 	});
+
+	let search_query = $state("");
+
+	const is_mobile = CreateMediaQueryBreakpoint("md");
 
 	const bundles_query = useLiveQuery(BundleTableDataCollection);
 
@@ -123,6 +129,28 @@
 		enableColumnResizing: false,
 	});
 
+	function HandleQueryChange(query: string) {
+		if (query.length > 0) {
+			if (table_state.DoesFilterExist("name-search")) {
+				table_state.UpdateFilterByKey("name-search", { value: query });
+			} else {
+				table_state.AddFilter({
+					id: "name",
+					key: "name-search",
+					defaultOpen: false,
+					silent: true,
+					value: { operator: "string:includes", value: query },
+				});
+			}
+		} else {
+			if (table_state.DoesFilterExist("name-search")) {
+				table_state.RemoveFilterByKey("name-search");
+			}
+		}
+
+		search_query = query;
+	}
+
 	SetTableContext(table_state);
 </script>
 
@@ -146,8 +174,23 @@
 		{/snippet}
 	</DashboardHeader>
 
-	<DashboardContent class="gap-0 p-0 md:gap-0 md:p-0" disableScroll>
-		{#if table_state.filters.length > 0}
+	<DashboardContent class="gap-2 p-0 md:gap-0 md:p-0" disableScroll>
+		{#if is_mobile.current}
+			<div class="flex flex-row items-center gap-2 px-2 pt-2">
+				<InputGroup>
+					<InputGroupAddon>
+						<LucideSearch />
+					</InputGroupAddon>
+					<InputGroupInput
+						oninput={(ev) => HandleQueryChange(ev.currentTarget.value)}
+						placeholder="Search Bundles..."
+						value={search_query}
+					/>
+				</InputGroup>
+			</div>
+		{/if}
+
+		{#if table_state.filters.filter((f) => f.silent != true).length > 0}
 			<div class="flex min-h-8 flex-row gap-3 border-b px-3 py-2">
 				<TableFilterDisplay bind:filters={table_state.filters} {table} />
 			</div>

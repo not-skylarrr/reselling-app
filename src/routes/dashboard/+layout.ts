@@ -8,6 +8,7 @@ export const load: LayoutLoad = ({ data }) => {
 
 	session_state.workspace_id = data.user_session.session.activeOrganizationId;
 	session_state.user_id = data.user_session.user.id;
+	session_state.workspace_role = data.user_role;
 
 	return data;
 };

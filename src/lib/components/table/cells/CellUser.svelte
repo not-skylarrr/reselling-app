@@ -3,7 +3,10 @@
 	import type { ServerUser } from "$lib/server/auth";
 
 	type Props = {
-		user: ServerUser;
+		user: {
+			id: string;
+			name: string;
+		};
 	};
 
 	let { user }: Props = $props();

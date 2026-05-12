@@ -118,7 +118,7 @@
 
 	const table_state = new TableState({
 		key: "fees-table",
-		default_column_visiblity: DefaultColumnVisibility,
+		default_column_visibility: DefaultColumnVisibility,
 	});
 
 	const fees_query = useLiveQuery((q) =>

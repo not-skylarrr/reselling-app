@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="Row extends any">
 	import type { Table } from "@tanstack/svelte-table";
 	import { createVirtualizer } from "@tanstack/svelte-virtual";
 	import { createHotkeyAttachment } from "@tanstack/svelte-hotkeys";
@@ -7,21 +7,39 @@
 	import { GetTableContext } from "$lib/table/init.svelte";
 	import TableHeader from "./TableHeader.svelte";
 	import TableRow from "./TableRow.svelte";
+	import type { Snippet } from "svelte";
+	import TableRowRenderer, { type TableRowProps } from "./TableRowRenderer.svelte";
+	import { MediaQuery } from "svelte/reactivity";
+	import { CreateMediaQueryBreakpoint, type MediaBreakPoint } from "$lib/utils/reactivity";
 
+	// TODO: Integrate mobile row snippets
 	type Props = {
 		onRowDouble?: () => void;
-		onRowFocus: (row: any) => void;
-		table: Table<any>;
-		getRowId?: (row: any) => string | null | undefined;
+		onRowFocus?: (row: Row) => void;
+		table: Table<Row>;
+		getRowId: (row: Row) => string | null | undefined;
+		mobile_row?: Snippet<[TableRowProps<Row>]>;
+		mobile_row_height?: number;
+		mobile_breakpoint?: MediaBreakPoint;
 	};
 
-	let { onRowFocus, onRowDouble, table, getRowId = (row) => row?.id }: Props = $props();
+	let {
+		onRowFocus,
+		onRowDouble,
+		table,
+		getRowId,
+		mobile_row,
+		mobile_row_height = 44,
+		mobile_breakpoint = "md",
+	}: Props = $props();
 
 	const table_state = GetTableContext();
 
 	let scroll_container = $state<HTMLElement | null>(null);
 	let focus_change_blocked = $state(false);
 	let scrolled_to_index = $state<number | null>(null);
+
+	const is_mobile = $derived(CreateMediaQueryBreakpoint(mobile_breakpoint));
 
 	let column_size_vars = $derived.by(() => {
 		return Object.entries(table_state.col_sizing)
@@ -59,7 +77,7 @@
 	function HandleFocus(row: any) {
 		if (focus_change_blocked) return;
 
-		onRowFocus(row);
+		onRowFocus?.(row);
 
 		const row_id = getRowId(row);
 		if (row_id != null) {
@@ -182,55 +200,31 @@
 	});
 </script>
 
-<ScrollArea
-	class="hidden min-h-0 w-full flex-1 overflow-hidden **:data-scroll-area-content:flex **:data-scroll-area-content:h-full **:data-scroll-area-content:overflow-y-hidden md:flex"
-	orientation="horizontal"
-	type="hover"
->
-	<div
-		class="flex flex-1 flex-col overflow-y-hidden"
-		data-slot="table-base"
-		style={column_size_vars}
+{#if !is_mobile.current || mobile_row == undefined}
+	<ScrollArea
+		class="flex min-h-0 w-full flex-1 overflow-hidden **:data-scroll-area-content:flex **:data-scroll-area-content:h-full **:data-scroll-area-content:overflow-y-hidden"
+		orientation="horizontal"
+		type="hover"
 	>
-		<TableHeader {table} />
+		<div
+			class="flex flex-1 flex-col overflow-y-hidden"
+			data-slot="table-base"
+			style={column_size_vars}
+		>
+			<TableHeader {table} />
 
-		<div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-			<div
-				bind:this={scroll_container}
-				class="flex-1 overflow-x-hidden overflow-y-auto"
-				tabindex={!hotkey_container ? -1 : undefined}
-				{@attach !hotkey_container && focus_up}
-				{@attach !hotkey_container && focus_down}
-			>
-				{#if table_rows.length > 0}
-					<div class="relative w-full" style="height: {total_virtual_size}px;">
-						{#each virtual_rows as virtual_row (virtual_row.key)}
-							{@const row = table_rows[virtual_row.index]}
-
-							{#if row}
-								<div
-									class="absolute top-0 left-0 flex w-full flex-col border-b border-border/50"
-									style="height: {virtual_row.size}px; transform: translateY({virtual_row.start}px);"
-								>
-									<TableRow
-										focused={virtual_row.index == focused_index}
-										onDouble={() => onRowDouble?.()}
-										onFocus={() => HandleFocus(row.original)}
-										onFocusBlock={() => {
-											focus_change_blocked = true;
-										}}
-										onFocusUnblock={() => {
-											focus_change_blocked = false;
-										}}
-										{row}
-									/>
-								</div>
-							{/if}
-						{/each}
-					</div>
-				{/if}
-			</div>
+			<TableRowRenderer {table} {getRowId} {onRowFocus} {onRowDouble} />
 		</div>
+	</ScrollArea>
+{:else}
+	<div class="flex flex-1 overflow-hidden">
+		<TableRowRenderer
+			{table}
+			{getRowId}
+			{onRowFocus}
+			{onRowDouble}
+			{mobile_row}
+			row_height={mobile_row_height}
+		/>
 	</div>
-</ScrollArea>
+{/if}

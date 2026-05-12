@@ -28,7 +28,7 @@
 
 	const table_state = new TableState({
 		key: "inventory-table",
-		default_column_visiblity: DefaultItemTableColVisibility,
+		default_column_visibility: DefaultItemTableColVisibility,
 	});
 
 	const items_query = useLiveQuery(ItemsWithAllMetaCollection);

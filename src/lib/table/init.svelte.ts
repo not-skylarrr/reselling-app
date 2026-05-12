@@ -24,7 +24,7 @@ type TableStateInit = {
 	sorting?: SortingState;
 	focused_id?: string | null;
 	column_visibility?: VisibilityState;
-	default_column_visiblity: VisibilityState;
+	default_column_visibility: VisibilityState;
 	col_sizing?: Record<string, number>;
 	selection_enabled?: boolean;
 	strict_visibility?: boolean;
@@ -99,7 +99,7 @@ export class TableState {
 		if (initial?.strict_visibility != undefined)
 			this.strict_visiblity = initial.strict_visibility;
 
-		this.default_column_visibility = initial.default_column_visiblity;
+		this.default_column_visibility = initial.default_column_visibility;
 
 		if (initial?.column_visibility) {
 			this.column_visibility = initial.column_visibility;

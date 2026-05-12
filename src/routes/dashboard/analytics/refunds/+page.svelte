@@ -107,7 +107,7 @@
 
 	const table_state = new TableState({
 		key: "refund-analytics",
-		default_column_visiblity: DefaultColVisibility,
+		default_column_visibility: DefaultColVisibility,
 	});
 
 	// Doesn't like the premade query for some reason despite being identical
