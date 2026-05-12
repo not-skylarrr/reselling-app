@@ -299,6 +299,7 @@ export const feedback_table = pgTable("feedback", {
 	created_at: timestamp("created_at").notNull(),
 	created_by: text("created_by").notNull(),
 	read: boolean("read").notNull().default(false),
+	archived: boolean("archived").notNull().default(false),
 });
 
 export type UserFeedback = InferSelectModel<typeof feedback_table>;

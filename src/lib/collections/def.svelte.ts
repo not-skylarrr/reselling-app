@@ -506,3 +506,29 @@ export const FeedbackCollection = createCollection(
 		onDelete: async ({ transaction }) => {},
 	}),
 );
+
+export const UsersCollection = createCollection(
+	queryCollectionOptions({
+		id: "users",
+		queryKey: ({ where }) => {
+			const parsed_where = ParseWhereFilters(where);
+
+			if (parsed_where) return ["user-session", "users", "ts-db", parsed_where];
+
+			return ["user-session", "users", "ts-db"];
+		},
+		queryFn: async (ctx) => {
+			const { limit, sorts, where } = ParseSubsetOptions(ctx.meta?.loadSubsetOptions);
+
+			const users = await trpc_client.admin.users.get_ts_db.query({
+				where: where,
+				orderBy: sorts,
+				limit: limit,
+			});
+
+			return users;
+		},
+		queryClient: query_client,
+		getKey: (user) => user.id,
+	}),
+);
