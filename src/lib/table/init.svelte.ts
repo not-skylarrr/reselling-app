@@ -319,13 +319,12 @@ export const [GetTableContext, SetTableContext] = createContext<TableState>();
 
 export function DefaultTableProps<T>(
 	table_state: TableState,
-	opts: Omit<TableOptions<T>, "getCoreRowModel" | "columns" | "data"> = {},
+	opts: Omit<TableOptions<T>, "getCoreRowModel" | "columns" | "data" | "getRowId"> = {},
 ): Omit<TableOptions<T>, "columns" | "data"> {
 	return {
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		getRowId: (original) => original.id,
 		groupedColumnMode: "reorder",
 		state: {
 			get columnFilters() {

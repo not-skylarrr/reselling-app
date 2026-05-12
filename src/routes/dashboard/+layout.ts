@@ -7,4 +7,7 @@ export const load: LayoutLoad = ({ data }) => {
 		throw redirect(308, "/auth/workspace/select");
 
 	session_state.workspace_id = data.user_session.session.activeOrganizationId;
+	session_state.user_id = data.user_session.user.id;
+
+	return data;
 };

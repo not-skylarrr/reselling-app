@@ -1,3 +1,4 @@
 export const session_state = $state({
-	workspace_id: ""
+	user_id: "",
+	workspace_id: "",
 });

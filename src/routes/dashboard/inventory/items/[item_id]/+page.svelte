@@ -1,7 +1,13 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
 	import { EndListing } from "$lib/collections/actions/listing.js";
-	import { ItemsCollection, LabelJoinsCollection } from "$lib/collections/def.svelte.js";
-	import { ItemsWithAllMetaCollection } from "$lib/collections/lib/items.js";
+	import {
+		ItemsCollection,
+		LabelJoinsCollection,
+		LabelsCollection,
+		ListingsCollection,
+		ItemFeesCollection,
+	} from "$lib/collections/def.svelte.js";
 	import { GetItemLabelJoinId } from "$lib/collections/lib/utils.js";
 	import ItemFeesPage from "$lib/components/dashboard/inventory/item-pages/ItemFeesPage.svelte";
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
@@ -35,6 +41,7 @@
 		GetListingExpiryString,
 		GetListingStatusFriendlyName,
 	} from "$lib/listings/utils.js";
+	import type { WorkspaceLabel } from "$lib/server/db/schema.js";
 	import { FormatCurrency } from "$lib/utils/formatting.js";
 	import { session_state } from "$lib/utils/session.svelte.js";
 	import {
@@ -42,11 +49,13 @@
 		LucideEllipsisVertical,
 		LucideImage,
 		LucideInbox,
+		LucideIterationCw,
 		LucidePlus,
 		LucideSettings,
 		LucideX,
+		LucidePackage,
 	} from "@lucide/svelte";
-	import { eq, useLiveQuery } from "@tanstack/svelte-db";
+	import { eq, toArray, useLiveQuery, not, isUndefined } from "@tanstack/svelte-db";
 
 	let { data } = $props();
 
@@ -55,10 +64,35 @@
 	const item_query = useLiveQuery(
 		(q) =>
 			q
-				.from({ item: ItemsWithAllMetaCollection })
+				.from({ item: ItemsCollection })
+				.orderBy(({ item }) => item.status_int, "desc")
+				.orderBy(({ item }) => item.added_at, "desc")
+				.select(({ item }) => ({
+					...item,
+					labels: toArray(
+						q
+							.from({ label_join: LabelJoinsCollection })
+							.where(({ label_join }) => eq(label_join.item_id, item.id))
+							.leftJoin({ label: LabelsCollection }, ({ label_join, label }) =>
+								eq(label.id, label_join.label_id),
+							)
+							.where(({ label }) => not(isUndefined(label)))
+							.fn.select(({ label }): WorkspaceLabel => {
+								return label as WorkspaceLabel;
+							}),
+					),
+					listings: toArray(
+						q
+							.from({ listing: ListingsCollection })
+							.where(({ listing }) => eq(item.id, listing.item_id)),
+					),
+					fees: toArray(
+						q.from({ fee: ItemFeesCollection }).where(({ fee }) => eq(item.id, fee.item_id)),
+					),
+				}))
 				.where(({ item }) => eq(item.id, data.item.id))
 				.findOne(),
-		[() => data.item.id],
+		[() => data.item],
 	);
 
 	let item = $derived(item_query.data ?? data.item);
@@ -119,7 +153,7 @@
 		]}
 	></DashboardHeader>
 
-	<DashboardContent class="@container p-0 md:p-0">
+	<DashboardContent class="@container gap-0 p-0 md:gap-0 md:p-0">
 		<div class="flex flex-row items-center gap-6 border-b p-6">
 			<div class="flex size-14 items-center justify-center rounded-lg bg-muted">
 				<LucideImage class="stroke-muted-foreground" />
@@ -133,12 +167,20 @@
 				{#if item.status_int < 2}
 					<Button><LucidePlus /> Create Listing</Button>
 				{/if}
+
+				{#if item.status_int == 3}
+					<Button><LucidePackage /> Mark as Returned</Button>
+				{/if}
 			</div>
 		</div>
 
 		<div class="flex flex-col border-b p-6 @xl:hidden">
 			{#if item.status_int < 2}
 				<Button><LucidePlus /> Create Listing</Button>
+			{/if}
+
+			{#if item.status_int == 3}
+				<Button><LucidePackage /> Mark as Returned</Button>
 			{/if}
 		</div>
 
@@ -170,7 +212,7 @@
 
 						<TabsTrigger value="finances">Finances</TabsTrigger>
 
-						<TabsTrigger value="bundles">Bundles</TabsTrigger>
+						<TabsTrigger value="bundles">Associations</TabsTrigger>
 					</TabsList>
 				</div>
 
@@ -204,6 +246,12 @@
 													label: "Manage Listing",
 													onSelect: () =>
 														OpenItemDialog(item, "update-listing", { listing: sold_listing }),
+												},
+												{
+													icon: LucideIterationCw,
+													label: "Refund Item",
+													onSelect: () => goto(`/dashboard/inventory/items/${item.id}/refund`),
+													variant: "destructive",
 												},
 											]}
 											align="end"

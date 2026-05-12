@@ -15,15 +15,16 @@
 	import type { Table } from "@tanstack/svelte-table";
 	import type { FilterDef } from "../lib/filters/types";
 	import AddFilterOptionRenderer from "./filters/AddFilterOptionRenderer.svelte";
-	import type { ItemTableState } from "../lib/init.svelte";
 	import { CreateTableFilter } from "../lib/filters/lib/utils";
+	import type { TableState } from "$lib/table/init.svelte";
 
 	type Props = {
-		table: Table<InventoryItemData>;
-		table_state: ItemTableState;
+		label?: string;
+		table: Table<any>;
+		table_state: TableState;
 	};
 
-	let { table, table_state }: Props = $props();
+	let { label, table, table_state }: Props = $props();
 
 	let open = $state(false);
 
@@ -69,11 +70,12 @@
 	<DropdownMenuTrigger>
 		{#snippet child({ props })}
 			<Button {...props} size="sm" variant="outline">
-				<LucideFunnelPlus /> Filter Items
+				<LucideFunnelPlus />
+				{label ?? "Filter Items"}
 			</Button>
 		{/snippet}
 	</DropdownMenuTrigger>
-	<DropdownMenuContent>
+	<DropdownMenuContent align="end">
 		{#each filter_columns as column (column.id)}
 			<DropdownMenuSub>
 				<DropdownMenuSubTrigger>

@@ -47,3 +47,21 @@ export function PrefetchFilterQueries(table: Table<any>, query_client: QueryClie
 		}
 	}
 }
+
+export function NavigateDataObject(data: any, key: string | number | symbol): unknown {
+	if (typeof key != "string") return data[key];
+
+	console.log(data, key);
+
+	const path_segments = key.split(".");
+
+	let reduced_data = data;
+
+	for (const seg of path_segments) {
+		if (!reduced_data[seg]) throw new Error("Invalid key in path");
+
+		reduced_data = reduced_data[seg];
+	}
+
+	return reduced_data;
+}

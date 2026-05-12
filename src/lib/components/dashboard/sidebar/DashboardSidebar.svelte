@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import {
 		Sidebar,
 		SidebarContent,
@@ -19,6 +19,13 @@
 		LucideTable,
 	} from "@lucide/svelte";
 	import DashboardSidebarHeader from "./DashboardSidebarHeader.svelte";
+	import DashboardSidebarFooter from "./DashboardSidebarFooter.svelte";
+
+	type Props = {
+		is_admin: boolean;
+	};
+
+	let { is_admin }: Props = $props();
 </script>
 
 <Sidebar collapsible="icon" variant="inset">
@@ -89,4 +96,6 @@
 			</SidebarGroupContent>
 		</SidebarGroup>
 	</SidebarContent>
+
+	<DashboardSidebarFooter {is_admin} />
 </Sidebar>

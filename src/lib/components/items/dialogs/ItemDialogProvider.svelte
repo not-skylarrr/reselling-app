@@ -6,6 +6,7 @@
 	import LinkItemDialog from "./item-dialogs/LinkItemDialog.svelte";
 	import ListingHistoryDialog from "./item-dialogs/ListingHistoryDialog.svelte";
 	import ListItemDialog from "./item-dialogs/ListItemDialog.svelte";
+	import RefundItemDialog from "./item-dialogs/RefundItemDialog.svelte";
 	import UpdateListingDialog from "./item-dialogs/UpdateListingDialog.svelte";
 
 	function RequestClose() {
@@ -18,8 +19,6 @@
 			item_dialog_state.dialog_type = null;
 		}
 	}
-
-	$inspect(item_dialog_state);
 </script>
 
 {#if item_dialog_state.item}
@@ -40,6 +39,14 @@
 				item={item_dialog_state.item}
 				request_close={RequestClose}
 				meta={item_dialog_state.dialog_meta as ItemDialogMeta<"sell">}
+			/>
+		{/if}
+
+		{#if item_dialog_state.dialog_type == "refund"}
+			<RefundItemDialog
+				item={item_dialog_state.item}
+				request_close={RequestClose}
+				meta={item_dialog_state.dialog_meta as ItemDialogMeta<"refund">}
 			/>
 		{/if}
 

@@ -42,7 +42,7 @@
 			<CommandGroup>
 				{#each options as option (option.value)}
 					<CommandItem
-						class="rounded-full"
+						class="rounded-full [&_svg]:stroke-muted-foreground"
 						onSelect={() => onFilterAdd(option.value)}
 						value={option.label}
 					>
@@ -71,7 +71,7 @@
 			<CommandGroup>
 				{#each options_query.data as option (option.value)}
 					<CommandItem
-						class="rounded-full"
+						class="rounded-full [&_svg]:stroke-muted-foreground"
 						onSelect={() => onFilterAdd(option.value)}
 						value={option.label}
 					>

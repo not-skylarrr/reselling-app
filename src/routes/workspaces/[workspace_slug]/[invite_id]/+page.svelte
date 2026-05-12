@@ -3,6 +3,7 @@
 	import { auth_client } from "$lib/auth-client";
 	import { Avatar, AvatarFallback } from "$lib/components/ui/avatar/index.js";
 	import { Button } from "$lib/components/ui/button";
+	import Hashvatar from "$lib/components/utils/Hashvatar.svelte";
 	import { query_client } from "$lib/queries/client.svelte.js";
 	import { UserOrgDataQuery } from "$lib/queries/session.js";
 	import { LucideCheck, LucideX } from "@lucide/svelte";
@@ -56,6 +57,8 @@
 </script>
 
 <div class="flex h-svh w-svw flex-col items-center justify-center gap-12 p-6">
+	<Hashvatar animated={true} hash={data.workspace.name} size={96} />
+
 	<div class="grid gap-2">
 		<h1 class="text-center text-3xl font-semibold">{data.workspace.name}</h1>
 		<p class="text-center text-pretty text-muted-foreground">

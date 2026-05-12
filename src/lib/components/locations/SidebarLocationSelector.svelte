@@ -112,7 +112,7 @@
 			</Button>
 		{/snippet}
 	</PopoverTrigger>
-	<PopoverContent class="p-0">
+	<PopoverContent align="end" class="p-0">
 		<Command shouldFilter={false}>
 			<CommandInput bind:value={filter_query} rootClass="h-8" placeholder="Search Locations" />
 			<CommandList>

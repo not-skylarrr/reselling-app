@@ -155,13 +155,12 @@
 		)}
 	>
 		{#if selected_options.length > 0}
-			<div class="flex flex-row -space-x-[3px] [&_svg]:size-3">
+			<div
+				class="flex flex-row -space-x-[3px] [&_svg]:size-3.5 [&_svg]:rounded-full [&_svg]:border [&_svg]:border-background [&_svg]:stroke-2"
+			>
 				{#each selected_options.slice(0, 3) as option (option.value)}
 					{#if option.icon}
-						<option.icon.component
-							class={`relative border border-input`}
-							{...option.icon.props}
-						/>
+						<option.icon.component class={`relative`} {...option.icon.props} />
 					{/if}
 				{/each}
 			</div>

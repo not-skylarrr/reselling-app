@@ -27,6 +27,7 @@
 	import type { AuthOrganizationRole } from "$lib/auth/permissions";
 	import { auth_client } from "$lib/auth-client";
 	import type { ServerWorkspace } from "$lib/server/auth";
+	import { cn } from "$lib/utils";
 
 	type Props = {
 		user_org: ServerWorkspace;
@@ -58,7 +59,13 @@
 	<SidebarHeader>
 		<div class="flex flex-row">
 			<button
-				class={buttonVariants({ size: "sm", variant: "ghost" })}
+				class={cn(
+					buttonVariants({
+						size: "sm",
+						variant: "ghost",
+					}),
+					"hover:bg-sidebar-accent!",
+				)}
 				use:NavigationReturn={{ fallback: "/dashboard" }}><LucideChevronLeft /> Return</button
 			>
 		</div>

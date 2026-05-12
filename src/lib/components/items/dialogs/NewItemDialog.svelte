@@ -16,13 +16,15 @@
 	import { createHotkey } from "@tanstack/svelte-hotkeys";
 	import { LucidePlus } from "@lucide/svelte";
 	import { Switch } from "$lib/components/ui/switch";
-	import { ItemsCollection } from "$lib/collections/def.svelte";
+	import { ItemsCollection, LabelJoinsCollection } from "$lib/collections/def.svelte";
 	import { session_state } from "$lib/utils/session.svelte";
 	import PurchaseDatePopover from "./components/PurchaseDatePopover.svelte";
 	import LabelsPopover from "./components/LabelsPopover.svelte";
 	import LocationPopover from "./components/LocationPopover.svelte";
 	import { GenerateQuickId } from "$lib/utils/web-crypto";
 	import type { Item } from "$lib/server/db/schema";
+	import { createTransaction } from "@tanstack/svelte-db";
+	import { ApplyTsDbMutation } from "$lib/utils/ts-db/trpc-map";
 
 	const form = createForm(() => ({
 		defaultValues: {
@@ -40,16 +42,26 @@
 				status: "unlisted",
 				status_int: 0,
 				name: value.name,
-				labels: value.labels,
 				storage_location: value.storage_location,
 				purchase_price: value.purchase_price,
 				target_sale_price: value.target_sale_price,
 				added_at: new Date(),
 				purchased_at: value.purchase_date,
+				refund_type: null,
+				refund_reason: null,
 				workspace_id: session_state.workspace_id,
 			};
 
-			const item_tx = ItemsCollection.insert(item);
+			ItemsCollection.insert(item);
+
+			for (const label_id of value.labels) {
+				LabelJoinsCollection.insert({
+					id: GenerateQuickId(),
+					label_id: label_id,
+					item_id: item.id,
+					workspace_id: session_state.workspace_id,
+				});
+			}
 
 			form.reset();
 

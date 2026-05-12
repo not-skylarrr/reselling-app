@@ -1,7 +1,6 @@
 import type { FilterDef, FilterOperation, IconDefinition } from "../types";
 import { z } from "zod";
-import type { IconProps } from "@lucide/svelte";
-import type { Component } from "svelte";
+import { NavigateDataObject } from "./utils";
 
 type BaseFilterOptions<T> = {
 	accessor_fn?: (row: T) => any;
@@ -41,7 +40,7 @@ export const NumberFilter = <T>({
 
 			const column_value = filter.accessor_fn
 				? filter.accessor_fn(row.original)
-				: row.original[col_id];
+				: NavigateDataObject(row.original, col_id);
 
 			if (typeof column_value != "number") return true;
 
@@ -128,7 +127,7 @@ export const OptionFilter = <T>({
 
 			if (!filter_value_validation.success) return true;
 
-			const column_value = row.original[col_id];
+			const column_value = NavigateDataObject(row.original, col_id);
 			const parsed_filter_value = filter_value_validation.data;
 
 			if (Array.isArray(column_value)) {
@@ -212,7 +211,7 @@ export const DateFilter = <T>({
 
 			const column_raw = filter.accessor_fn
 				? filter.accessor_fn(row.original)
-				: row.original[col_id];
+				: NavigateDataObject(row.original, col_id);
 			if (column_raw == null) return false;
 
 			const column_date = new Date(column_raw);
@@ -280,7 +279,7 @@ export const StringFilter = <T>({
 			const filter_value_validation = z.string().safeParse(value.value);
 			if (!filter_value_validation.success) return true;
 
-			const column_value = row.original[col_id];
+			const column_value = NavigateDataObject(row.original, col_id);
 
 			if (column_value == null) return false;
 

@@ -19,6 +19,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import SidebarHeaderDropdown from "./SidebarHeaderDropdown.svelte";
 	import { UserOrgDataQuery } from "$lib/queries/session";
+	import Hashvatar from "$lib/components/utils/Hashvatar.svelte";
 
 	const org_query = createQuery(() => UserOrgDataQuery);
 </script>
@@ -47,9 +48,7 @@
 
 									<LucideChevronsUpDown />
 								{:else}
-									<Avatar class="size-8">
-										<AvatarFallback>{org_query.data.org.name.charAt(0)}</AvatarFallback>
-									</Avatar>
+									<Hashvatar class="size-8 shrink-0" hash={org_query.data.org.name} />
 
 									<div class="grid flex-1 overflow-hidden">
 										<p class="line-clamp-1">{org_query.data.org.name}</p>

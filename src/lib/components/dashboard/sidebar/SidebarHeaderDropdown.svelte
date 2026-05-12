@@ -24,6 +24,7 @@
 	import { auth_client } from "$lib/auth-client";
 	import { goto } from "$app/navigation";
 	import type { Snippet } from "svelte";
+	import Hashvatar from "$lib/components/utils/Hashvatar.svelte";
 
 	type Props = {
 		trigger: Snippet<[Record<string, unknown>]>;
@@ -72,7 +73,7 @@
 						<DropdownMenuItem>
 							{#snippet child({ props })}
 								<a {...props} href={`/auth/workspace/load/${workspace.id}`} use:WithReturn>
-									<LucideBuilding />
+									<Hashvatar hash={workspace.name} size={16} />
 
 									<p class="flex-1">{workspace.name}</p>
 

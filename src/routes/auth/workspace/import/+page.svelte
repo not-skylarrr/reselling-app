@@ -87,6 +87,7 @@
 	let step = $state<ImportStep>("workspace");
 	let imported_workspace = $state<WorkspaceImport | null>(null);
 	let input_ref = $state<HTMLInputElement | null>(null);
+	let is_importing_items = $state(false);
 
 	let import_tx = createTransaction({
 		autoCommit: false,
@@ -98,6 +99,7 @@
 	const import_label_map = new Map<string, string>();
 	const import_location_map = new Map<string, string>();
 	const import_bundle_item_map = new Map<string, string>();
+
 	let import_workspace_id = "";
 
 	const workspace_form = createForm(() => ({
@@ -241,6 +243,13 @@
 
 		const file_reader = new FileReader();
 
+		const post_insert_tx = createTransaction({
+			autoCommit: false,
+			mutationFn: async ({ transaction }) => {
+				await ApplyTsDbMutation(transaction, false);
+			},
+		});
+
 		file_reader.onload = (e) => {
 			const file_content = e.target?.result;
 			if (!file_content) return toast.error("Failed to read file");
@@ -269,6 +278,8 @@
 				});
 			}
 
+			is_importing_items = true;
+
 			Papa.parse<Record<string, string>>(file_content as string, {
 				header: true,
 				skipEmptyLines: "greedy",
@@ -281,17 +292,6 @@
 
 					let item_id = GenerateQuickId();
 					let listing_id = GenerateQuickId();
-
-					import_tx.mutate(() => {
-						for (const label_id of toLabels(row["labels"])) {
-							LabelJoinsCollection.insert({
-								id: GetItemLabelJoinId(item_id, label_id),
-								item_id: item_id,
-								label_id: label_id,
-								workspace_id: import_workspace_id,
-							});
-						}
-					});
 
 					switch (status) {
 						case "unlisted":
@@ -358,6 +358,8 @@
 									buyer_paid: false,
 									marketplace_id: "ebay",
 									created_at: toDate(row["listed_at"]) ?? new Date(),
+									removed: false,
+									removal_reason: null,
 								});
 							});
 							break;
@@ -408,6 +410,8 @@
 									buyer_paid: false,
 									marketplace_id: "ebay",
 									created_at: toDate(row["listed_at"]) ?? new Date(),
+									removed: false,
+									removal_reason: null,
 								});
 
 								ItemFeesCollection.insert({
@@ -422,6 +426,8 @@
 									buyer_paid: false,
 									marketplace_id: "ebay",
 									created_at: toDate(row["sold_at"]) ?? new Date(),
+									removed: false,
+									removal_reason: null,
 								});
 
 								ItemFeesCollection.insert({
@@ -436,6 +442,8 @@
 									buyer_paid: toBool(row["buyer_paid_postage"]) ?? false,
 									marketplace_id: "ebay",
 									created_at: toDate(row["sold_at"]) ?? new Date(),
+									removed: false,
+									removal_reason: null,
 								});
 							});
 							break;
@@ -484,6 +492,8 @@
 									buyer_paid: false,
 									marketplace_id: "ebay",
 									created_at: toDate(row["listed_at"]) ?? new Date(),
+									removed: true,
+									removal_reason: "Removed due to refund",
 								});
 
 								ItemFeesCollection.insert({
@@ -498,6 +508,8 @@
 									buyer_paid: false,
 									marketplace_id: "ebay",
 									created_at: toDate(row["sold_at"]) ?? new Date(),
+									removed: true,
+									removal_reason: "Removed due to refund",
 								});
 
 								ItemFeesCollection.insert({
@@ -512,6 +524,8 @@
 									buyer_paid: toBool(row["buyer_paid_postage"]) ?? false,
 									marketplace_id: "ebay",
 									created_at: toDate(row["sold_at"]) ?? new Date(),
+									removed: true,
+									removal_reason: "Removed due to refund",
 								});
 
 								ItemFeesCollection.insert({
@@ -526,11 +540,24 @@
 									buyer_paid: false,
 									marketplace_id: "ebay",
 									created_at: toDate(row["refunded_at"]) ?? new Date(),
+									removed: false,
+									removal_reason: null,
 								});
 							});
 
 							break;
 					}
+
+					post_insert_tx.mutate(() => {
+						for (const label_id of toLabels(row["labels"])) {
+							LabelJoinsCollection.insert({
+								id: GetItemLabelJoinId(item_id, label_id),
+								item_id: item_id,
+								label_id: label_id,
+								workspace_id: import_workspace_id,
+							});
+						}
+					});
 
 					const association_array: string[] = JSON.parse(row["associations"]);
 
@@ -539,12 +566,14 @@
 							const new_item_id = import_bundle_item_map.get(bundle_item_id);
 
 							if (new_item_id) {
-								ItemAssociationsCollection.insert({
-									id: GenerateQuickId(),
-									item_id: item_id,
-									subject_id: new_item_id,
-									type: "bundle-item",
-									workspace_id: import_workspace_id,
+								post_insert_tx.mutate(() => {
+									ItemAssociationsCollection.insert({
+										id: GenerateQuickId(),
+										item_id: item_id,
+										subject_id: new_item_id,
+										type: "bundle-item",
+										workspace_id: import_workspace_id,
+									});
 								});
 							}
 						}
@@ -555,6 +584,10 @@
 						import_tx.commit();
 
 						await import_tx.isPersisted.promise;
+
+						post_insert_tx.commit();
+
+						await post_insert_tx.isPersisted.promise;
 
 						goto("/dashboard");
 
@@ -567,6 +600,9 @@
 				},
 				error: (err: any) => {
 					console.error(err);
+
+					is_importing_items = false;
+
 					toast.error("Import failed");
 				},
 			});
@@ -658,7 +694,12 @@
 
 	{#if step == "items"}
 		<CardFooter>
-			<Button class="flex-1" onclick={() => input_ref?.click()}>Import Item CSV</Button>
+			<Button class="flex-1" disabled={is_importing_items} onclick={() => input_ref?.click()}>
+				{#if is_importing_items}
+					<LucideLoaderCircle class="animate-spin" />
+				{/if}
+				Import Item CSV
+			</Button>
 		</CardFooter>
 
 		<input

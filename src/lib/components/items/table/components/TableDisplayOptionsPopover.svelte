@@ -36,8 +36,6 @@
 
 		table_state.SetColumnVisibility(visibility_obj);
 	}
-
-	$inspect(table_state.column_visibility);
 </script>
 
 <Popover bind:open>

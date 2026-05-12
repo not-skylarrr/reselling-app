@@ -18,6 +18,7 @@ export type DialogDefinitions = {
 	list: DialogDefinition<never>;
 	sell: DialogDefinition<{ listing_id?: string }>;
 	link: DialogDefinition<never>;
+	refund: DialogDefinition<{ listing: ItemListing }>;
 	"update-listing": DialogDefinition<{ listing: ItemListing }>;
 	"listing-history": DialogDefinition<never>;
 	"fee-details": DialogDefinition<never>;

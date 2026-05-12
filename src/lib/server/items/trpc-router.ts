@@ -5,6 +5,7 @@ import { CreateDrizzleFilters } from "../ts-db/filters";
 import {
 	item_associations,
 	items,
+	label_join_table,
 	new_item_association_schema,
 	new_item_schema,
 	update_item_association_schema,
@@ -108,6 +109,15 @@ const association_router = router({
 				and(
 					eq(item_associations.workspace_id, workspace_id),
 					inArray(item_associations.id, opts.input),
+				),
+			);
+
+		await db
+			.delete(label_join_table)
+			.where(
+				and(
+					eq(label_join_table.workspace_id, workspace_id),
+					inArray(label_join_table.item_id, opts.input),
 				),
 			);
 	}),

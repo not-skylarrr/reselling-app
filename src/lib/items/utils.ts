@@ -1,4 +1,11 @@
 import type { Item, ItemFee, ItemListing, ItemStatus } from "$lib/server/db/schema";
+import {
+	LucideBadgeAlert,
+	LucideBan,
+	LucideMessageSquareWarning,
+	LucidePackageX,
+} from "@lucide/svelte";
+import type { Component } from "svelte";
 
 export const ItemStatusOrder: ItemStatus[] = ["unlisted", "listed", "sold", "refunded"];
 
@@ -58,7 +65,7 @@ export function CalculateItemProfit({
 	if (!sold_listing) return null;
 
 	const total_fees = fees.reduce((total, fee) => {
-		if (fee.buyer_paid) return total;
+		if (fee.buyer_paid || fee.removed) return total;
 
 		return total + fee.amount;
 	}, 0);
@@ -117,10 +124,17 @@ export const RefundTypeFriendlyNames: Record<string, string> = {
 	CUSTOM: "Other Issue",
 };
 
+export const RefundTypeIcons: Record<string, Component<any>> = {
+	ITEM_DAMAGED: LucidePackageX,
+	NOT_AS_DESCRIBED: LucideBadgeAlert,
+	ORDER_CANCELLED: LucideBan,
+	CUSTOM: LucideMessageSquareWarning,
+};
+
 export function GetRefundTypeFriendlyName(type: string) {
 	if (type in RefundTypeFriendlyNames) {
 		return RefundTypeFriendlyNames[type];
 	}
 
-	return "Unknown Type";
+	return type;
 }

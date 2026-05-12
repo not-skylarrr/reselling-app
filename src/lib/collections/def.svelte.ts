@@ -55,8 +55,13 @@ export const ItemsCollection = createCollection(
 
 			query_client.invalidateQueries({ queryKey: ["user-session", "items"] });
 		},
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
 	}),
 );
+
+ItemsCollection.createIndex((row) => row.id);
+ItemsCollection.createIndex((row) => row.status);
 
 export const ListingsCollection = createCollection(
 	queryCollectionOptions({
@@ -70,8 +75,6 @@ export const ListingsCollection = createCollection(
 		},
 		queryFn: async (ctx) => {
 			const { limit, sorts, where } = ParseSubsetOptions(ctx.meta?.loadSubsetOptions);
-
-			console.log(where);
 
 			const listings = await trpc_client.listings.get_ts_db.query({
 				where: where,
@@ -143,6 +146,8 @@ export const ItemFeesCollection = createCollection(
 
 			query_client.invalidateQueries({ queryKey: ["user-session", "item-fees"] });
 		},
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
 	}),
 );
 
@@ -247,6 +252,8 @@ export const LabelJoinsCollection = createCollection(
 
 			query_client.invalidateQueries({ queryKey: ["user-session", "label-joins"] });
 		},
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
 	}),
 );
 
@@ -453,5 +460,49 @@ export const ItemAssociationsCollection = createCollection(
 
 			query_client.invalidateQueries({ queryKey: ["user-session", "item-associations"] });
 		},
+	}),
+);
+
+export const FeedbackCollection = createCollection(
+	queryCollectionOptions({
+		id: "feedback",
+		queryKey: ({ where }) => {
+			const parsed_where = ParseWhereFilters(where);
+
+			if (parsed_where) return ["user-session", "feedback", "ts-db", parsed_where];
+
+			return ["user-session", "feedback", "ts-db"];
+		},
+		queryFn: async (ctx) => {
+			const { limit, sorts, where } = ParseSubsetOptions(ctx.meta?.loadSubsetOptions);
+
+			const bundles = await trpc_client.feedback.get_ts_db.query({
+				where: where,
+				orderBy: sorts,
+				limit: limit,
+			});
+
+			return bundles;
+		},
+		queryClient: query_client,
+		getKey: (feedback) => feedback.id,
+		onInsert: async ({ transaction }) => {
+			const insertions = transaction.mutations.map((m) => m.modified);
+
+			await trpc_client.feedback.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "feedback"] });
+		},
+		onUpdate: async ({ transaction }) => {
+			const updates = transaction.mutations.map((m) => ({
+				id: m.key,
+				changes: m.changes,
+			}));
+
+			await trpc_client.feedback.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "feedback"] });
+		},
+		onDelete: async ({ transaction }) => {},
 	}),
 );

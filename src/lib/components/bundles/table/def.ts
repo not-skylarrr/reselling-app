@@ -1,6 +1,9 @@
 import { createColumnHelper, type VisibilityState } from "@tanstack/svelte-table";
 import { type BundleTableData } from "../../../../routes/dashboard/bundles/+page.svelte";
 import { GetBundleCompletionStats } from "./lib/utils";
+import { StringFilter } from "$lib/components/items/table/lib/filters/lib/functions";
+import { LucideTextCursor } from "@lucide/svelte";
+import { AdvancedFilter } from "$lib/components/items/table/lib/filters";
 
 const column = createColumnHelper<BundleTableData>();
 
@@ -11,8 +14,15 @@ export const BundleTableColumns = [
 		meta: {
 			align: "left",
 			flex: true,
+			filter: StringFilter({
+				name: "Name",
+				icon: {
+					component: LucideTextCursor,
+				},
+			}),
 		},
 		minSize: 360,
+		filterFn: AdvancedFilter,
 	}),
 	column.accessor((row) => GetBundleCompletionStats(row).total_item_count, {
 		id: "item-count",

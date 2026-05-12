@@ -6,7 +6,7 @@
 	import DestructiveDialogProvider from "$lib/components/utils/dialogs/DestructiveDialogProvider.svelte";
 	import { mode } from "mode-watcher";
 
-	const { children } = $props();
+	const { children, data } = $props();
 </script>
 
 <svelte:head>
@@ -14,7 +14,7 @@
 </svelte:head>
 
 <SidebarProvider>
-	<DashboardSidebar />
+	<DashboardSidebar is_admin={data.user_session.user.role == "admin"} />
 	<SidebarInset class="overflow-hidden">
 		{@render children()}
 	</SidebarInset>

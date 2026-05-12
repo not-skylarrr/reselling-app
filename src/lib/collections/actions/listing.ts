@@ -60,6 +60,8 @@ export function ListItem(item_id: string, options: ListItemOptions) {
 			reference_name: "Marketplace Listing Fee",
 			reference_details: `${marketplace_data.name}: ${FormatDateStd(new Date())}`,
 			created_at: new Date(),
+			removed: false,
+			removal_reason: null,
 		});
 	}
 }
@@ -127,9 +129,11 @@ export async function MarkListingSold(
 		amount: sale_fee,
 		buyer_paid: false,
 		marketplace_id: marketplace_id,
-		reference_name: "Listing sale fees",
+		reference_name: "Final Sale Fees",
 		reference_details: "Automatically generated",
 		created_at: new Date(),
+		removed: false,
+		removal_reason: null,
 	});
 
 	ItemFeesCollection.insert({
@@ -141,9 +145,11 @@ export async function MarkListingSold(
 		amount: postage_cost,
 		buyer_paid: buyer_paid_postage,
 		marketplace_id: marketplace_id,
-		reference_name: "Listing postage cost",
+		reference_name: "Postage Cost",
 		reference_details: "Automatically generated",
 		created_at: new Date(),
+		removed: false,
+		removal_reason: null,
 	});
 
 	for (const listing of active_listings) {

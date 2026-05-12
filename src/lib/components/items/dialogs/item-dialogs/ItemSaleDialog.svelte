@@ -66,8 +66,6 @@
 		selected_listing ? GetMarketplaceData(selected_listing.marketplace_id) : null,
 	);
 
-	$inspect(selected_marketplace);
-
 	const form = createForm(() => ({
 		defaultValues: {
 			sale_price: selected_listing?.price ?? 0,

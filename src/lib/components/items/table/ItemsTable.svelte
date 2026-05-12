@@ -194,7 +194,7 @@
 </script>
 
 <ScrollArea
-	class="hidden min-h-0 w-full flex-1 overflow-hidden md:flex [&_[data-scroll-area-content]]:flex [&_[data-scroll-area-content]]:h-full [&_[data-scroll-area-content]]:overflow-y-hidden"
+	class="hidden min-h-0 w-full flex-1 overflow-hidden **:data-scroll-area-content:flex **:data-scroll-area-content:h-full **:data-scroll-area-content:overflow-y-hidden md:flex"
 	orientation="horizontal"
 	type="hover"
 >

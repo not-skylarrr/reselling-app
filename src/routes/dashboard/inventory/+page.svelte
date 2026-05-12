@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { ItemsWithAllMetaCollection } from "$lib/collections/lib/items";
-	import { type InventoryItemData } from "$lib/collections/query-collections";
 	import ItemInventorySidebar from "$lib/components/dashboard/inventory/inventory-sidebar/ItemInventorySidebar.svelte";
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
 	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";

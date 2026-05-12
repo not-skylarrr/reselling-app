@@ -72,13 +72,18 @@
 	} from "$lib/components/ui/item";
 	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import Plural from "$lib/components/utils/Plural.svelte";
+	import type { ItemBundle } from "$lib/server/db/schema";
 	import { session_state } from "$lib/utils/session.svelte";
 	import { ApplyTsDbMutation } from "$lib/utils/ts-db/trpc-map";
 	import { GenerateQuickId } from "$lib/utils/web-crypto";
-	import { LucideCheck, LucideChevronDown, LucidePlus } from "@lucide/svelte";
-	import { createTransaction } from "@tanstack/svelte-db";
+	import { LucideCheck, LucideChevronDown, LucidePlus, LucideX } from "@lucide/svelte";
+	import { createTransaction, ilike, queryOnce } from "@tanstack/svelte-db";
 	import { createForm, useStore } from "@tanstack/svelte-form";
 	import { toast } from "svelte-sonner";
+	import { slide } from "svelte/transition";
+
+	let similar_bundles = $state<ItemBundle[]>([]);
+	let similar_bundles_dismissed = $state(false);
 
 	let show_multiline_dialog = $state(false);
 	let show_series_tool = $state(false);
@@ -97,7 +102,7 @@
 				{ id: GenerateQuickId(), name: "", price: 0, parent_id: null },
 			] as NewFormBundleItem[],
 		},
-		onSubmit: ({ value }) => {
+		onSubmit: async ({ value }) => {
 			try {
 				const tx = createTransaction({
 					autoCommit: false,
@@ -109,31 +114,43 @@
 				const bundle_id = GenerateQuickId();
 
 				tx.mutate(() => {
-					BundlesCollection.insert({
-						id: bundle_id,
-						name: value.name,
-						completed_price: value.price,
-						created_at: new Date(),
-						workspace_id: session_state.workspace_id,
-					});
+					BundlesCollection.insert(
+						{
+							id: bundle_id,
+							name: value.name,
+							completed_price: value.price,
+							created_at: new Date(),
+							workspace_id: session_state.workspace_id,
+						},
+						{ optimistic: false },
+					);
 				});
 
 				for (const item of value.items) {
 					tx.mutate(() => {
-						BundleItemsCollection.insert({
-							id: item.id,
-							name: item.name,
-							price: item.price,
-							parent_id: item.parent_id,
-							bundle_id: bundle_id,
-							workspace_id: session_state.workspace_id,
-						});
+						BundleItemsCollection.insert(
+							{
+								id: item.id,
+								name: item.name,
+								price: item.price,
+								parent_id: item.parent_id,
+								bundle_id: bundle_id,
+								workspace_id: session_state.workspace_id,
+							},
+							{ optimistic: false },
+						);
 					});
 				}
 
-				tx.commit();
+				try {
+					await tx.commit();
 
-				goto("/dashboard/bundles");
+					goto("/dashboard/bundles");
+				} catch (e) {
+					console.error(e);
+
+					toast.error("Failed to create bundle");
+				}
 			} catch (e) {
 				console.error(e);
 
@@ -191,6 +208,23 @@
 		multiline_parent_id = null;
 		multiline_item_id = "";
 	}
+
+	async function FindSimiliarBundles(name: string) {
+		if (name.length == 0) {
+			similar_bundles = [];
+			return;
+		}
+
+		const matching_bundles = await queryOnce((q) =>
+			q
+				.from({ bundle: BundlesCollection })
+				.where(({ bundle }) => ilike(bundle.name, `%${name}%`)),
+		);
+
+		console.log(matching_bundles);
+
+		similar_bundles = matching_bundles;
+	}
 </script>
 
 <DashboardLayoutRoot>
@@ -206,32 +240,66 @@
 			<FormCard>
 				<FormCardSection>
 					<FieldGroup>
-						<form.Field name="name">
-							{#snippet children(field)}
-								<Field orientation="responsive">
-									<FieldContent>
-										<FieldLabel>Bundle Name</FieldLabel>
+						<div class="flex flex-col gap-0">
+							<form.Field
+								name="name"
+								listeners={{
+									onChangeDebounceMs: 1000,
+									onChange: ({ value }) => FindSimiliarBundles(value),
+								}}
+							>
+								{#snippet children(field)}
+									<Field orientation="responsive">
+										<FieldContent>
+											<FieldLabel>Bundle Name</FieldLabel>
 
-										{#if field.state.meta.errors.length > 0}
-											<FieldError errors={field.state.meta.errors} />
-										{:else}
-											<FieldDescription class="hidden @md:block"
-												>The name of the completed bundle</FieldDescription
+											{#if field.state.meta.errors.length > 0}
+												<FieldError errors={field.state.meta.errors} />
+											{:else}
+												<FieldDescription class="hidden @md:block"
+													>The name of the completed bundle</FieldDescription
+												>
+											{/if}
+										</FieldContent>
+
+										<FieldControl>
+											<Input
+												onblur={() => field.handleBlur()}
+												oninput={(ev) => field.handleChange(ev.currentTarget.value)}
+												placeholder="eg. Friends Complete Series"
+												value={field.state.value}
+											/>
+										</FieldControl>
+									</Field>
+								{/snippet}
+							</form.Field>
+
+							{#if similar_bundles.length > 0 && !similar_bundles_dismissed}
+								<div class="pt-3" transition:slide={{ axis: "y" }}>
+									<div class="flex flex-col gap-2 rounded-2xl border bg-muted/50 p-2 px-4 pb-4">
+										<div class="flex flex-row items-center justify-between">
+											<p class="text-xs text-muted-foreground">
+												Bundles with similiar names found:
+											</p>
+											<Button
+												class="hover:bg-sidebar-accent!"
+												onclick={() => (similar_bundles_dismissed = true)}
+												size="icon-xs"
+												variant="ghost"><LucideX /></Button
 											>
-										{/if}
-									</FieldContent>
+										</div>
 
-									<FieldControl>
-										<Input
-											onblur={() => field.handleBlur()}
-											onchange={(ev) => field.handleChange(ev.currentTarget.value)}
-											placeholder="eg. Friends Complete Series"
-											value={field.state.value}
-										/>
-									</FieldControl>
-								</Field>
-							{/snippet}
-						</form.Field>
+										<ul class="flex list-inside list-decimal flex-col gap-1">
+											{#each similar_bundles as bundle (bundle.id)}
+												<li class="text-sm marker:text-muted-foreground">
+													{bundle.name}
+												</li>
+											{/each}
+										</ul>
+									</div>
+								</div>
+							{/if}
+						</div>
 
 						<form.Field name="price">
 							{#snippet children(field)}

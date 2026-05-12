@@ -1,14 +1,5 @@
 import { relations, type InferSelectModel, type InferInsertModel } from "drizzle-orm";
-import {
-	pgTable,
-	text,
-	real,
-	timestamp,
-	json,
-	boolean,
-	integer,
-	pgTableCreator,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, real, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import z from "zod";
 
@@ -80,11 +71,6 @@ export const update_item_schema = createUpdateSchema(items, {
 
 export type NewItem = z.infer<typeof new_item_schema>;
 
-export const items_relations = relations(items, ({ many }) => ({
-	listings: many(item_listings),
-	listing_fees: many(item_fees),
-}));
-
 export type Item = InferSelectModel<typeof items>;
 
 export type ItemWithLabels = Item & {
@@ -135,14 +121,6 @@ export const update_listing_schema = createUpdateSchema(item_listings, {
 	ended_at: true,
 });
 
-export const item_listing_relations = relations(item_listings, ({ one, many }) => ({
-	item: one(items, {
-		fields: [item_listings.item_id],
-		references: [items.id],
-	}),
-	fees: many(item_fees),
-}));
-
 export type NewItemListing = InferInsertModel<typeof item_listings>;
 export type ItemListing = InferSelectModel<typeof item_listings>;
 
@@ -168,6 +146,8 @@ export const item_fees = pgTable("item_fees", {
 	buyer_paid: boolean("buyer_paid").notNull().default(false),
 	marketplace_id: text("marketplace_id"),
 	created_at: timestamp("created_at").notNull(),
+	removed: boolean("removed").default(false),
+	removal_reason: text("removal_reason"),
 });
 
 export const new_item_fee_schema = createInsertSchema(item_fees, {
@@ -183,20 +163,11 @@ export const update_item_fee_schema = createUpdateSchema(item_fees, {
 	amount: true,
 	buyer_paid: true,
 	marketplace_id: true,
+	removed: true,
+	removal_reason: true,
 });
 
 export type ItemFee = InferSelectModel<typeof item_fees>;
-
-export const item_fees_relations = relations(item_fees, ({ one }) => ({
-	listing: one(item_listings, {
-		fields: [item_fees.listing_id],
-		references: [item_listings.id],
-	}),
-	item: one(items, {
-		fields: [item_fees.item_id],
-		references: [items.id],
-	}),
-}));
 
 export const workspace_labels = pgTable("workspace_labels", {
 	id: text("id").primaryKey(),
@@ -291,6 +262,8 @@ export const item_association_type_schema = z.union([
 	z.literal("bundle-item"),
 	// Links an item to a completed bundle in the inventory
 	z.literal("inclusion-ref"),
+	// Links a refunded item to a new copy to manage returns
+	z.literal("returned-item"),
 	// Links an item arbitrarily
 	z.literal("misc-item-ref"),
 ]);
@@ -300,7 +273,9 @@ export type ItemAssociationType = z.infer<typeof item_association_type_schema>;
 export const item_associations = pgTable("item-associations", {
 	id: text("id").primaryKey(),
 	type: text("type").notNull().$type<ItemAssociationType>(),
-	item_id: text("item_id").notNull(),
+	item_id: text("item_id")
+		.notNull()
+		.references(() => items.id, { onDelete: "cascade" }),
 	subject_id: text("subject_id").notNull(),
 	workspace_id: text("workspace_id").notNull(),
 });
@@ -316,5 +291,24 @@ export const update_item_association_schema = createUpdateSchema(item_associatio
 });
 
 export type ItemAssociation = InferSelectModel<typeof item_associations>;
+
+export const feedback_table = pgTable("feedback", {
+	id: text("id").primaryKey(),
+	title: text("title").notNull(),
+	content: text("content").notNull(),
+	created_at: timestamp("created_at").notNull(),
+	created_by: text("created_by").notNull(),
+	read: boolean("read").notNull().default(false),
+});
+
+export type UserFeedback = InferSelectModel<typeof feedback_table>;
+
+export const new_feedback_schema = createInsertSchema(feedback_table);
+
+export const update_feedback_schema = createUpdateSchema(feedback_table).pick({
+	title: true,
+	content: true,
+	read: true,
+});
 
 export * from "./auth.schema";

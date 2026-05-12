@@ -60,10 +60,12 @@
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
 	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";
+	import TableFilterDisplay from "$lib/components/items/table/components/TableFilterDisplay.svelte";
+	import { CreateTableFilter } from "$lib/components/items/table/lib/filters/lib/utils";
 	import { Button } from "$lib/components/ui/button";
 	import type { BundleItem, Item, ItemAssociation, ItemBundle } from "$lib/server/db/schema";
 	import { SetTableContext, TableState } from "$lib/table/init.svelte";
-	import { LucidePlus } from "@lucide/svelte";
+	import { LucidePlus, LucideSearch } from "@lucide/svelte";
 	import {
 		eq,
 		and,
@@ -132,11 +134,25 @@
 		]}
 	>
 		{#snippet actions()}
-			<Button href="/dashboard/bundles/new"><LucidePlus /> New Bundle</Button>
+			<Button href="/dashboard/bundles/new" size="sm"><LucidePlus /> New Bundle</Button>
+			<Button
+				onclick={() =>
+					table_state.AddFilter(
+						CreateTableFilter("name", "string:includes", "", { defaultOpen: true }),
+					)}
+				size="icon-sm"
+				variant="outline"><LucideSearch /></Button
+			>
 		{/snippet}
 	</DashboardHeader>
 
-	<DashboardContent class="p-0 md:p-0" disableScroll>
+	<DashboardContent class="gap-0 p-0 md:gap-0 md:p-0" disableScroll>
+		{#if table_state.filters.length > 0}
+			<div class="flex min-h-8 flex-row gap-3 border-b px-3 py-2">
+				<TableFilterDisplay bind:filters={table_state.filters} {table} />
+			</div>
+		{/if}
+
 		<BundleTable {table} />
 		<MobileBundleTable {table} />
 	</DashboardContent>
