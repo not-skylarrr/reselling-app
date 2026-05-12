@@ -76,6 +76,7 @@ type OptionFilterOptions<T> = BaseFilterOptions<T> & {
 	columnArray?: boolean;
 	multiLabel?: string;
 	options: OptionFilterOption[] | (() => OptionFilterOption[] | Promise<OptionFilterOption[]>);
+	getKey: (data: T) => string;
 };
 
 export type OptionFilterOption = {
@@ -92,6 +93,7 @@ export const OptionFilter = <T>({
 	icon,
 	name,
 	options,
+	getKey,
 }: OptionFilterOptions<T>): FilterDef<T> => {
 	const available_operations: FilterOperation[] = columnArray
 		? [
@@ -131,34 +133,38 @@ export const OptionFilter = <T>({
 			const parsed_filter_value = filter_value_validation.data;
 
 			if (Array.isArray(column_value)) {
+				const key_arr = column_value.map((data) => getKey(data));
+
 				if (value.operator == "option:includes") {
-					return column_value.some((val) => parsed_filter_value.includes(val));
+					return key_arr.some((val) => parsed_filter_value.includes(val));
 				}
 
 				if (value.operator == "option:includes-all") {
-					return parsed_filter_value.every((val) => column_value.includes(val));
+					return parsed_filter_value.every((val) => key_arr.includes(val));
 				}
 
 				if (value.operator == "option:excludes") {
-					return !parsed_filter_value.some((val) => column_value.includes(val));
+					return !parsed_filter_value.some((val) => key_arr.includes(val));
 				}
 
 				if (value.operator == "option:excludes-all") {
-					return !parsed_filter_value.every((val) => column_value.includes(val));
+					return !parsed_filter_value.every((val) => key_arr.includes(val));
 				}
 
 				return false;
 			}
 
+			if (!column_value) return false;
+
 			const operation_avail = available_operations.findIndex((o) => o.id == value.operator);
 			if (operation_avail == -1) return false;
 
 			if (value.operator == "option:includes") {
-				return parsed_filter_value.includes(column_value as string);
+				return parsed_filter_value.includes(getKey(column_value));
 			}
 
 			if (value.operator == "option:excludes") {
-				return !parsed_filter_value.includes(column_value as string);
+				return !parsed_filter_value.includes(getKey(column_value));
 			}
 
 			if (value.operator == "option:includes-all") {

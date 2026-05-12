@@ -25,6 +25,7 @@ import { CalculateItemProfit } from "$lib/items/utils";
 import { trpc_client } from "$lib/trpc/client";
 import LabelMarkers from "../../labels/LabelMarkers.svelte";
 import LocationMarker from "../../locations/LocationMarker.svelte";
+import type { WorkspaceLabel } from "$lib/server/db/schema";
 
 const column = createColumnHelper<InventoryItemData>();
 
@@ -83,6 +84,7 @@ export const ItemTableColumns = [
 						value: "unlisted",
 					},
 				],
+				getKey: (status) => status as string,
 			}),
 		},
 		minSize: 184,
@@ -97,7 +99,7 @@ export const ItemTableColumns = [
 		minSize: 184,
 		meta: {
 			align: "left",
-			filter: OptionFilter({
+			filter: OptionFilter<WorkspaceLabel>({
 				icon: { component: LucideTags },
 				name: "Label",
 				multiLabel: "labels",
@@ -113,6 +115,7 @@ export const ItemTableColumns = [
 						value: label.id,
 					}));
 				},
+				getKey: (label) => label.id,
 			}),
 		},
 		filterFn: AdvancedFilter<InventoryItemData>,
@@ -138,6 +141,7 @@ export const ItemTableColumns = [
 						value: location.id,
 					}));
 				},
+				getKey: (id: string) => id,
 			}),
 		},
 		minSize: 184,

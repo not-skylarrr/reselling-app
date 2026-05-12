@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/svelte-query";
 import type { Table } from "@tanstack/svelte-table";
 import { Alphabet, GenerateRandomString } from "$lib/utils/web-crypto";
-import type { TableSearchFilter } from "../../validators";
+import type { TableSearchFilter } from "$lib/table/validators";
 
 export type CreateFilterOptions = {
 	defaultOpen?: boolean;
@@ -51,14 +51,12 @@ export function PrefetchFilterQueries(table: Table<any>, query_client: QueryClie
 export function NavigateDataObject(data: any, key: string | number | symbol): unknown {
 	if (typeof key != "string") return data[key];
 
-	console.log(data, key);
-
-	const path_segments = key.split(".");
+	const path_segments = key.split(".").filter((seg) => seg.length > 0);
 
 	let reduced_data = data;
 
 	for (const seg of path_segments) {
-		if (!reduced_data[seg]) throw new Error("Invalid key in path");
+		if (reduced_data[seg] == undefined) return undefined;
 
 		reduced_data = reduced_data[seg];
 	}

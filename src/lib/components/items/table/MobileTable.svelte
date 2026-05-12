@@ -9,8 +9,8 @@
 
 	type Props = {
 		onRowDouble?: () => void;
-		onRowFocus: (item: FullItem) => void;
-		table: Table<FullItem>;
+		onRowFocus: (item: InventoryItemData) => void;
+		table: Table<InventoryItemData>;
 	};
 
 	let { onRowFocus, onRowDouble, table }: Props = $props();
