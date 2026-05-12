@@ -17,6 +17,7 @@
 		LucideBuilding,
 		LucideCheck,
 		LucidePlus,
+		LucideLayoutPanelLeft,
 	} from "@lucide/svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { WithReturn } from "$lib/utils/navigation";
@@ -53,6 +54,14 @@
 		{/snippet}
 	</DropdownMenuTrigger>
 	<DropdownMenuContent align="end" class="w-64">
+		<DropdownMenuItem>
+			{#snippet child({ props })}
+				<a {...props} href="/dashboard">
+					<LucideLayoutPanelLeft /> Dashboard
+				</a>
+			{/snippet}
+		</DropdownMenuItem>
+
 		<DropdownMenuItem>
 			{#snippet child({ props })}
 				<a {...props} href="/settings" use:WithReturn>

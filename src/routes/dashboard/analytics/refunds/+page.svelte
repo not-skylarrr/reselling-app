@@ -75,7 +75,6 @@
 		LabelsCollection,
 		ListingsCollection,
 	} from "$lib/collections/def.svelte";
-
 	import { ItemsWithAllMetaCollection } from "$lib/collections/lib/items";
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";

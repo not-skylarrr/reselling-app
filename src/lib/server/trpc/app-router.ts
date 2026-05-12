@@ -1,3 +1,4 @@
+import { admin_router } from "../admin/trpc-router";
 import { bundles_router } from "../bundles/trpc-router";
 import { feedback_router } from "../feedback/trpc-router";
 import { fees_router } from "../fees/trpc-router";
@@ -7,6 +8,7 @@ import { workspace_router } from "../workspace/trpc-router";
 import { router } from "./router";
 
 export const app_router = router({
+	admin: admin_router,
 	bundles: bundles_router,
 	items: items_router,
 	listings: listings_router,
