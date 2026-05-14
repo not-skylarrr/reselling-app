@@ -18,6 +18,11 @@
 				align: "left",
 			},
 			minSize: 160,
+			sortingFn: (a, b) => {
+				const role_order: AuthOrganizationRole[] = ["owner", "admin", "member"];
+
+				return role_order.indexOf(b.original.role) - role_order.indexOf(a.original.role);
+			},
 		}),
 		column.accessor((row) => row, {
 			id: "actions",
@@ -104,6 +109,7 @@
 		key: "member-table",
 		default_column_visibility: DefaultColumnVisibility,
 		selection_enabled: false,
+		sorting: [{ id: "role", desc: true }],
 	});
 
 	const table = createTable<ServerWorkspaceMember>({
