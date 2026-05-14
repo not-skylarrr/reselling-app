@@ -164,12 +164,8 @@
 						});
 
 						for (const item of bundle.items) {
-							const item_id = GenerateQuickId();
-
-							import_bundle_item_map.set(item.id, item_id);
-
 							BundleItemsCollection.insert({
-								id: item_id,
+								id: item.id,
 								name: item.name,
 								price: item.price,
 								parent_id: item.parent_id,
@@ -563,19 +559,15 @@
 
 					if (Array.isArray(association_array) && association_array.length > 0) {
 						for (const bundle_item_id of association_array) {
-							const new_item_id = import_bundle_item_map.get(bundle_item_id);
-
-							if (new_item_id) {
-								post_insert_tx.mutate(() => {
-									ItemAssociationsCollection.insert({
-										id: GenerateQuickId(),
-										item_id: item_id,
-										subject_id: new_item_id,
-										type: "bundle-item",
-										workspace_id: import_workspace_id,
-									});
+							post_insert_tx.mutate(() => {
+								ItemAssociationsCollection.insert({
+									id: GenerateQuickId(),
+									item_id: item_id,
+									subject_id: bundle_item_id,
+									type: "bundle-item",
+									workspace_id: import_workspace_id,
 								});
-							}
+							});
 						}
 					}
 				},
