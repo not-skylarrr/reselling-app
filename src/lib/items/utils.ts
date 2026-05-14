@@ -75,10 +75,20 @@ export function CalculateItemProfit({
 
 export function CalculateTotalFees(fees: ItemFee[]) {
 	return fees.reduce((total, fee) => {
-		if (fee.buyer_paid) return total;
+		if (fee.buyer_paid || fee.removed) return total;
 
 		return total + fee.amount;
 	}, 0);
+}
+
+export function GetItemSalePrice(listings: ItemListing[]) {
+	for (const listing of listings) {
+		if (listing.status == "sold") {
+			return listing.price;
+		}
+	}
+
+	return 0;
 }
 
 export function CalculateFeesByType(fees: ItemFee[]) {

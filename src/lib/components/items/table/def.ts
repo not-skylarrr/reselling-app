@@ -25,9 +25,9 @@ import { CalculateItemProfit } from "$lib/items/utils";
 import { trpc_client } from "$lib/trpc/client";
 import LabelMarkers from "../../labels/LabelMarkers.svelte";
 import LocationMarker from "../../locations/LocationMarker.svelte";
-import type { WorkspaceLabel } from "$lib/server/db/schema";
+import type { FullItem, WorkspaceLabel } from "$lib/server/db/schema";
 
-const column = createColumnHelper<InventoryItemData>();
+const column = createColumnHelper<FullItem>();
 
 export const ItemTableColumns = [
 	column.accessor("name", {
@@ -41,7 +41,7 @@ export const ItemTableColumns = [
 			}),
 		},
 		minSize: 360,
-		filterFn: AdvancedFilter<InventoryItemData>,
+		filterFn: AdvancedFilter,
 	}),
 	column.accessor("status", {
 		header: "Status",
@@ -88,7 +88,7 @@ export const ItemTableColumns = [
 			}),
 		},
 		minSize: 184,
-		filterFn: AdvancedFilter<InventoryItemData>,
+		filterFn: AdvancedFilter,
 		sortingFn: (a, b) => {
 			return b.original.status_int - a.original.status_int;
 		},
@@ -118,7 +118,7 @@ export const ItemTableColumns = [
 				getKey: (label) => label.id,
 			}),
 		},
-		filterFn: AdvancedFilter<InventoryItemData>,
+		filterFn: AdvancedFilter,
 	}),
 	column.accessor("storage_location", {
 		header: "Location",
@@ -145,7 +145,7 @@ export const ItemTableColumns = [
 			}),
 		},
 		minSize: 184,
-		filterFn: AdvancedFilter<InventoryItemData>,
+		filterFn: AdvancedFilter,
 	}),
 	column.accessor(
 		(row) => {

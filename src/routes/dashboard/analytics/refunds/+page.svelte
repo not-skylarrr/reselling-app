@@ -46,6 +46,7 @@
 						label,
 						value,
 					})),
+					getKey: (key: string) => key,
 				}),
 			},
 			minSize: 184,
@@ -146,6 +147,7 @@
 		get data() {
 			return refunded_items_query.data;
 		},
+		getRowId: (item) => item.id,
 	});
 
 	const available_data = $derived(table.getFilteredRowModel().rows.map((row) => row.original));
@@ -236,7 +238,7 @@
 		{/if}
 
 		<div class="flex flex-1 overflow-hidden">
-			<TableBase onRowFocus={() => {}} {table} />
+			<TableBase getRowId={(data) => data.id} onRowFocus={() => {}} {table} />
 		</div>
 	</DashboardContent>
 </DashboardLayoutRoot>

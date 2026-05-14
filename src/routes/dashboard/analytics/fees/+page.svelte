@@ -38,6 +38,7 @@
 						label,
 						value,
 					})),
+					getKey: (key: string) => key,
 				}),
 			},
 			minSize: 160,
@@ -112,7 +113,7 @@
 	import { LucidePanelRight, LucideReceipt, LucideTextCursor } from "@lucide/svelte";
 	import TableFilterDropdown from "$lib/components/items/table/components/TableFilterDropdown.svelte";
 	import TableFilterDisplay from "$lib/components/items/table/components/TableFilterDisplay.svelte";
-	import { FormatCurrency, FormatDateRange, FormatDateStd } from "$lib/utils/formatting";
+	import { FormatCurrency, FormatDateStd } from "$lib/utils/formatting";
 	import AnalyticsFeeSidebar from "$lib/components/analytics/fees/AnalyticsFeeSidebar.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
 

@@ -1,10 +1,9 @@
+import type { BundleItem } from "$lib/server/db/schema";
+import type ArrowUp_0_1 from "@lucide/svelte/icons/arrow-up-0-1";
 import type { BundleTableData } from "../../../../../routes/dashboard/bundles/+page.svelte";
 
 export function GetBundleCompletionStats(bundle_data: BundleTableData) {
 	let item_count = bundle_data.items.length;
-	let completion_count = 0;
-
-	const header_items: Set<string> = new Set();
 
 	if (bundle_data.items.length == 0)
 		return {
@@ -13,26 +12,39 @@ export function GetBundleCompletionStats(bundle_data: BundleTableData) {
 			completion_perc: 0,
 		};
 
+	const parent_map = new Map<string, string[]>();
+	const completed_items = new Set<string>();
+
 	for (const item of bundle_data.items) {
-		let entry_has_inv_item = false;
-
 		if (item.parent_id) {
-			header_items.add(item.parent_id);
-		}
-
-		for (const association of item.associations) {
-			if (association.item) {
-				entry_has_inv_item = true;
-				break;
+			if (parent_map.has(item.parent_id)) {
+				parent_map.get(item.parent_id)!.push(item.id);
+			} else {
+				parent_map.set(item.parent_id, [item.id]);
 			}
-		}
-
-		if (entry_has_inv_item) {
-			completion_count += 1;
 		}
 	}
 
-	item_count = item_count - header_items.size;
+	item_count = item_count - parent_map.size;
+
+	for (const item of bundle_data.items) {
+		let is_parent_item = parent_map.has(item.id);
+
+		const has_stock =
+			item.associations.filter((a) => a.item && a.item.status_int < 2).length > 0;
+
+		if (has_stock) {
+			if (is_parent_item) {
+				for (const sub_item_id of parent_map.get(item.id)!) {
+					completed_items.add(sub_item_id);
+				}
+			} else {
+				completed_items.add(item.id);
+			}
+		}
+	}
+
+	const completion_count = completed_items.size;
 
 	return {
 		total_item_count: item_count,

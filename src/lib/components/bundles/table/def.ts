@@ -33,6 +33,15 @@ export const BundleTableColumns = [
 		},
 		minSize: 160,
 	}),
+	column.accessor((row) => GetBundleCompletionStats(row).completion_count, {
+		id: "completion-count",
+		header: "Completion Count",
+		cell: (info) => `${info.getValue()}`,
+		meta: {
+			align: "left",
+		},
+		minSize: 160,
+	}),
 	column.accessor((row) => GetBundleCompletionStats(row).completion_perc, {
 		id: "completion",
 		header: "Completion",

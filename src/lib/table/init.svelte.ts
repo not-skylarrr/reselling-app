@@ -226,6 +226,10 @@ export class TableState {
 		this.focused_id = null;
 	}
 
+	GetVisibleFilters() {
+		return this.filters.filter((filter) => filter.silent != true);
+	}
+
 	SetColumnVisibility(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) {
 		this.column_visibility =
 			typeof updater == "function" ? updater(this.column_visibility) : updater;
