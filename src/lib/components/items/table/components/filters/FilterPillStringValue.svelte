@@ -20,7 +20,14 @@
 		value: string;
 	};
 
-	let { columnName, defaultOpen, placeholder, onBlur, onValueChange, value }: Props = $props();
+	let {
+		columnName,
+		defaultOpen = false,
+		placeholder,
+		onBlur,
+		onValueChange,
+		value,
+	}: Props = $props();
 
 	// svelte-ignore state_referenced_locally
 	let open = $state(defaultOpen);

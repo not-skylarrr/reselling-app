@@ -13,7 +13,13 @@
 		variant?: "default" | "currency";
 	};
 
-	let { defaultOpen, placeholder, onValueChange, value, variant = "default" }: Props = $props();
+	let {
+		defaultOpen = false,
+		placeholder,
+		onValueChange,
+		value,
+		variant = "default",
+	}: Props = $props();
 
 	// svelte-ignore state_referenced_locally
 	let open = $state(defaultOpen);
