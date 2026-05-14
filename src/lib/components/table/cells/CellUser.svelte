@@ -6,6 +6,7 @@
 		user: {
 			id: string;
 			name: string;
+			email: string;
 		};
 	};
 
@@ -13,6 +14,6 @@
 </script>
 
 <div class="flex flex-row items-center gap-2">
-	<Hashvatar hash={user.name} size={16} />
+	<Hashvatar hash={user.email} size={16} />
 	<p>{user.name}</p>
 </div>
