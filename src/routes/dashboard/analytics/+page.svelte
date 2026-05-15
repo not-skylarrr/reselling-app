@@ -43,7 +43,7 @@
 	const fees_query = useLiveQuery((q) =>
 		q
 			.from({ fee: ItemFeesCollection })
-			.where(({ fee }) => eq(fee.buyer_paid, false))
+			.where(({ fee }) => and(eq(fee.buyer_paid, false), eq(fee.removed, false)))
 			.select(({ fee }) => ({
 				count: count(fee.id),
 				total_fee_amount: sum(fee.amount),

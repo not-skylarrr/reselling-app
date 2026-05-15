@@ -73,8 +73,10 @@ export function CalculateItemProfit({
 	return sold_listing.price - item.purchase_price - total_fees;
 }
 
-export function CalculateTotalFees(fees: ItemFee[]) {
+export function CalculateTotalFees(fees: ItemFee[], exclude_refund: boolean = false) {
 	return fees.reduce((total, fee) => {
+		if (exclude_refund && fee.type == "refunded_amount") return total;
+
 		if (fee.buyer_paid || fee.removed) return total;
 
 		return total + fee.amount;

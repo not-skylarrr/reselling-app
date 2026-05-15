@@ -77,6 +77,8 @@
 
 			HandleLocationSelect(new_location_id);
 
+			filter_query = "";
+
 			await tx.isPersisted.promise;
 		} catch (e) {
 			HandleLocationSelect(previous_id);

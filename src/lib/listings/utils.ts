@@ -3,7 +3,7 @@ import { FormatDateStd } from "$lib/utils/formatting";
 import { formatDistanceStrict } from "date-fns";
 
 export const ListingStatusFriendlyNames: { [K in ItemListingStatus]: string } = {
-	sold: "Sold",
+	sold: "Sale Completed",
 	active: "Active",
 	expired: "Expired",
 	cancelled: "Cancelled",

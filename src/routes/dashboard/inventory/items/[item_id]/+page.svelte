@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
-	import { EndListing } from "$lib/collections/actions/listing.js";
 	import {
 		ItemsCollection,
 		LabelJoinsCollection,
@@ -9,57 +7,30 @@
 		ItemFeesCollection,
 	} from "$lib/collections/def.svelte.js";
 	import { GetItemLabelJoinId } from "$lib/collections/lib/utils.js";
-	import ItemFeesPage from "$lib/components/dashboard/inventory/item-pages/ItemFeesPage.svelte";
+	import UpdateStringPopover from "$lib/components/dashboard/inventory/item-pages/components/UpdateStringPopover.svelte";
+	import ItemListingsView from "$lib/components/dashboard/inventory/item-pages/ItemListingsView.svelte";
+	import ItemRefundView from "$lib/components/dashboard/inventory/item-pages/ItemRefundView.svelte";
+	import ItemSoldView from "$lib/components/dashboard/inventory/item-pages/ItemSoldView.svelte";
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
 	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";
-	import { OpenItemDialog } from "$lib/components/items/dialogs/dialog-state.svelte.js";
+	import UpdateItemPriceInput from "$lib/components/items/item-page/UpdateItemPriceInput.svelte";
 	import SidebarLabelSelector from "$lib/components/labels/SidebarLabelSelector.svelte";
-	import MarketplaceMedia from "$lib/components/listings/MarketplaceMedia.svelte";
 	import SidebarLocationSelector from "$lib/components/locations/SidebarLocationSelector.svelte";
-	import FormCard from "$lib/components/settings/form/FormCard.svelte";
-	import FormCardSection from "$lib/components/settings/form/FormCardSection.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import {
-		Item,
-		ItemActions,
-		ItemContent,
-		ItemDescription,
-		ItemTitle,
-	} from "$lib/components/ui/item/index.js";
-	import ResponsiveActionMenu from "$lib/components/ui/responsive-actions/ResponsiveActionMenu.svelte";
-	import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
-	import { OpenDestructiveActionDialog } from "$lib/components/utils/dialogs/destructive-dialog-state.svelte.js";
-	import {
-		CalculateFeesByType,
-		CalculateItemProfit,
-		CalculateTotalFees,
-		GetStatusFriendlyName,
-	} from "$lib/items/utils.js";
-	import {
-		GetListingDurationString,
-		GetListingExpiryString,
-		GetListingStatusFriendlyName,
-	} from "$lib/listings/utils.js";
+	import { ScrollArea } from "$lib/components/ui/scroll-area";
+	import { GetStatusFriendlyName } from "$lib/items/utils.js";
 	import type { WorkspaceLabel } from "$lib/server/db/schema.js";
-	import { FormatCurrency } from "$lib/utils/formatting.js";
 	import { session_state } from "$lib/utils/session.svelte.js";
 	import {
-		LucideDollarSign,
-		LucideEllipsisVertical,
-		LucideImage,
-		LucideInbox,
 		LucideIterationCw,
 		LucidePlus,
-		LucideSettings,
-		LucideX,
 		LucidePackage,
+		LucideTextCursor,
 	} from "@lucide/svelte";
 	import { eq, toArray, useLiveQuery, not, isUndefined } from "@tanstack/svelte-db";
 
 	let { data } = $props();
-
-	let tab = $state("listings");
 
 	const item_query = useLiveQuery(
 		(q) =>
@@ -96,23 +67,6 @@
 	);
 
 	let item = $derived(item_query.data ?? data.item);
-
-	let active_listings = $derived(item.listings.filter((l) => l.status == "active"));
-
-	let previous_listings = $derived(
-		item.listings.filter((l) => !["active", "sold"].includes(l.status)),
-	);
-
-	let sold_listing = $derived(item.listings.find((l) => l.status == "sold"));
-
-	let postage_fee = $derived(item.fees.find((fee) => fee.type == "postage_fee"));
-
-	let fee_breakdown = $derived(CalculateFeesByType(item.fees));
-	let total_fees = $derived(CalculateTotalFees(item.fees));
-
-	let item_profit = $derived(
-		CalculateItemProfit({ item, listings: item.listings, fees: item.fees }),
-	);
 
 	function HandleLabelsChange(label_ids: string[]) {
 		const current_label_set = new Set<string>(item.labels.map((l) => l.id));
@@ -153,19 +107,38 @@
 		]}
 	></DashboardHeader>
 
-	<DashboardContent class="@container gap-0 p-0 md:gap-0 md:p-0">
+	<DashboardContent class="@container gap-0 p-0 md:gap-0 md:p-0" disableScroll>
 		<div class="flex flex-row items-center gap-6 border-b p-6">
-			<div class="flex size-14 items-center justify-center rounded-lg bg-muted">
-				<LucideImage class="stroke-muted-foreground" />
-			</div>
-			<div class="grid flex-1">
+			<div class="grid flex-1 gap-1">
 				<p class="text-xl font-medium">{item.name}</p>
+
 				<p class="text-sm text-muted-foreground">{GetStatusFriendlyName(item.status)}</p>
 			</div>
 
-			<div class="hidden flex-row gap-3 @xl:flex">
+			<div class="hidden flex-row gap-3 @2xl:flex">
+				<UpdateStringPopover
+					label="Update Item Name"
+					value={item.name}
+					onValueChange={(name) => {
+						ItemsCollection.update(item.id, (draft) => {
+							draft.name = name;
+						});
+					}}
+					type="dialog"
+				>
+					{#snippet trigger({ props })}
+						<Button {...props} variant="outline"><LucideTextCursor /> Rename Item</Button>
+					{/snippet}
+				</UpdateStringPopover>
+
 				{#if item.status_int < 2}
 					<Button><LucidePlus /> Create Listing</Button>
+				{/if}
+
+				{#if item.status_int == 2}
+					<Button href={`/dashboard/inventory/items/${item.id}/refund`}
+						><LucideIterationCw /> Mark as Refunded</Button
+					>
 				{/if}
 
 				{#if item.status_int == 3}
@@ -174,314 +147,103 @@
 			</div>
 		</div>
 
-		<div class="flex flex-col border-b p-6 @xl:hidden">
+		<div class="grid @3xl:grid-cols-2 @3xl:divide-x">
+			<div class="flex flex-col gap-2 border-b p-6">
+				<div class="flex flex-row items-center justify-between">
+					<p class="text-sm text-muted-foreground">Purchase Price</p>
+
+					<UpdateItemPriceInput
+						label="Update Purchase Price"
+						price={item.purchase_price}
+						onPriceChange={(new_price) => {
+							ItemsCollection.update(item.id, (draft) => {
+								draft.purchase_price = new_price;
+							});
+						}}
+					/>
+				</div>
+
+				<div class="flex flex-row items-center justify-between">
+					<p class="text-sm text-muted-foreground">Target Sale Price</p>
+
+					<UpdateItemPriceInput
+						label="Update Target Sale Price"
+						price={item.target_sale_price}
+						onPriceChange={(new_price) => {
+							ItemsCollection.update(item.id, (draft) => {
+								draft.target_sale_price = new_price;
+							});
+						}}
+					/>
+				</div>
+			</div>
+
+			<div class="flex flex-col gap-2 border-b p-6">
+				<div class="flex flex-row items-center justify-between">
+					<p class="text-sm text-muted-foreground">Labels</p>
+
+					<SidebarLabelSelector labels={item.labels} onLabelsChange={HandleLabelsChange} />
+				</div>
+
+				<div class="flex flex-row items-center justify-between">
+					<p class="text-sm text-muted-foreground">Storage Location</p>
+
+					<SidebarLocationSelector
+						location_id={item.storage_location}
+						onLocationChange={(location_id) =>
+							ItemsCollection.update(item.id, (item) => {
+								item.storage_location = location_id;
+							})}
+					/>
+				</div>
+			</div>
+		</div>
+
+		<ScrollArea class="flex-1 overflow-hidden">
+			<div
+				class="grid @3xl:grid-cols-2 @3xl:divide-x @3xl:[&>*:last-child:nth-child(odd)]:col-span-2"
+			>
+				{#if item.status_int == 3}
+					<ItemRefundView {item} />
+				{/if}
+
+				{#if item.status_int >= 2}
+					<ItemSoldView {item} />
+				{/if}
+
+				{#if item.status_int >= 1}
+					<ItemListingsView {item} />
+				{/if}
+			</div>
+		</ScrollArea>
+
+		<div class="flex flex-col-reverse gap-3 border-b p-6 @2xl:hidden">
+			<UpdateStringPopover
+				label="Update Item Name"
+				value={item.name}
+				onValueChange={(name) => {
+					ItemsCollection.update(item.id, (draft) => {
+						draft.name = name;
+					});
+				}}
+				type="dialog"
+			>
+				{#snippet trigger({ props })}
+					<Button {...props} variant="outline"><LucideTextCursor /> Rename Item</Button>
+				{/snippet}
+			</UpdateStringPopover>
+
 			{#if item.status_int < 2}
 				<Button><LucidePlus /> Create Listing</Button>
+			{/if}
+
+			{#if item.status_int == 2}
+				<Button><LucideIterationCw /> Mark as Refunded</Button>
 			{/if}
 
 			{#if item.status_int == 3}
 				<Button><LucidePackage /> Mark as Returned</Button>
 			{/if}
-		</div>
-
-		<div class="flex flex-col gap-2 border-b p-6">
-			<div class="flex flex-row items-center justify-between">
-				<p class="text-sm text-muted-foreground">Labels</p>
-
-				<SidebarLabelSelector labels={item.labels} onLabelsChange={HandleLabelsChange} />
-			</div>
-
-			<div class="flex flex-row items-center justify-between">
-				<p class="text-sm text-muted-foreground">Storage Location</p>
-
-				<SidebarLocationSelector
-					location_id={item.storage_location}
-					onLocationChange={(location_id) =>
-						ItemsCollection.update(item.id, (item) => {
-							item.storage_location = location_id;
-						})}
-				/>
-			</div>
-		</div>
-
-		<div class="flex flex-1 flex-col">
-			<Tabs class="flex-1" bind:value={tab}>
-				<div class="sticky top-0 flex w-full border-b bg-background">
-					<TabsList class="mx-auto h-12! w-full max-w-3xl px-6" variant="line">
-						<TabsTrigger value="listings">Listings</TabsTrigger>
-
-						<TabsTrigger value="finances">Finances</TabsTrigger>
-
-						<TabsTrigger value="bundles">Associations</TabsTrigger>
-					</TabsList>
-				</div>
-
-				<TabsContent
-					class="@container mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 p-6"
-					value="listings"
-				>
-					{#if item.listings.length == 0}
-						<div class="m-auto flex flex-col items-center justify-center gap-2">
-							<LucideInbox class="size-8 stroke-muted-foreground stroke-1" />
-							<p class="text-sm text-muted-foreground">This item is not listed</p>
-						</div>
-					{:else}
-						{#if sold_listing}
-							<div class="flex flex-col gap-3">
-								<div class="flex flex-row items-center justify-between pr-4">
-									<h5 class="px-4 text-xl font-medium">Sold Listing</h5>
-								</div>
-
-								<FormCard>
-									<FormCardSection class="flex flex-row items-center justify-between py-1 pr-1">
-										<MarketplaceMedia
-											class="h-7"
-											marketplace_id={sold_listing.marketplace_id}
-										/>
-
-										<ResponsiveActionMenu
-											actions={[
-												{
-													icon: LucideSettings,
-													label: "Manage Listing",
-													onSelect: () =>
-														OpenItemDialog(item, "update-listing", { listing: sold_listing }),
-												},
-												{
-													icon: LucideIterationCw,
-													label: "Refund Item",
-													onSelect: () => goto(`/dashboard/inventory/items/${item.id}/refund`),
-													variant: "destructive",
-												},
-											]}
-											align="end"
-										>
-											{#snippet trigger(props)}
-												<Button
-													{...props}
-													class="text-muted-foreground"
-													size="icon-sm"
-													variant="ghost"><LucideEllipsisVertical /></Button
-												>
-											{/snippet}
-										</ResponsiveActionMenu>
-									</FormCardSection>
-									<FormCardSection class="grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3">
-										<div class="grid gap-1.5">
-											<p class="text-xs text-muted-foreground">Status</p>
-											<p>{GetListingStatusFriendlyName(sold_listing.status)}</p>
-										</div>
-
-										<div class="grid gap-1.5">
-											<p class="text-xs text-muted-foreground">Duration</p>
-											<p>{GetListingDurationString(sold_listing)}</p>
-										</div>
-
-										<div class="grid gap-1.5">
-											<p class="text-xs text-muted-foreground">Total Fees</p>
-											<p>
-												{FormatCurrency(
-													CalculateTotalFees(
-														item.fees.filter((fee) => fee.listing_id == sold_listing.id),
-													),
-												)}
-											</p>
-										</div>
-									</FormCardSection>
-								</FormCard>
-							</div>
-						{/if}
-
-						{#if active_listings.length > 0}
-							<div class="flex flex-col gap-3">
-								<div class="flex flex-row items-center justify-between pr-4">
-									<h5 class="px-4 text-xl font-medium">Active Listings</h5>
-								</div>
-
-								{#each active_listings as listing (listing.id)}
-									<FormCard>
-										<FormCardSection
-											class="flex flex-row items-center justify-between py-1 pr-1"
-										>
-											<MarketplaceMedia class="h-7" marketplace_id={listing.marketplace_id} />
-
-											<ResponsiveActionMenu
-												actions={[
-													{
-														icon: LucideDollarSign,
-														label: "Mark as Sold",
-														onSelect: () =>
-															OpenItemDialog(item, "sell", { listing_id: listing.id }),
-													},
-													{
-														icon: LucideSettings,
-														label: "Manage Listing",
-														onSelect: () =>
-															OpenItemDialog(item, "update-listing", { listing: listing }),
-													},
-													{
-														icon: LucideX,
-														label: "End Listing",
-														onSelect: () =>
-															OpenDestructiveActionDialog({
-																title: "Are you sure?",
-																description: "Are you sure you want to end this listing?",
-																action_label: "End Listing",
-																onConfirm: () => {
-																	EndListing(listing.id, item.id);
-																},
-															}),
-														variant: "destructive",
-													},
-												]}
-												align="end"
-											>
-												{#snippet trigger(props)}
-													<Button
-														{...props}
-														class="text-muted-foreground"
-														size="icon-sm"
-														variant="ghost"><LucideEllipsisVertical /></Button
-													>
-												{/snippet}
-											</ResponsiveActionMenu>
-										</FormCardSection>
-
-										<FormCardSection class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-											<div class="grid gap-1.5">
-												<p class="text-xs text-muted-foreground">Status</p>
-												<p>{GetListingStatusFriendlyName(listing.status)}</p>
-											</div>
-
-											<div class="grid gap-1.5">
-												<p class="text-xs text-muted-foreground">Expires in</p>
-												<p>{GetListingExpiryString(listing)}</p>
-											</div>
-
-											<div class="grid gap-1.5">
-												<p class="text-xs text-muted-foreground">Total Fees</p>
-												<p>
-													{FormatCurrency(
-														CalculateTotalFees(
-															item.fees.filter((fee) => fee.listing_id == listing.id),
-														),
-													)}
-												</p>
-											</div>
-										</FormCardSection>
-									</FormCard>
-								{/each}
-							</div>
-						{/if}
-
-						{#if previous_listings.length > 0}
-							<div class="flex flex-col gap-3">
-								<div class="flex flex-row items-center justify-between pr-4">
-									<h5 class="px-4 text-xl font-medium">Previous Listings</h5>
-								</div>
-
-								{#each previous_listings as listing (listing.id)}
-									<FormCard>
-										<FormCardSection
-											class="flex flex-row items-center justify-between py-1 pr-1"
-										>
-											<MarketplaceMedia class="h-7" marketplace_id={listing.marketplace_id} />
-
-											<ResponsiveActionMenu
-												actions={[
-													{
-														icon: LucideSettings,
-														label: "Manage Listing",
-														onSelect: () =>
-															OpenItemDialog(item, "update-listing", { listing: listing }),
-													},
-												]}
-												align="end"
-											>
-												{#snippet trigger(props)}
-													<Button
-														{...props}
-														class="text-muted-foreground"
-														size="icon-sm"
-														variant="ghost"><LucideEllipsisVertical /></Button
-													>
-												{/snippet}
-											</ResponsiveActionMenu>
-										</FormCardSection>
-
-										<FormCardSection class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-											<div class="grid gap-1.5">
-												<p class="text-xs text-muted-foreground">Status</p>
-												<p>{GetListingStatusFriendlyName(listing.status)}</p>
-											</div>
-
-											<div class="grid gap-1.5">
-												<p class="text-xs text-muted-foreground">Duration</p>
-												<p>{GetListingDurationString(listing)}</p>
-											</div>
-
-											<div class="grid gap-1.5">
-												<p class="text-xs text-muted-foreground">Total Fees</p>
-												<p>
-													{FormatCurrency(
-														CalculateTotalFees(
-															item.fees.filter((fee) => fee.listing_id == listing.id),
-														),
-													)}
-												</p>
-											</div>
-										</FormCardSection>
-									</FormCard>
-								{/each}
-							</div>
-						{/if}
-					{/if}
-				</TabsContent>
-
-				<TabsContent
-					class="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 p-6"
-					value="finances"
-				>
-					<ItemFeesPage {item} fees={item.fees} listings={item.listings} />
-				</TabsContent>
-
-				<TabsContent
-					class="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 p-6"
-					value="item-fees"
-				>
-					<FormCard>
-						{#each item.fees as fee (fee.id)}
-							<FormCardSection>
-								<Item class="p-0">
-									<ItemContent>
-										<ItemTitle>{fee.reference_name}</ItemTitle>
-										<ItemDescription>{fee.reference_details}</ItemDescription>
-									</ItemContent>
-
-									<ItemActions>
-										<p>{FormatCurrency(fee.amount)}</p>
-									</ItemActions>
-								</Item>
-							</FormCardSection>
-						{/each}
-					</FormCard>
-
-					<FormCard>
-						<FormCardSection>
-							<Item class="p-0">
-								<ItemContent>
-									<ItemTitle>Total Fees</ItemTitle>
-									<ItemDescription>The total fees you paid on this item</ItemDescription>
-								</ItemContent>
-
-								<ItemActions>
-									<p>{FormatCurrency(total_fees)}</p>
-								</ItemActions>
-							</Item>
-						</FormCardSection>
-					</FormCard>
-				</TabsContent>
-			</Tabs>
 		</div>
 	</DashboardContent>
 </DashboardLayoutRoot>

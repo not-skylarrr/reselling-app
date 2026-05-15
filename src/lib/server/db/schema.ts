@@ -38,6 +38,10 @@ export const items = pgTable("items", {
 	refund_reason: text("refund_reason"),
 });
 
+export const items_relations = relations(items, ({ one, many }) => ({
+	listings: many(item_listings),
+}));
+
 export const new_item_schema = createInsertSchema(items, {
 	status: item_status_validator,
 	storage_location: z.string().nullable(),
@@ -104,6 +108,13 @@ export const item_listings = pgTable("item_listings", {
 	expires_at: timestamp("expires_at"),
 	ended_at: timestamp("ended_at"),
 });
+
+export const listings_relations = relations(item_listings, ({ one }) => ({
+	item: one(items, {
+		fields: [item_listings.item_id],
+		references: [items.id],
+	}),
+}));
 
 export const new_listing_schema = createInsertSchema(item_listings, {
 	status: item_listing_status_schema,
