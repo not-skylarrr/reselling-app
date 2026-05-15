@@ -117,7 +117,7 @@
 					<Button
 						{...props}
 						class={cn(
-							"h-auto! min-h-7 w-full rounded-md py-1.5 text-left text-sm leading-snug font-normal text-pretty whitespace-normal",
+							"h-auto! min-h-7 py-1.5 text-left text-sm leading-snug font-normal text-pretty whitespace-normal",
 							class_name,
 						)}
 						{disabled}
