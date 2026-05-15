@@ -74,6 +74,10 @@
 	const table_state = new TableState({
 		key: "inventory-analytics",
 		default_column_visibility: DefaultColVisibility,
+		column_visibility: {
+			storage_location: false,
+			marketplaces: false,
+		},
 	});
 
 	const items_query = useLiveQuery(ItemsWithAllMetaCollection);

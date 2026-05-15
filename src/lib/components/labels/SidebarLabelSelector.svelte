@@ -70,6 +70,8 @@
 
 			ToggleLabel(label_id);
 
+			filter_query = "";
+
 			await tx.isPersisted.promise;
 		} catch (e) {
 			ToggleLabel(label_id);
