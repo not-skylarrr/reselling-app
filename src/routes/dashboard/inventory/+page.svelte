@@ -136,7 +136,7 @@
 			{/snippet}
 		</DashboardHeader>
 
-		{#if table_state.filters.length > 0}
+		{#if table_state.GetVisibleFilters().length > 0}
 			<div class="flex min-h-8 flex-row gap-3 border-b px-3 py-2">
 				<TableFilterDisplay bind:filters={table_state.filters} {table} />
 			</div>
