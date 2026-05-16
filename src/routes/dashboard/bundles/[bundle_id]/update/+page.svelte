@@ -11,7 +11,12 @@
 
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { BundleItemsCollection, BundlesCollection } from "$lib/collections/def.svelte";
+	import {
+		BundleItemsCollection,
+		BundlesCollection,
+		ItemAssociationsCollection,
+		ItemsCollection,
+	} from "$lib/collections/def.svelte";
 	import NewBundleItemField from "$lib/components/bundles/create/NewBundleItemField.svelte";
 	import SeriesInsertTool from "$lib/components/bundles/create/tools/SeriesInsertTool.svelte";
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
@@ -36,6 +41,7 @@
 		DialogFooter,
 		DialogHeader,
 		DialogTitle,
+		DialogTrigger,
 	} from "$lib/components/ui/dialog";
 	import {
 		DropdownMenu,
@@ -68,15 +74,76 @@
 		LucideChevronDown,
 		LucideLoaderCircle,
 		LucidePlus,
+		LucideWrench,
 	} from "@lucide/svelte";
-	import { createTransaction } from "@tanstack/svelte-db";
+	import {
+		createTransaction,
+		useLiveQuery,
+		eq,
+		toArray,
+		and,
+		inArray,
+	} from "@tanstack/svelte-db";
 	import { createForm, useStore } from "@tanstack/svelte-form";
 	import { toast } from "svelte-sonner";
 	import { CreateNewFormBundleItem, type NewFormBundleItem } from "../../new/+page.svelte";
 	import type { BundleItem } from "$lib/server/db/schema";
 	import { session_state } from "$lib/utils/session.svelte.js";
+	import {
+		Select,
+		SelectContent,
+		SelectItem,
+		SelectTrigger,
+	} from "$lib/components/ui/select/index.js";
+	import { cn } from "$lib/utils";
+	import { SvelteSet } from "svelte/reactivity";
 
 	let { data } = $props();
+
+	const bundle_query = useLiveQuery(
+		(q) =>
+			q
+				.from({ bundle: BundlesCollection })
+				.where(({ bundle }) => eq(bundle.id, data.bundle.id))
+				.select(({ bundle }) => ({
+					...bundle,
+					items: toArray(
+						q
+							.from({ bundle_item: BundleItemsCollection })
+							.where(({ bundle_item }) => eq(bundle.id, bundle_item.bundle_id))
+							.select(({ bundle_item }) => ({
+								...bundle_item,
+								associations: toArray(
+									q
+										.from({ association: ItemAssociationsCollection })
+										.where(({ association }) =>
+											and(
+												eq(association.subject_id, bundle_item.id),
+												eq(association.type, "bundle-item"),
+											),
+										)
+										.select(({ association }) => ({
+											...association,
+											linked_items: toArray(
+												q
+													.from({ item: ItemsCollection })
+													.where(({ item }) =>
+														and(
+															eq(association.item_id, item.id),
+															inArray(item.status, ["unlisted", "listed"]),
+														),
+													),
+											),
+										})),
+								),
+							})),
+					),
+				}))
+				.findOne(),
+		[() => data.bundle],
+	);
+
+	const bundle = $derived(bundle_query.data ?? data.bundle);
 
 	let show_multiline_dialog = $state(false);
 	let show_series_tool = $state(false);
@@ -86,6 +153,27 @@
 	let multiline_content = $state<string[]>([]);
 
 	let multiline_dialog_res: ((val: boolean) => void) | null = null;
+
+	let fixed_item_ids = new SvelteSet<string>();
+
+	const parent_items = $derived([...bundle.items].filter((item) => item.parent_id == null));
+
+	const items_with_invalid_parent = $derived.by(() => {
+		let invalid_items = [];
+
+		const item_id_set = new Set(data.bundle.items.map((item) => item.id));
+
+		for (const item of data.bundle.items) {
+			if (fixed_item_ids.has(item.id)) continue;
+			if (!item.parent_id) continue;
+
+			if (!item_id_set.has(item.parent_id)) {
+				invalid_items.push(item);
+			}
+		}
+
+		return invalid_items;
+	});
 
 	const form = createForm(() => ({
 		defaultValues: {
@@ -315,7 +403,67 @@
 						</form.Field>
 					</FieldGroup>
 				</FormCardSection>
-				<FormCardSection class="flex flex-row items-center justify-end">
+				<FormCardSection class="flex flex-row items-center justify-end gap-3">
+					{#if items_with_invalid_parent.length > 0}
+						<Dialog>
+							<DialogTrigger>
+								{#snippet child({ props })}
+									<Button {...props} variant="outline"
+										><LucideWrench /> Fix Invalid Items</Button
+									>
+								{/snippet}
+							</DialogTrigger>
+							<DialogContent class="sm:max-w-xl">
+								<DialogHeader>
+									<DialogTitle>Fix Invalid Items</DialogTitle>
+									<DialogDescription
+										>Restore bundle items with invalid parent configurations</DialogDescription
+									>
+								</DialogHeader>
+
+								<div class="flex flex-col gap-3">
+									{#each items_with_invalid_parent as item (item.id)}
+										{@const selected_parent = parent_items.find((i) => i.id == item.parent_id!)}
+
+										<div class="flex flex-row items-center gap-3">
+											<p class="flex-1 font-medium">{item.name}</p>
+
+											<Select
+												type="single"
+												onValueChange={(val) => {
+													try {
+														BundleItemsCollection.update(item.id, (draft) => {
+															draft.parent_id = val;
+														});
+
+														fixed_item_ids.add(item.id);
+													} catch (e) {
+														console.error(e);
+
+														toast.error("Failed to set parent");
+													}
+												}}
+												value={item.parent_id!}
+											>
+												<SelectTrigger
+													class={cn(!selected_parent && "text-muted-foreground")}
+													size="sm"
+												>
+													{selected_parent ? selected_parent.name : "N/A"}
+												</SelectTrigger>
+												<SelectContent>
+													{#each parent_items as parent_item (parent_item.id)}
+														<SelectItem value={parent_item.id}>{parent_item.name}</SelectItem>
+													{/each}
+												</SelectContent>
+											</Select>
+										</div>
+									{/each}
+								</div>
+							</DialogContent>
+						</Dialog>
+					{/if}
+
 					<form.Subscribe selector={(state) => state.isSubmitting}>
 						{#snippet children(is_submitting)}
 							<Button disabled={is_submitting} onclick={() => form.handleSubmit()}>
