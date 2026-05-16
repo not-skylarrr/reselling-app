@@ -202,6 +202,10 @@
 	SetTableContext(table_state);
 </script>
 
+<svelte:head>
+	<title>Analytics | Fees</title>
+</svelte:head>
+
 <div class="flex flex-1 flex-row overflow-hidden">
 	<DashboardLayoutRoot>
 		<DashboardHeader

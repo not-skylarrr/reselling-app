@@ -117,6 +117,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Bundles | {bundle.name}</title>
+</svelte:head>
+
 <DashboardLayoutRoot>
 	<DashboardHeader
 		breadcrumbs={[

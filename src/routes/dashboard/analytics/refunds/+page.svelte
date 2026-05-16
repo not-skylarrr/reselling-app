@@ -196,6 +196,10 @@
 	SetTableContext(table_state);
 </script>
 
+<svelte:head>
+	<title>Analytics | Refunds</title>
+</svelte:head>
+
 <DashboardLayoutRoot>
 	<DashboardHeader
 		breadcrumbs={[

@@ -227,6 +227,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>New Bundle</title>
+</svelte:head>
+
 <DashboardLayoutRoot>
 	<DashboardHeader
 		breadcrumbs={[

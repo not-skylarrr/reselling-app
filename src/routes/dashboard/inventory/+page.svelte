@@ -102,6 +102,10 @@
 	SetTableContext(table_state);
 </script>
 
+<svelte:head>
+	<title>Your Inventory</title>
+</svelte:head>
+
 <div class="flex flex-1 flex-row overflow-hidden">
 	<DashboardLayoutRoot>
 		<DashboardHeader

@@ -154,6 +154,10 @@
 	SetTableContext(table_state);
 </script>
 
+<svelte:head>
+	<title>Your Bundles</title>
+</svelte:head>
+
 <DashboardLayoutRoot>
 	<DashboardHeader
 		breadcrumbs={[

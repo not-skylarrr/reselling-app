@@ -117,6 +117,10 @@
 	);
 </script>
 
+<svelte:head>
+	<title>Analytics</title>
+</svelte:head>
+
 <DashboardLayoutRoot>
 	<DashboardHeader
 		breadcrumbs={[

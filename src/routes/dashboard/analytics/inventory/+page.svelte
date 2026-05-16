@@ -130,6 +130,10 @@
 	SetTableContext(table_state);
 </script>
 
+<svelte:head>
+	<title>Analytics | Inventory</title>
+</svelte:head>
+
 <DashboardLayoutRoot>
 	<DashboardHeader
 		breadcrumbs={[
