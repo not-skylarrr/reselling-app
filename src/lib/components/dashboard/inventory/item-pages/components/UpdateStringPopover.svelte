@@ -12,6 +12,7 @@
 	import { Popover, PopoverContent, PopoverTrigger } from "$lib/components/ui/popover";
 	import { Textarea } from "$lib/components/ui/textarea";
 	import { cn } from "$lib/utils";
+	import { GrowingTextarea } from "$lib/utils/attachments/TextareaSizer";
 	import { LucideCheck } from "@lucide/svelte";
 	import type { Snippet } from "svelte";
 	import { toast } from "svelte-sonner";
@@ -137,6 +138,7 @@
 			<form class="flex flex-col gap-4" onsubmit={HandleFormSubmit}>
 				{#if variant == "textarea"}
 					<Textarea
+						{@attach GrowingTextarea}
 						onchange={(ev) => (internal_value = ev.currentTarget.value)}
 						value={internal_value}
 					/>

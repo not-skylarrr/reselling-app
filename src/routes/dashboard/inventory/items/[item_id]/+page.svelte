@@ -147,62 +147,59 @@
 			</div>
 		</div>
 
-		<div class="grid @3xl:grid-cols-2 @3xl:divide-x">
-			<div class="flex flex-col gap-2 border-b p-6">
-				<div class="flex flex-row items-center justify-between">
-					<p class="text-sm text-muted-foreground">Purchase Price</p>
-
-					<UpdateItemPriceInput
-						label="Update Purchase Price"
-						price={item.purchase_price}
-						onPriceChange={(new_price) => {
-							ItemsCollection.update(item.id, (draft) => {
-								draft.purchase_price = new_price;
-							});
-						}}
-					/>
-				</div>
-
-				<div class="flex flex-row items-center justify-between">
-					<p class="text-sm text-muted-foreground">Target Sale Price</p>
-
-					<UpdateItemPriceInput
-						label="Update Target Sale Price"
-						price={item.target_sale_price}
-						onPriceChange={(new_price) => {
-							ItemsCollection.update(item.id, (draft) => {
-								draft.target_sale_price = new_price;
-							});
-						}}
-					/>
-				</div>
-			</div>
-
-			<div class="flex flex-col gap-2 border-b p-6">
-				<div class="flex flex-row items-center justify-between">
-					<p class="text-sm text-muted-foreground">Labels</p>
-
-					<SidebarLabelSelector labels={item.labels} onLabelsChange={HandleLabelsChange} />
-				</div>
-
-				<div class="flex flex-row items-center justify-between">
-					<p class="text-sm text-muted-foreground">Storage Location</p>
-
-					<SidebarLocationSelector
-						location_id={item.storage_location}
-						onLocationChange={(location_id) =>
-							ItemsCollection.update(item.id, (item) => {
-								item.storage_location = location_id;
-							})}
-					/>
-				</div>
-			</div>
-		</div>
-
 		<ScrollArea class="flex-1 overflow-hidden">
 			<div
 				class="grid @3xl:grid-cols-2 @3xl:divide-x @3xl:[&>*:last-child:nth-child(odd)]:col-span-2"
 			>
+				<div class="flex flex-col gap-2 border-b p-6">
+					<div class="flex flex-row items-center justify-between">
+						<p class="text-sm text-muted-foreground">Purchase Price</p>
+
+						<UpdateItemPriceInput
+							label="Update Purchase Price"
+							price={item.purchase_price}
+							onPriceChange={(new_price) => {
+								ItemsCollection.update(item.id, (draft) => {
+									draft.purchase_price = new_price;
+								});
+							}}
+						/>
+					</div>
+
+					<div class="flex flex-row items-center justify-between">
+						<p class="text-sm text-muted-foreground">Target Sale Price</p>
+
+						<UpdateItemPriceInput
+							label="Update Target Sale Price"
+							price={item.target_sale_price}
+							onPriceChange={(new_price) => {
+								ItemsCollection.update(item.id, (draft) => {
+									draft.target_sale_price = new_price;
+								});
+							}}
+						/>
+					</div>
+				</div>
+
+				<div class="flex flex-col gap-2 border-b p-6">
+					<div class="flex flex-row items-center justify-between">
+						<p class="text-sm text-muted-foreground">Labels</p>
+
+						<SidebarLabelSelector labels={item.labels} onLabelsChange={HandleLabelsChange} />
+					</div>
+
+					<div class="flex flex-row items-center justify-between">
+						<p class="text-sm text-muted-foreground">Storage Location</p>
+
+						<SidebarLocationSelector
+							location_id={item.storage_location}
+							onLocationChange={(location_id) =>
+								ItemsCollection.update(item.id, (item) => {
+									item.storage_location = location_id;
+								})}
+						/>
+					</div>
+				</div>
 				{#if item.status_int == 3}
 					<ItemRefundView {item} />
 				{/if}

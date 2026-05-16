@@ -7,13 +7,20 @@
 	import { LucideCheck } from "@lucide/svelte";
 
 	type Props = {
+		align?: "start" | "center" | "end";
 		class?: string;
 		label?: string;
 		price: number;
 		onPriceChange: (price: number) => void;
 	};
 
-	let { class: class_name, label = "Update Price", price, onPriceChange }: Props = $props();
+	let {
+		align = "end",
+		class: class_name,
+		label = "Update Price",
+		price,
+		onPriceChange,
+	}: Props = $props();
 
 	// svelte-ignore state_referenced_locally
 	let internal_value = $state(price);
@@ -50,7 +57,7 @@
 			</Button>
 		{/snippet}
 	</PopoverTrigger>
-	<PopoverContent align="end" class="p-3">
+	<PopoverContent {align} class="p-3">
 		<form class="flex flex-col gap-3" onsubmit={HandleFormSubmit}>
 			<div class="grid gap-1.5">
 				<p class="px-3 text-xs text-muted-foreground">{label}</p>

@@ -24,28 +24,28 @@
 		</div>
 
 		<ScrollArea class="flex-1 overflow-hidden">
-			<div class="flex flex-1 flex-col gap-2">
-				<div class="flex flex-row items-center justify-between px-2.5">
-					<p class="text-sm text-muted-foreground">Amount Refunded</p>
-
-					<UpdateItemPriceInput
-						label="Update Refund Amount"
-						price={refund_fee.amount}
-						onPriceChange={(val) => {
-							if (!refund_fee) return;
-
-							ItemFeesCollection.update(refund_fee.id, (draft) => {
-								draft.amount = val;
-							});
-						}}
-					/>
-				</div>
-
-				<Separator class="my-2" />
-
-				<div class="flex flex-col gap-2">
+			<div class="flex flex-1 flex-col gap-3">
+				<div class="grid grid-cols-2">
 					<div class="flex flex-col justify-between">
-						<p class="h-7 px-2.5 text-sm text-muted-foreground">Refund Type</p>
+						<p class="h-5 px-2.5 text-sm text-muted-foreground">Amount Refunded</p>
+
+						<UpdateItemPriceInput
+							align="start"
+							class="self-start"
+							label="Update Refund Amount"
+							price={refund_fee.amount}
+							onPriceChange={(val) => {
+								if (!refund_fee) return;
+
+								ItemFeesCollection.update(refund_fee.id, (draft) => {
+									draft.amount = val;
+								});
+							}}
+						/>
+					</div>
+
+					<div class="flex flex-col justify-between">
+						<p class="h-5 px-2.5 text-sm text-muted-foreground">Refund Type</p>
 
 						<RefundTypePopover
 							align="start"
@@ -58,25 +58,25 @@
 							}}
 						/>
 					</div>
+				</div>
 
-					<div class="flex flex-col">
-						<div class="flex h-7 flex-row items-center px-2.5">
-							<p class="text-sm text-muted-foreground">Refund Reason</p>
-						</div>
-
-						<UpdateStringPopover
-							class="self-start"
-							label="Update Refund Reason"
-							onValueChange={(val) => {
-								ItemsCollection.update(item.id, (draft) => {
-									draft.refund_reason = val;
-								});
-							}}
-							type="dialog"
-							value={item.refund_reason ?? ""}
-							variant="textarea"
-						/>
+				<div class="flex flex-col">
+					<div class="flex h-7 flex-row items-center px-2.5">
+						<p class="text-sm text-muted-foreground">Refund Reason</p>
 					</div>
+
+					<UpdateStringPopover
+						class="self-start"
+						label="Update Refund Reason"
+						onValueChange={(val) => {
+							ItemsCollection.update(item.id, (draft) => {
+								draft.refund_reason = val;
+							});
+						}}
+						type="dialog"
+						value={item.refund_reason ?? ""}
+						variant="textarea"
+					/>
 				</div>
 			</div>
 		</ScrollArea>
