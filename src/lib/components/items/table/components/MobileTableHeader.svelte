@@ -26,7 +26,8 @@
 				table_state.AddFilter({
 					id: "name",
 					key: "name-search",
-					value: { operator: "includes", value: query },
+					silent: true,
+					value: { operator: "string:includes", value: query },
 				});
 			}
 		} else {

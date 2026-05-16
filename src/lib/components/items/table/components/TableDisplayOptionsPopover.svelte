@@ -3,12 +3,12 @@
 	import { Popover, PopoverContent, PopoverTrigger } from "$lib/components/ui/popover";
 	import { LucideSettings } from "@lucide/svelte";
 	import type { Table } from "@tanstack/svelte-table";
-	import type { InventoryItemData } from "$lib/collections/query-collections";
 	import { cn } from "$lib/utils";
 	import { GetTableContext } from "$lib/table/init.svelte";
+	import type { FullItem } from "$lib/server/db/schema";
 
 	type Props = {
-		table: Table<InventoryItemData>;
+		table: Table<any>;
 	};
 
 	let { table }: Props = $props();

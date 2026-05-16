@@ -26,12 +26,11 @@
 	import { GetColumnSizingCssVarName } from "$lib/table/utils";
 	import { GetTableContext } from "$lib/table/init.svelte";
 	import type { FullItem } from "$lib/server/db/schema";
-	import type { InventoryItemData } from "$lib/collections/query-collections";
 
 	type Props = {
 		onRowDouble?: () => void;
-		onRowFocus: (item: InventoryItemData) => void;
-		table: Table<InventoryItemData>;
+		onRowFocus: (item: FullItem) => void;
+		table: Table<FullItem>;
 	};
 
 	let { onRowFocus, onRowDouble, table }: Props = $props();

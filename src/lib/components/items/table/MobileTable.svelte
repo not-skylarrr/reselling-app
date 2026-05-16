@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Table } from "@tanstack/svelte-table";
 	import { createVirtualizer } from "@tanstack/svelte-virtual";
-	import type { InventoryItemData } from "$lib/collections/query-collections";
 	import MobileTableRow from "./components/MobileTableRow.svelte";
 	import MobileTableHeader from "./components/MobileTableHeader.svelte";
 	import { GetTableContext } from "$lib/table/init.svelte";
@@ -9,8 +8,8 @@
 
 	type Props = {
 		onRowDouble?: () => void;
-		onRowFocus: (item: InventoryItemData) => void;
-		table: Table<InventoryItemData>;
+		onRowFocus: (item: FullItem) => void;
+		table: Table<FullItem>;
 	};
 
 	let { onRowFocus, onRowDouble, table }: Props = $props();
@@ -35,7 +34,7 @@
 	let virtual_rows = $derived($row_virtualizer.getVirtualItems());
 	let total_virtual_size = $derived($row_virtualizer.getTotalSize());
 
-	function HandleFocus(item: InventoryItemData) {
+	function HandleFocus(item: FullItem) {
 		if (focus_change_blocked) return;
 
 		onRowFocus(item);
