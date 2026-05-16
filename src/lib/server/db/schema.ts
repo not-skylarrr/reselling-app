@@ -39,6 +39,8 @@ export const items = pgTable("items", {
 });
 
 export const items_relations = relations(items, ({ one, many }) => ({
+	associations: many(item_associations),
+	fees: many(item_fees),
 	listings: many(item_listings),
 }));
 
@@ -160,6 +162,13 @@ export const item_fees = pgTable("item_fees", {
 	removed: boolean("removed").default(false),
 	removal_reason: text("removal_reason"),
 });
+
+export const fees_relations = relations(item_fees, ({ one }) => ({
+	item: one(items, {
+		fields: [item_fees.item_id],
+		references: [items.id],
+	}),
+}));
 
 export const new_item_fee_schema = createInsertSchema(item_fees, {
 	type: item_fee_type_schema,
@@ -290,6 +299,13 @@ export const item_associations = pgTable("item-associations", {
 	subject_id: text("subject_id").notNull(),
 	workspace_id: text("workspace_id").notNull(),
 });
+
+export const associations_relations = relations(item_associations, ({ one }) => ({
+	item: one(items, {
+		fields: [item_associations.item_id],
+		references: [items.id],
+	}),
+}));
 
 export const new_item_association_schema = createInsertSchema(item_associations, {
 	type: item_association_type_schema,

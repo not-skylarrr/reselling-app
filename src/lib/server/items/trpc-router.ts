@@ -215,5 +215,20 @@ export const items_router = router({
 			.where(and(inArray(items.id, opts.input), eq(items.workspace_id, workspace_id)));
 	}),
 
+	export_items_csv: auth_procedure.query(async (opts) => {
+		const { session } = opts.ctx.session_data;
+
+		const { workspace_id } = GetSessionWorkspaceID(session);
+
+		const workspace_items = await db.query.items.findMany({
+			where: (table, ops) => ops.eq(table.workspace_id, workspace_id),
+			with: {
+				associations: true,
+			},
+		});
+
+		const mapped_rows = workspace_items.map((item) => ({}));
+	}),
+
 	assocations: association_router,
 });
