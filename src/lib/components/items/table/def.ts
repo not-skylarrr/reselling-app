@@ -120,9 +120,9 @@ export const ItemTableColumns = [
 		},
 		filterFn: AdvancedFilter,
 	}),
-	column.accessor("storage_location", {
+	column.accessor("location", {
 		header: "Location",
-		cell: (info) => renderComponent(CellLocation, { location_id: info.getValue() }),
+		cell: (info) => renderComponent(CellLocation, { location: info.getValue() }),
 		meta: {
 			align: "left",
 			filter: OptionFilter({

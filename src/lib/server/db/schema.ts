@@ -86,6 +86,7 @@ export type ItemWithLabels = Item & {
 export type FullItem = ItemWithLabels & {
 	listings: ItemListing[];
 	fees: ItemFee[];
+	location: WorkspaceLocation | undefined;
 };
 
 export const item_listing_status_schema = z.union([

@@ -6,21 +6,10 @@
 	import { LocationsCollection } from "$lib/collections/def.svelte";
 
 	type Props = {
-		location_id: string | null;
+		location: WorkspaceLocation | undefined;
 	};
 
-	let { location_id }: Props = $props();
-
-	const location_query = useLiveQuery(
-		(q) =>
-			q
-				.from({ location: LocationsCollection })
-				.where(({ location }) => eq(location.id, location_id ?? ""))
-				.findOne(),
-		[() => location_id],
-	);
-
-	const location = $derived(location_query.data);
+	let { location }: Props = $props();
 </script>
 
 {#if location}

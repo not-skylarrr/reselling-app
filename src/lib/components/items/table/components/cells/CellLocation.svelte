@@ -1,15 +1,16 @@
 <script lang="ts">
 	import LocationBadge from "$lib/components/locations/LocationBadge.svelte";
+	import type { WorkspaceLocation } from "$lib/server/db/schema";
 
 	type Props = {
-		location_id: string | null;
+		location: WorkspaceLocation | undefined;
 	};
 
-	let { location_id }: Props = $props();
+	let { location }: Props = $props();
 </script>
 
-{#if location_id}
-	<LocationBadge {location_id} />
+{#if location}
+	<LocationBadge {location} />
 {:else}
 	<p class="text-muted-foreground">-</p>
 {/if}

@@ -14,6 +14,7 @@ import {
 	LabelJoinsCollection,
 	LabelsCollection,
 	ListingsCollection,
+	LocationsCollection,
 } from "../def.svelte";
 import type { WorkspaceLabel } from "$lib/server/db/schema";
 
@@ -42,9 +43,12 @@ export const ItemsWithAllMetaCollection = createCollection(
 				.from({ item: ItemsCollection })
 				.orderBy(({ item }) => item.status_int, "desc")
 				.orderBy(({ item }) => item.added_at, "desc")
-
-				.select(({ item }) => ({
+				.leftJoin({ location: LocationsCollection }, ({ location, item }) =>
+					eq(item.storage_location, location.id),
+				)
+				.select(({ item, location }) => ({
 					...item,
+					location: location,
 					labels: toArray(
 						q
 							.from({ label_join: LabelJoinsCollection })

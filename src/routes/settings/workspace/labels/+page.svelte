@@ -13,8 +13,11 @@
 		type Transaction,
 		debounceStrategy,
 		createPacedMutations,
+		eq,
+		toArray,
+		count,
 	} from "@tanstack/svelte-db";
-	import { LabelsCollection } from "$lib/collections/def.svelte";
+	import { LabelJoinsCollection, LabelsCollection } from "$lib/collections/def.svelte";
 	import { trpc_client } from "$lib/trpc/client";
 	import { session_state } from "$lib/utils/session.svelte";
 	import {
@@ -34,7 +37,17 @@
 	let { data } = $props();
 
 	const labels_query = useLiveQuery((q) =>
-		q.from({ label: LabelsCollection }).orderBy(({ label }) => label.created_at, "desc"),
+		q
+			.from({ label: LabelsCollection })
+			.orderBy(({ label }) => label.created_at, "desc")
+			.select(({ label }) => ({
+				...label,
+				label_joins: toArray(
+					q
+						.from({ join: LabelJoinsCollection })
+						.where(({ join }) => eq(join.label_id, label.id)),
+				),
+			})),
 	);
 
 	let label_tx_map = new SvelteMap<string, Transaction>();
@@ -214,12 +227,12 @@
 					>
 						<p></p>
 						<p class="pl-3 text-xs text-muted-foreground">Name</p>
-						<p class=" text-xs text-muted-foreground">Created</p>
+						<p class=" text-xs text-muted-foreground">Item Count</p>
 					</div>
 
 					{#each labels_query.data as label (label.id)}
 						<div
-							class="group grid w-full grid-cols-[32px_1fr_128px] items-center gap-6 @lg:grid-cols-[32px_2fr_1fr_128px]"
+							class="group grid w-full grid-cols-[32px_1fr_32px_128px] items-center gap-6 @lg:grid-cols-[32px_2fr_1fr_128px]"
 						>
 							<ColourPickerPopover
 								buttonVariant="ghost"
@@ -237,7 +250,7 @@
 							/>
 
 							<p class="hidden text-sm @lg:block">
-								{FormatDateStd(label.created_at, true)}
+								{label.label_joins.length}
 							</p>
 
 							<div class="flex flex-row items-center justify-end gap-2">

@@ -4,6 +4,7 @@
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
 	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";
 	import { item_dialog_state } from "$lib/components/items/dialogs/dialog-state.svelte";
+	import ItemStatusBadge from "$lib/components/items/reusable/ItemStatusBadge.svelte";
 	import TableDisplayOptionsPopover from "$lib/components/items/table/components/TableDisplayOptionsPopover.svelte";
 	import TableFilterDisplay from "$lib/components/items/table/components/TableFilterDisplay.svelte";
 	import TableFilterDropdown from "$lib/components/items/table/components/TableFilterDropdown.svelte";
@@ -12,7 +13,7 @@
 		DefaultItemTableColVisibility,
 	} from "$lib/components/items/table/ItemsTable.svelte";
 	import { CreateTableFilter } from "$lib/components/items/table/lib/filters/lib/utils";
-	import MobileTable from "$lib/components/items/table/MobileTable.svelte";
+	import { TableBase } from "$lib/components/table";
 	import { Button } from "$lib/components/ui/button";
 	import { SetTableContext, TableState } from "$lib/table/init.svelte";
 	import { GetLocalDetailsOpenState, SetLocalDetailsOpenState } from "$lib/utils/dashboard";
@@ -25,6 +26,11 @@
 		getFilteredRowModel,
 		getSortedRowModel,
 	} from "@tanstack/svelte-table";
+	import { cn } from "$lib/utils";
+	import LabelBadgeDisplay from "$lib/components/labels/LabelBadgeDisplay.svelte";
+	import LocationBadge from "$lib/components/locations/LocationBadge.svelte";
+	import { Field, FieldLabel } from "$lib/components/ui/field";
+	import type { FullItem } from "$lib/server/db/schema";
 
 	const table_state = new TableState({
 		key: "inventory-table",
@@ -38,7 +44,7 @@
 	let focused_item = $derived(items_query.data.find((i) => i.id == focused_item_id));
 	let show_details = $state(GetLocalDetailsOpenState());
 
-	const table = createTable({
+	const table = createTable<FullItem>({
 		columns: ItemTableColumns,
 		get data() {
 			return items_query.data;
@@ -147,17 +153,55 @@
 		{/if}
 
 		<div class="flex min-h-0 flex-1 flex-row overflow-hidden">
-			<ItemsTable
+			<TableBase
+				{table}
+				getRowId={(item) => item.id}
 				onRowFocus={(item) => (focused_item_id = item.id)}
 				onRowDouble={ToggleDetailsSidebar}
-				{table}
-			/>
+				mobile_row_height={128}
+			>
+				{#snippet mobile_row({ row })}
+					{@const item = row.original}
 
-			<MobileTable
-				onRowFocus={(item) => (focused_item_id = item.id)}
-				onRowDouble={ToggleDetailsSidebar}
-				{table}
-			/>
+					<a
+						class={cn("flex h-32 flex-col gap-6 p-4", "hover:bg-accent")}
+						href={`/dashboard/inventory/items/${item.id}`}
+					>
+						<div class="flex flex-row items-center justify-between gap-3">
+							<p class="line-clamp-1 truncate">{item.name}</p>
+
+							<ItemStatusBadge status={item.status} />
+						</div>
+
+						<div class="grid grid-cols-2 gap-6">
+							<Field class="flex-1">
+								<FieldLabel class="text-xs font-normal text-muted-foreground">Labels</FieldLabel
+								>
+
+								{#if item.labels.length > 0}
+									<LabelBadgeDisplay labels={item.labels} />
+								{:else}
+									<p class="text-sm text-muted-foreground">N/A</p>
+								{/if}
+							</Field>
+
+							<Field class="w-auto min-w-32">
+								<FieldLabel class="text-xs font-normal text-muted-foreground"
+									>Location</FieldLabel
+								>
+
+								<div class="flex flex-row items-center">
+									{#if item.storage_location}
+										<LocationBadge location_id={item.storage_location} />
+									{:else}
+										<p class="text-sm text-muted-foreground">N/A</p>
+									{/if}
+								</div>
+							</Field>
+						</div>
+					</a>
+				{/snippet}
+			</TableBase>
 		</div>
 	</DashboardLayoutRoot>
 
