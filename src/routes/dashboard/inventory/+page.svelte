@@ -31,6 +31,7 @@
 	import LocationBadge from "$lib/components/locations/LocationBadge.svelte";
 	import { Field, FieldLabel } from "$lib/components/ui/field";
 	import type { FullItem } from "$lib/server/db/schema";
+	import { Input } from "$lib/components/ui/input";
 
 	const table_state = new TableState({
 		key: "inventory-table",
@@ -40,6 +41,7 @@
 	const items_query = useLiveQuery(ItemsWithAllMetaCollection);
 
 	let focused_item_id = $state<string | null>(null);
+	let search_query = $state<string>("");
 
 	let focused_item = $derived(items_query.data.find((i) => i.id == focused_item_id));
 	let show_details = $state(GetLocalDetailsOpenState());
@@ -103,6 +105,27 @@
 		SetLocalDetailsOpenState(show_details);
 	}
 
+	function HandleQueryChange(query: string) {
+		if (query.length > 0) {
+			if (table_state.DoesFilterExist("name-search")) {
+				table_state.UpdateFilterByKey("name-search", { value: query });
+			} else {
+				table_state.AddFilter({
+					id: "name",
+					key: "name-search",
+					silent: true,
+					value: { operator: "string:includes", value: query },
+				});
+			}
+		} else {
+			if (table_state.DoesFilterExist("name-search")) {
+				table_state.RemoveFilterByKey("name-search");
+			}
+		}
+
+		search_query = query;
+	}
+
 	createHotkey("Shift+D", () => ToggleDetailsSidebar());
 
 	SetTableContext(table_state);
@@ -145,6 +168,14 @@
 				</Button>
 			{/snippet}
 		</DashboardHeader>
+
+		<div class="flex flex-col border-b p-3 md:hidden">
+			<Input
+				oninput={(ev) => HandleQueryChange(ev.currentTarget.value)}
+				placeholder="Search Items"
+				value={search_query}
+			/>
+		</div>
 
 		{#if table_state.GetVisibleFilters().length > 0}
 			<div class="flex min-h-8 flex-row gap-3 border-b px-3 py-2">
