@@ -85,8 +85,6 @@
 
 			const child_ids = IsBundleItemGroupHeader(selected_item.id);
 
-			console.log(child_ids);
-
 			if (child_ids.length > 0) {
 				tx.mutate(() => {
 					for (const id of child_ids) {
