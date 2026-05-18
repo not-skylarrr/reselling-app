@@ -78,13 +78,15 @@
 					});
 				}
 
-				ItemAssociationsCollection.insert({
-					id: GenerateQuickId(),
-					type: "bundle-item",
-					item_id: item.id,
-					subject_id: value.associated_bundle_item!,
-					workspace_id: session_state.workspace_id,
-				});
+				if (value.associated_bundle_item != null) {
+					ItemAssociationsCollection.insert({
+						id: GenerateQuickId(),
+						type: "bundle-item",
+						item_id: item.id,
+						subject_id: value.associated_bundle_item!,
+						workspace_id: session_state.workspace_id,
+					});
+				}
 			});
 
 			try {
