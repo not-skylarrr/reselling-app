@@ -306,6 +306,8 @@ export const LocationsCollection = createCollection(
 
 			query_client.invalidateQueries({ queryKey: ["user-session", "workspace-locations"] });
 		},
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
 	}),
 );
 

@@ -16,7 +16,11 @@
 	import { createHotkey } from "@tanstack/svelte-hotkeys";
 	import { LucidePlus } from "@lucide/svelte";
 	import { Switch } from "$lib/components/ui/switch";
-	import { ItemsCollection, LabelJoinsCollection } from "$lib/collections/def.svelte";
+	import {
+		ItemAssociationsCollection,
+		ItemsCollection,
+		LabelJoinsCollection,
+	} from "$lib/collections/def.svelte";
 	import { session_state } from "$lib/utils/session.svelte";
 	import PurchaseDatePopover from "./components/PurchaseDatePopover.svelte";
 	import LabelsPopover from "./components/LabelsPopover.svelte";
@@ -25,6 +29,8 @@
 	import type { Item } from "$lib/server/db/schema";
 	import { createTransaction } from "@tanstack/svelte-db";
 	import { ApplyTsDbMutation } from "$lib/utils/ts-db/trpc-map";
+	import NewItemBundleSelector from "./components/NewItemBundleSelector.svelte";
+	import { toast } from "svelte-sonner";
 
 	const form = createForm(() => ({
 		defaultValues: {
@@ -35,8 +41,16 @@
 			labels: [] as string[],
 			storage_location: null as string | null,
 			list_on_submit: false,
+			associated_bundle_item: null as string | null,
 		},
 		onSubmit: async ({ value }) => {
+			const tx = createTransaction({
+				autoCommit: false,
+				mutationFn: async ({ transaction }) => {
+					await ApplyTsDbMutation(transaction);
+				},
+			});
+
 			const item: Item = {
 				id: GenerateQuickId(),
 				status: "unlisted",
@@ -52,23 +66,43 @@
 				workspace_id: session_state.workspace_id,
 			};
 
-			ItemsCollection.insert(item);
+			tx.mutate(() => {
+				ItemsCollection.insert(item);
 
-			for (const label_id of value.labels) {
-				LabelJoinsCollection.insert({
+				for (const label_id of value.labels) {
+					LabelJoinsCollection.insert({
+						id: GenerateQuickId(),
+						label_id: label_id,
+						item_id: item.id,
+						workspace_id: session_state.workspace_id,
+					});
+				}
+
+				ItemAssociationsCollection.insert({
 					id: GenerateQuickId(),
-					label_id: label_id,
+					type: "bundle-item",
 					item_id: item.id,
+					subject_id: value.associated_bundle_item!,
 					workspace_id: session_state.workspace_id,
 				});
-			}
+			});
 
-			form.reset();
+			try {
+				await tx.commit();
 
-			item_dialog_state.new_item_dialog_open = false;
+				form.reset();
 
-			if (value.list_on_submit) {
-				OpenItemDialog(item, "list");
+				item_dialog_state.new_item_dialog_open = false;
+
+				if (value.list_on_submit) {
+					OpenItemDialog(item, "list");
+				}
+			} catch (e) {
+				console.error(e);
+
+				tx.rollback();
+
+				toast.error("Error while registering item. Creation reverted...");
 			}
 		},
 	}));
@@ -160,6 +194,15 @@
 							<LocationPopover
 								location_id={field.state.value}
 								onLocationIdChange={field.handleChange}
+							/>
+						{/snippet}
+					</form.Field>
+
+					<form.Field name="associated_bundle_item">
+						{#snippet children(field)}
+							<NewItemBundleSelector
+								bundle_item_id={field.state.value}
+								onSelectedBundleChange={field.handleChange}
 							/>
 						{/snippet}
 					</form.Field>

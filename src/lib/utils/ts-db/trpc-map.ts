@@ -214,17 +214,22 @@ export async function ApplyTsDbMutation(
 
 	const handlers: Promise<void>[] = [];
 
+	// Item insertions need to be performed first to prevent FK errors
+	const sorted_insertions = insertion_map
+		.entries()
+		.toArray()
+		.sort(([id]) => (id == "items" ? -1 : 1));
+
 	if (insertion_map.size > 0) {
-		for (const [collection_id, mutations] of insertion_map.entries()) {
+		for await (const [collection_id, mutations] of sorted_insertions) {
 			if (collection_id in MutationHandlerMap) {
 				const handler = MutationHandlerMap[collection_id as CollectionKey];
 
-				handlers.push(
-					handler.insert(
-						// @ts-expect-error maybe fix later
-						mutations.map((m) => m.modified),
-						client,
-					),
+				// To ensure insert order, inserts need to be awaited individually
+				await handler.insert(
+					// @ts-expect-error maybe fix later
+					mutations.map((m) => m.modified),
+					client,
 				);
 			} else {
 				console.warn("Unknown collection id: ", collection_id);
