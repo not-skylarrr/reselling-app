@@ -210,15 +210,24 @@ export const update_label_schema = createUpdateSchema(workspace_labels, {
 export type WorkspaceLabel = InferSelectModel<typeof workspace_labels>;
 export type UpdateWorkspaceLabel = z.infer<typeof update_label_schema>;
 
+const label_join_type_schema = z.union([z.literal("item-label"), z.literal("fee-association")]);
+
+export type LabelJoinType = z.infer<typeof label_join_type_schema>;
+
 export const label_join_table = pgTable("label_join_table", {
 	id: text("id").primaryKey(),
-	item_id: text("item_id").notNull(),
+	type: text("type").notNull().$type<LabelJoinType>().default("item-label"),
+	subject_id: text("subject_id").notNull(),
 	label_id: text("label_id").notNull(),
 	workspace_id: text("workspace_id").notNull(),
 });
 
-export const new_label_join_schema = createInsertSchema(label_join_table);
-export const update_label_join_schema = createUpdateSchema(label_join_table).pick({
+export const new_label_join_schema = createInsertSchema(label_join_table, {
+	type: label_join_type_schema,
+});
+export const update_label_join_schema = createUpdateSchema(label_join_table, {
+	type: label_join_type_schema,
+}).pick({
 	label_id: true,
 });
 
@@ -319,6 +328,22 @@ export const update_item_association_schema = createUpdateSchema(item_associatio
 });
 
 export type ItemAssociation = InferSelectModel<typeof item_associations>;
+
+export const fee_prediction_catagories = pgTable("fee_prediction_catagories", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	fee_value_perc: real("fee_value_perc").notNull(),
+	workspace_id: text("workspace_id").notNull(),
+});
+
+export const new_fee_catagory_schema = createInsertSchema(fee_prediction_catagories);
+export const update_fee_catagory_schema = createUpdateSchema(fee_prediction_catagories).pick({
+	name: true,
+	fee_value_perc: true,
+});
+
+export type FeeGroup = InferSelectModel<typeof fee_prediction_catagories>;
+export type UpdateFeeGroup = z.infer<typeof update_fee_catagory_schema>;
 
 export const feedback_table = pgTable("feedback", {
 	id: text("id").primaryKey(),

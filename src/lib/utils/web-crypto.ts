@@ -72,3 +72,7 @@ function BigintFromBytes(bytes: Uint8Array): bigint {
 	}
 	return decoded;
 }
+
+export function GenerateAssociationId(source_id: string, subject_id: string) {
+	return `${source_id}:${subject_id}`;
+}

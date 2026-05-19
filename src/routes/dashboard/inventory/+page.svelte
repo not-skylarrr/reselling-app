@@ -223,7 +223,7 @@
 
 								<div class="flex flex-row items-center">
 									{#if item.storage_location}
-										<LocationBadge location_id={item.storage_location} />
+										<LocationBadge location={item.location} />
 									{:else}
 										<p class="text-sm text-muted-foreground">N/A</p>
 									{/if}

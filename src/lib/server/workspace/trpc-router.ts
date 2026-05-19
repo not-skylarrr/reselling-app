@@ -16,6 +16,9 @@ import {
 	label_join_table,
 	update_label_join_schema,
 	item_associations,
+	fee_prediction_catagories,
+	new_fee_catagory_schema,
+	update_fee_catagory_schema,
 } from "../db/schema";
 import { auth, GetSessionWorkspaceID } from "../auth";
 import { db } from "../db";
@@ -356,9 +359,92 @@ const locations_router = router({
 	}),
 });
 
+const fee_calculation_router = router({
+	get_ts_db: auth_procedure.input(TsDbFilterSchema).query(async (opts) => {
+		const { session } = opts.ctx.session_data;
+
+		const { workspace_id } = GetSessionWorkspaceID(session);
+
+		const { where, orderBy, limit } = CreateDrizzleFilters(
+			{
+				orderBy: opts.input.orderBy,
+				where: opts.input.where,
+				limit: opts.input.limit,
+			},
+			{
+				dbTable: fee_prediction_catagories,
+				defaultWhere: eq(fee_prediction_catagories.workspace_id, workspace_id),
+			},
+		);
+
+		const catagories = await db.query.fee_prediction_catagories.findMany({
+			where,
+			orderBy,
+			limit,
+		});
+
+		return catagories;
+	}),
+	insert_ts_db: auth_procedure
+		.input(z.array(new_fee_catagory_schema))
+		.mutation(async (opts) => {
+			const { session } = opts.ctx.session_data;
+
+			const { workspace_id } = GetSessionWorkspaceID(session);
+
+			await db.insert(fee_prediction_catagories).values(
+				opts.input.map((catagory) => ({
+					...catagory,
+					workspace_id: workspace_id,
+				})),
+			);
+		}),
+	update_ts_db: auth_procedure
+		.input(TsDbUpdateSchema(update_fee_catagory_schema))
+		.mutation(async (opts) => {
+			const { session } = opts.ctx.session_data;
+
+			const { workspace_id } = GetSessionWorkspaceID(session);
+
+			const failed_updates = await Promise.allSettled(
+				opts.input.map((change) => {
+					return db
+						.update(fee_prediction_catagories)
+						.set(change.changes)
+						.where(
+							and(
+								eq(fee_prediction_catagories.workspace_id, workspace_id),
+								eq(fee_prediction_catagories.id, change.id),
+							),
+						);
+				}),
+			);
+
+			return {
+				failed_updates: failed_updates,
+				update_count: opts.input.length - failed_updates.length,
+			};
+		}),
+	delete_ts_db: auth_procedure.input(z.array(z.string())).mutation(async (opts) => {
+		const { session } = opts.ctx.session_data;
+
+		const { workspace_id } = GetSessionWorkspaceID(session);
+
+		await db
+			.delete(fee_prediction_catagories)
+			.where(
+				and(
+					eq(fee_prediction_catagories.workspace_id, workspace_id),
+					inArray(fee_prediction_catagories.id, opts.input),
+				),
+			);
+	}),
+});
+
 export const workspace_router = router({
 	labels: labels_router,
 	locations: locations_router,
+	fee_groups: fee_calculation_router,
 	delete: auth_procedure.mutation(async (opts) => {
 		const { session } = opts.ctx.session_data;
 

@@ -465,6 +465,58 @@ export const ItemAssociationsCollection = createCollection(
 	}),
 );
 
+export const FeeGroupsCollection = createCollection(
+	queryCollectionOptions({
+		id: "fee-groups",
+		queryKey: ({ where }) => {
+			const parsed_where = ParseWhereFilters(where);
+
+			if (parsed_where) return ["user-session", "fee-groups", "ts-db", parsed_where];
+
+			return ["user-session", "fee-groups", "ts-db"];
+		},
+		queryFn: async (ctx) => {
+			const { limit, sorts, where } = ParseSubsetOptions(ctx.meta?.loadSubsetOptions);
+
+			const fee_groups = await trpc_client.workspace.fee_groups.get_ts_db.query({
+				where: where,
+				orderBy: sorts,
+				limit: limit,
+			});
+
+			return fee_groups;
+		},
+		queryClient: query_client,
+		getKey: (bundle_item) => bundle_item.id,
+		onInsert: async ({ transaction }) => {
+			const insertions = transaction.mutations.map((m) => m.modified);
+
+			await trpc_client.workspace.fee_groups.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "fee-groups"] });
+		},
+		onUpdate: async ({ transaction }) => {
+			const updates = transaction.mutations.map((m) => ({
+				id: m.key,
+				changes: m.changes,
+			}));
+
+			await trpc_client.workspace.fee_groups.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "fee-groups"] });
+		},
+		onDelete: async ({ transaction }) => {
+			const deletions = transaction.mutations.filter((m) => m.type == "delete");
+
+			await trpc_client.workspace.fee_groups.delete_ts_db.mutate(
+				deletions.map((mut) => mut.key),
+			);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "fee-groups"] });
+		},
+	}),
+);
+
 export const FeedbackCollection = createCollection(
 	queryCollectionOptions({
 		id: "feedback",

@@ -10,13 +10,14 @@
 		StructuredDialogSection,
 		StructuredDialogTitle,
 	} from "$lib/components/ui/structured-dialog";
-	import { createForm } from "@tanstack/svelte-form";
+	import { createForm, useStore } from "@tanstack/svelte-form";
 	import { item_dialog_state, OpenItemDialog } from "./dialog-state.svelte";
 	import { Field, FieldLabel } from "$lib/components/ui/field";
 	import { createHotkey } from "@tanstack/svelte-hotkeys";
 	import { LucidePlus } from "@lucide/svelte";
 	import { Switch } from "$lib/components/ui/switch";
 	import {
+		FeeGroupsCollection,
 		ItemAssociationsCollection,
 		ItemsCollection,
 		LabelJoinsCollection,
@@ -27,10 +28,13 @@
 	import LocationPopover from "./components/LocationPopover.svelte";
 	import { GenerateQuickId } from "$lib/utils/web-crypto";
 	import type { Item } from "$lib/server/db/schema";
-	import { createTransaction } from "@tanstack/svelte-db";
+	import { eq, inArray, and, createTransaction, useLiveQuery } from "@tanstack/svelte-db";
 	import { ApplyTsDbMutation } from "$lib/utils/ts-db/trpc-map";
 	import NewItemBundleSelector from "./components/NewItemBundleSelector.svelte";
 	import { toast } from "svelte-sonner";
+	import type { Prettify } from "$lib/utils/types";
+	import { FormatCurrency } from "$lib/utils/formatting";
+	import { slideFade } from "$lib/utils/transition";
 
 	const form = createForm(() => ({
 		defaultValues: {
@@ -72,8 +76,9 @@
 				for (const label_id of value.labels) {
 					LabelJoinsCollection.insert({
 						id: GenerateQuickId(),
+						type: "item-label",
 						label_id: label_id,
-						item_id: item.id,
+						subject_id: item.id,
 						workspace_id: session_state.workspace_id,
 					});
 				}
@@ -108,6 +113,42 @@
 			}
 		},
 	}));
+
+	const item_label_ids = useStore(form.store, (state) => state.values.labels);
+	const target_sale_price = useStore(form.store, (state) => state.values.target_sale_price);
+
+	const fee_groups_query = useLiveQuery(
+		(q) =>
+			q
+				.from({ label_join: LabelJoinsCollection })
+				.where(({ label_join }) =>
+					and(
+						eq(label_join.type, "fee-association"),
+						inArray(label_join.label_id, item_label_ids.current),
+					),
+				)
+				.innerJoin({ fee_group: FeeGroupsCollection }, ({ fee_group, label_join }) =>
+					eq(fee_group.id, label_join.subject_id),
+				)
+				.select(({ fee_group }) => fee_group),
+		[() => item_label_ids],
+	);
+
+	const estimated_fees = $derived.by(() => {
+		if (fee_groups_query.data.length == 0) return null;
+
+		let highest_percentage = 0;
+
+		for (const fee_group of fee_groups_query.data) {
+			if (fee_group.fee_value_perc > highest_percentage) {
+				highest_percentage = fee_group.fee_value_perc;
+			}
+		}
+
+		const fee_value = (target_sale_price.current / 100) * highest_percentage;
+
+		return fee_value;
+	});
 
 	function HandleOpenChangeComplete(open: boolean) {
 		if (open == false) {
@@ -171,6 +212,12 @@
 								onValueChange={(val) => field.handleChange(val)}
 								value={field.state.value}
 							/>
+
+							{#if estimated_fees != null}
+								<p class="text-xs text-muted-foreground" transition:slideFade={{ axis: "y" }}>
+									Estimated Final Fees: {FormatCurrency(estimated_fees)}
+								</p>
+							{/if}
 						</Field>
 					{/snippet}
 				</form.Field>
