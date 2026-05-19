@@ -6,7 +6,6 @@ import {
 	liveQueryCollectionOptions,
 	not,
 	toArray,
-	type QueryBuilder,
 } from "@tanstack/svelte-db";
 import {
 	ItemFeesCollection,
@@ -24,7 +23,7 @@ export const ItemsWithLabelsCollection = createLiveQueryCollection((q) =>
 		labels: toArray(
 			q
 				.from({ label_join: LabelJoinsCollection })
-				.where(({ label_join }) => eq(label_join.item_id, item.id))
+				.where(({ label_join }) => eq(label_join.subject_id, item.id))
 				.leftJoin({ label: LabelsCollection }, ({ label_join, label }) =>
 					eq(label.id, label_join.label_id),
 				)
@@ -38,8 +37,8 @@ export const ItemsWithLabelsCollection = createLiveQueryCollection((q) =>
 
 export const ItemsWithAllMetaCollection = createCollection(
 	liveQueryCollectionOptions({
-		query: (q) =>
-			q
+		query: (q) => {
+			return q
 				.from({ item: ItemsCollection })
 				.orderBy(({ item }) => item.status_int, "desc")
 				.orderBy(({ item }) => item.added_at, "desc")
@@ -52,7 +51,7 @@ export const ItemsWithAllMetaCollection = createCollection(
 					labels: toArray(
 						q
 							.from({ label_join: LabelJoinsCollection })
-							.where(({ label_join }) => eq(label_join.item_id, item.id))
+							.where(({ label_join }) => eq(label_join.subject_id, item.id))
 							.leftJoin({ label: LabelsCollection }, ({ label_join, label }) =>
 								eq(label.id, label_join.label_id),
 							)
@@ -69,6 +68,7 @@ export const ItemsWithAllMetaCollection = createCollection(
 					fees: toArray(
 						q.from({ fee: ItemFeesCollection }).where(({ fee }) => eq(item.id, fee.item_id)),
 					),
-				})),
+				}));
+		},
 	}),
 );

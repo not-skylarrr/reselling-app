@@ -12,10 +12,10 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
 		"format": "prettier --write .",
-		"db:push": "drizzle-kit push",
-		"db:generate": "drizzle-kit generate",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio",
+		"db:push:dev": "drizzle-kit push --config=drizzle.config.dev.ts",
+		"db:push:prod": "drizzle-kit push --config=drizzle.config.prod.ts",
+		"db:studio:dev": "drizzle-kit studio --config=drizzle.config.dev.ts",
+		"db:studio:prod": "drizzle-kit studio --config=drizzle.config.prod.ts",
 		"auth:schema": "better-auth generate --config src/lib/server/auth.ts --output src/lib/server/db/auth.schema.ts --yes"
 	},
 	"devDependencies": {
@@ -32,6 +32,7 @@
 		"better-auth": "~1.4.21",
 		"bits-ui": "^2.16.3",
 		"clsx": "^2.1.1",
+		"dotenv": "^17.4.2",
 		"drizzle-kit": "^0.31.10",
 		"drizzle-orm": "^0.45.2",
 		"mode-watcher": "^1.1.0",

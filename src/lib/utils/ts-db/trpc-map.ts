@@ -1,6 +1,7 @@
 import { query_client } from "$lib/queries/client.svelte";
 import type {
 	BundleItem,
+	FeeGroup,
 	Item,
 	ItemAssociation,
 	ItemBundle,
@@ -159,6 +160,23 @@ export const MutationHandlerMap = {
 			await client.workspace.labels.connections.delete_ts_db.mutate(deletions);
 
 			query_client.invalidateQueries({ queryKey: ["user-session", "label-joins"] });
+		},
+	}),
+	"fee-groups": CreateMutationHandler<FeeGroup>({
+		insert: async (insertions, client) => {
+			await client.workspace.fee_groups.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "fee-groups"] });
+		},
+		update: async (updates, client) => {
+			await client.workspace.fee_groups.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "fee-groups"] });
+		},
+		delete: async (deletions, client) => {
+			await client.workspace.fee_groups.delete_ts_db.mutate(deletions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "fee-groups"] });
 		},
 	}),
 } as const;

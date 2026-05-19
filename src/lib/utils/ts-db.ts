@@ -16,7 +16,6 @@ import {
 	parseWhereExpression,
 } from "@tanstack/db";
 import type { TsDbOrderByNode, TsDbWhereNode } from "../server/ts-db/validator";
-import type { TableSearchFilter } from "$lib/components/items/table/lib/validators";
 
 export function ParseSubsetOptions(subset: LoadSubsetOptions | undefined) {
 	const parsed_where = ParseWhereFilters(subset?.where);
