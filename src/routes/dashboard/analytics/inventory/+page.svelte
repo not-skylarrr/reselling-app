@@ -75,7 +75,7 @@
 		key: "inventory-analytics",
 		default_column_visibility: DefaultColVisibility,
 		column_visibility: {
-			storage_location: false,
+			location: false,
 			marketplaces: false,
 		},
 	});

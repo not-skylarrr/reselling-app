@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { InventoryItemData } from "$lib/collections/query-collections";
 	import { Button } from "$lib/components/ui/button";
 	import {
 		DropdownMenu,
@@ -17,6 +16,7 @@
 	import AddFilterOptionRenderer from "./filters/AddFilterOptionRenderer.svelte";
 	import { CreateTableFilter } from "../lib/filters/lib/utils";
 	import type { TableState } from "$lib/table/init.svelte";
+	import { cn } from "$lib/utils";
 
 	type Props = {
 		label?: string;
@@ -89,7 +89,10 @@
 						{column.filter.display_meta.name}
 					</p>
 				</DropdownMenuSubTrigger>
-				<DropdownMenuSubContent align="start" class="w-64">
+				<DropdownMenuSubContent
+					align="start"
+					class={cn("w-64", column.filter.id == "option" && "p-0")}
+				>
 					{#if column.filter.id == "option"}
 						<AddFilterOptionRenderer
 							id={column.id}

@@ -129,24 +129,29 @@ export function CalculateFeesByType(fees: ItemFee[]) {
 	return { listing_fees, final_fees, postage_fees, other_fees, refund_fees };
 }
 
-export const RefundTypeFriendlyNames: Record<string, string> = {
+export const RefundTypeFriendlyNames = {
 	ITEM_DAMAGED: "Item Damaged",
-	NOT_AS_DESCRIBED: "Item Not As Described",
+	NOT_AS_DESCRIBED: "Not As Described",
 	ORDER_CANCELLED: "Order Cancelled",
 	CUSTOM: "Other Issue",
 };
 
-export const RefundTypeIcons: Record<string, Component<any>> = {
+export type RefundType = keyof typeof RefundTypeFriendlyNames;
+
+export const RefundTypeIcons = {
 	ITEM_DAMAGED: LucidePackageX,
 	NOT_AS_DESCRIBED: LucideBadgeAlert,
 	ORDER_CANCELLED: LucideBan,
 	CUSTOM: LucideMessageSquareWarning,
 };
 
-export function GetRefundTypeFriendlyName(type: string) {
+export function GetRefundTypeFriendlyName(type: string, fallback?: string) {
 	if (type in RefundTypeFriendlyNames) {
+		// @ts-expect-error stupid typescript
 		return RefundTypeFriendlyNames[type];
 	}
+
+	if (fallback) return fallback;
 
 	return type;
 }
