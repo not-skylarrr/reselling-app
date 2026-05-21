@@ -28,7 +28,7 @@
 	let { is_admin }: Props = $props();
 </script>
 
-<Sidebar collapsible="icon" variant="inset">
+<Sidebar collapsible="icon" variant="sidebar">
 	<DashboardSidebarHeader />
 
 	<SidebarContent>

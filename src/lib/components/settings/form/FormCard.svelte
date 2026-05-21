@@ -7,9 +7,6 @@
 	let { children, class: class_name, ...props }: Props = $props();
 </script>
 
-<div
-	class={cn("flex flex-col divide-y rounded-2xl border bg-card dark:bg-sidebar", class_name)}
-	{...props}
->
+<div class={cn("flex flex-col divide-y rounded-2xl border bg-card", class_name)} {...props}>
 	{@render children?.()}
 </div>
