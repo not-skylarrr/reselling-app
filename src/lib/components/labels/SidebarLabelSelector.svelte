@@ -41,6 +41,18 @@
 	const selected_label_set = $derived(new Set(labels.map((l) => l.id)));
 
 	const filtered_labels = $derived.by(() => {
+		if (filter_query.length == 0)
+			return [...labels_query.data].sort((a, b) => {
+				const a_selected = selected_label_set.has(a.id);
+				const b_selected = selected_label_set.has(b.id);
+
+				if (a_selected && b_selected) return 0;
+				if (a_selected && !b_selected) return -1;
+				if (b_selected && !a_selected) return 1;
+
+				return 0;
+			});
+
 		return labels_query.data
 			.map((label) => [label, computeCommandScore(label.content, filter_query, [])] as const)
 			.filter(([_, score]) => score > 0)

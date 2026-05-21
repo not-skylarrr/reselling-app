@@ -42,7 +42,7 @@
 	</PopoverTrigger>
 	<PopoverContent {align} class="p-0">
 		<Command>
-			<CommandInput placeholder="Search Refund Types" />
+			<CommandInput rootClass="h-7" placeholder="Search Refund Types" />
 			<CommandList>
 				<CommandGroup>
 					{#each Object.entries(RefundTypeFriendlyNames) as [value, label] (value)}

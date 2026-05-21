@@ -56,7 +56,7 @@
 	);
 </script>
 
-<Sidebar variant="inset">
+<Sidebar variant="sidebar">
 	<SidebarHeader>
 		<div class="flex flex-row">
 			<button

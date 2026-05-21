@@ -33,7 +33,8 @@
 		for (const label_id of new_label_ids) {
 			LabelJoinsCollection.insert({
 				id: GetItemLabelJoinId(item.id, label_id),
-				item_id: item.id,
+				type: "item-label",
+				subject_id: item.id,
 				label_id: label_id,
 				workspace_id: session_state.workspace_id,
 			});

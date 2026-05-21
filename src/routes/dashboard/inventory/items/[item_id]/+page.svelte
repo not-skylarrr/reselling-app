@@ -5,10 +5,13 @@
 		LabelsCollection,
 		ListingsCollection,
 		ItemFeesCollection,
+		LocationsCollection,
 	} from "$lib/collections/def.svelte.js";
 	import { GetItemLabelJoinId } from "$lib/collections/lib/utils.js";
+	import ItemSaleDetails from "$lib/components/dashboard/inventory/inventory-sidebar/components/ItemSaleDetails.svelte";
 	import UpdateStringPopover from "$lib/components/dashboard/inventory/item-pages/components/UpdateStringPopover.svelte";
 	import ItemListingsView from "$lib/components/dashboard/inventory/item-pages/ItemListingsView.svelte";
+	import ItemPurchaseView from "$lib/components/dashboard/inventory/item-pages/ItemPurchaseView.svelte";
 	import ItemRefundView from "$lib/components/dashboard/inventory/item-pages/ItemRefundView.svelte";
 	import ItemSoldView from "$lib/components/dashboard/inventory/item-pages/ItemSoldView.svelte";
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
@@ -38,12 +41,16 @@
 				.from({ item: ItemsCollection })
 				.orderBy(({ item }) => item.status_int, "desc")
 				.orderBy(({ item }) => item.added_at, "desc")
-				.select(({ item }) => ({
+				.leftJoin({ location: LocationsCollection }, ({ location, item }) =>
+					eq(item.storage_location, location.id),
+				)
+				.select(({ item, location }) => ({
 					...item,
+					location: location,
 					labels: toArray(
 						q
 							.from({ label_join: LabelJoinsCollection })
-							.where(({ label_join }) => eq(label_join.item_id, item.id))
+							.where(({ label_join }) => eq(label_join.subject_id, item.id))
 							.leftJoin({ label: LabelsCollection }, ({ label_join, label }) =>
 								eq(label.id, label_join.label_id),
 							)
@@ -84,7 +91,8 @@
 		for (const label_id of new_label_ids) {
 			LabelJoinsCollection.insert({
 				id: GetItemLabelJoinId(item.id, label_id),
-				item_id: item.id,
+				type: "item-label",
+				subject_id: item.id,
 				label_id: label_id,
 				workspace_id: session_state.workspace_id,
 			});
@@ -108,7 +116,7 @@
 	></DashboardHeader>
 
 	<DashboardContent class="@container gap-0 p-0 md:gap-0 md:p-0" disableScroll>
-		<div class="flex flex-row items-center gap-6 border-b p-6">
+		<div class="flex flex-row items-center gap-6 border-b px-8 py-6">
 			<div class="grid flex-1 gap-1">
 				<p class="text-xl font-medium">{item.name}</p>
 
@@ -148,40 +156,8 @@
 		</div>
 
 		<ScrollArea class="flex-1 overflow-hidden">
-			<div
-				class="grid @3xl:grid-cols-2 @3xl:divide-x @3xl:[&>*:last-child:nth-child(odd)]:col-span-2"
-			>
-				<div class="flex flex-col gap-2 border-b p-6">
-					<div class="flex flex-row items-center justify-between">
-						<p class="text-sm text-muted-foreground">Purchase Price</p>
-
-						<UpdateItemPriceInput
-							label="Update Purchase Price"
-							price={item.purchase_price}
-							onPriceChange={(new_price) => {
-								ItemsCollection.update(item.id, (draft) => {
-									draft.purchase_price = new_price;
-								});
-							}}
-						/>
-					</div>
-
-					<div class="flex flex-row items-center justify-between">
-						<p class="text-sm text-muted-foreground">Target Sale Price</p>
-
-						<UpdateItemPriceInput
-							label="Update Target Sale Price"
-							price={item.target_sale_price}
-							onPriceChange={(new_price) => {
-								ItemsCollection.update(item.id, (draft) => {
-									draft.target_sale_price = new_price;
-								});
-							}}
-						/>
-					</div>
-				</div>
-
-				<div class="flex flex-col gap-2 border-b p-6">
+			<div class="flex flex-col">
+				<div class="flex flex-col gap-2 border-b px-8 py-6">
 					<div class="flex flex-row items-center justify-between">
 						<p class="text-sm text-muted-foreground">Labels</p>
 
@@ -201,17 +177,19 @@
 					</div>
 				</div>
 
-				{#if item.status_int == 3}
-					<ItemRefundView {item} />
-				{/if}
+				<div class="grid gap-8 p-4 @3xl:grid-cols-2">
+					{#if item.status_int == 3}
+						<ItemRefundView {item} />
+					{/if}
 
-				{#if item.status_int >= 2}
-					<ItemSoldView {item} />
-				{/if}
+					{#if item.status_int >= 2}
+						<ItemSoldView {item} />
+					{/if}
 
-				{#if item.status_int >= 1}
 					<ItemListingsView {item} />
-				{/if}
+
+					<ItemPurchaseView {item} />
+				</div>
 			</div>
 		</ScrollArea>
 
