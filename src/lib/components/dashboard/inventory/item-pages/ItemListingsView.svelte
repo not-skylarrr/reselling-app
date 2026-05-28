@@ -20,6 +20,7 @@
 	import {
 		LucideCheck,
 		LucideEllipsisVertical,
+		LucideFunnel,
 		LucideList,
 		LucidePlus,
 		LucideSettings,
@@ -35,99 +36,94 @@
 
 	const listing_order: ItemListingStatus[] = ["sold", "active", "expired", "cancelled"];
 
-	const ordered_listings = $derived(
-		[...item.listings].sort((a, b) => {
-			const a_index = listing_order.indexOf(a.status);
-			const b_index = listing_order.indexOf(b.status);
+	let displayed_types = $state(["sold", "active", "expired"]);
 
-			return a_index - b_index;
-		}),
+	const ordered_listings = $derived(
+		[...item.listings]
+			.filter((listing) => displayed_types.includes(listing.status))
+			.sort((a, b) => {
+				const a_index = listing_order.indexOf(a.status);
+				const b_index = listing_order.indexOf(b.status);
+
+				return a_index - b_index;
+			}),
 	);
 </script>
 
-<div class="flex flex-col gap-2">
-	<p class="px-4 text-lg font-medium">Item Listings</p>
+{#if ordered_listings.length > 0}
+	<div class="flex justify-center">
+		<div class="flex w-full max-w-3xl flex-col gap-4 px-3 py-6">
+			<div class="flex h-7 flex-row items-center justify-between px-4">
+				<p class="text-lg font-medium">Item Listings</p>
 
-	<FormCard class="divide-transparent @3xl:h-78.5">
-		{#if ordered_listings.length > 0}
-			<FormCardSection class="flex-1 gap-0 overflow-hidden p-0">
-				<div class="flex h-12 flex-row items-center justify-between border-b pr-2 pl-4">
-					<p class="text-xs text-muted-foreground">
-						{ordered_listings.length}
-						<Plural count={ordered_listings.length} singular="Listing" plural="Listings" />
-					</p>
+				<Select type="multiple" bind:value={displayed_types}>
+					<SelectTrigger
+						class="bg-transparent hover:bg-accent data-[state=open]:bg-accent"
+						size="sm"><LucideFunnel /> Filter Listings</SelectTrigger
+					>
+					<SelectContent align="end">
+						<SelectItem value="sold">Completed</SelectItem>
+						<SelectItem value="active">Active</SelectItem>
+						<SelectItem value="expired">Expired</SelectItem>
+						<SelectItem value="cancelled">Cancelled</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
 
-					<Select type="multiple" value={["completed"]}>
-						<SelectTrigger size="sm">All Listings</SelectTrigger>
-						<SelectContent align="end">
-							<SelectItem value="completed">Completed</SelectItem>
-							<SelectItem value="active">Active</SelectItem>
-							<SelectItem value="expired">Expired</SelectItem>
-							<SelectItem value="cancelled">Cancelled</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-				<ScrollArea class="flex-1 overflow-hidden">
-					<div class="flex flex-col gap-2 p-2">
-						{#each ordered_listings as listing (listing.id)}
-							{@const marketplace = GetMarketplaceData(listing.marketplace_id)}
+			<ScrollArea class="flex-1 overflow-hidden">
+				<div class="flex flex-col gap-2 p-2">
+					{#each ordered_listings as listing (listing.id)}
+						{@const marketplace = GetMarketplaceData(listing.marketplace_id)}
 
-							<div class="flex h-14 flex-row items-center gap-4 rounded-xl bg-muted px-3">
-								<MarketplaceMedia marketplace_id={listing.marketplace_id} />
+						<div class="flex h-14 flex-row items-center gap-4 px-2">
+							<MarketplaceMedia marketplace_id={listing.marketplace_id} />
 
-								<div class="grid flex-1">
-									<p class="text-sm font-medium">{marketplace.name}</p>
-									<p class="text-sm text-muted-foreground">
-										{GetListingStatusFriendlyName(listing.status)} - {#if listing.status == "active"}
-											{GetListingExpiryString(listing)}
-										{:else}
-											{GetListingDurationString(listing)}
-										{/if}
-									</p>
-								</div>
-
-								<ResponsiveActionMenu
-									actions={[
-										{
-											label: "Mark as Sold",
-											icon: LucideCheck,
-											onSelect: () => OpenItemDialog(item, "sell", { listing_id: listing.id }),
-										},
-										{
-											label: "Manage Listing",
-											icon: LucideSettings,
-											onSelect: () =>
-												OpenItemDialog(item, "update-listing", { listing: listing }),
-										},
-										{
-											label: "End Listing",
-											icon: LucideX,
-											onSelect: () => EndListing(listing.id, item.id),
-											variant: "destructive",
-										},
-									]}
-									align="end"
-								>
-									{#snippet trigger(props)}
-										<Button {...props} size="icon-sm" variant="ghost"
-											><LucideEllipsisVertical /></Button
-										>
-									{/snippet}
-								</ResponsiveActionMenu>
+							<div class="grid flex-1">
+								<p class="text-sm font-medium">{marketplace.name} Listing</p>
+								<p class="text-xs text-muted-foreground">
+									{GetListingStatusFriendlyName(listing.status)} - {#if listing.status == "active"}
+										{GetListingExpiryString(listing)}
+									{:else}
+										{GetListingDurationString(listing)}
+									{/if}
+								</p>
 							</div>
-						{/each}
-					</div>
-				</ScrollArea>
-			</FormCardSection>
-		{:else}
-			<FormCardSection class="flex flex-1 flex-col gap-6">
-				<div class="flex flex-1 items-center justify-center py-6">
-					<p class="text-sm text-muted-foreground">No Listings To Display</p>
+
+							<ResponsiveActionMenu
+								actions={[
+									{
+										label: "Mark as Sold",
+										icon: LucideCheck,
+										onSelect: () => OpenItemDialog(item, "sell", { listing_id: listing.id }),
+									},
+									{
+										label: "Manage Listing",
+										icon: LucideSettings,
+										onSelect: () =>
+											OpenItemDialog(item, "update-listing", { listing: listing }),
+									},
+									{
+										label: "End Listing",
+										icon: LucideX,
+										onSelect: () => EndListing(listing.id, item.id),
+										variant: "destructive",
+									},
+								]}
+								align="end"
+							>
+								{#snippet trigger(props)}
+									<Button
+										{...props}
+										class="stroke-muted-foreground"
+										size="icon-sm"
+										variant="ghost"><LucideEllipsisVertical /></Button
+									>
+								{/snippet}
+							</ResponsiveActionMenu>
+						</div>
+					{/each}
 				</div>
-				<Button onclick={() => OpenItemDialog(item, "list")} variant="outline"
-					><LucidePlus /> Create Item Listing</Button
-				>
-			</FormCardSection>
-		{/if}
-	</FormCard>
-</div>
+			</ScrollArea>
+		</div>
+	</div>
+{/if}

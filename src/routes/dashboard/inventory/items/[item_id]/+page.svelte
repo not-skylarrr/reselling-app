@@ -8,8 +8,8 @@
 		LocationsCollection,
 	} from "$lib/collections/def.svelte.js";
 	import { GetItemLabelJoinId } from "$lib/collections/lib/utils.js";
-	import ItemSaleDetails from "$lib/components/dashboard/inventory/inventory-sidebar/components/ItemSaleDetails.svelte";
 	import UpdateStringPopover from "$lib/components/dashboard/inventory/item-pages/components/UpdateStringPopover.svelte";
+	import ItemJourney from "$lib/components/dashboard/inventory/item-pages/ItemJourney.svelte";
 	import ItemListingsView from "$lib/components/dashboard/inventory/item-pages/ItemListingsView.svelte";
 	import ItemPurchaseView from "$lib/components/dashboard/inventory/item-pages/ItemPurchaseView.svelte";
 	import ItemRefundView from "$lib/components/dashboard/inventory/item-pages/ItemRefundView.svelte";
@@ -17,7 +17,7 @@
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
 	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";
-	import UpdateItemPriceInput from "$lib/components/items/item-page/UpdateItemPriceInput.svelte";
+	import { OpenItemDialog } from "$lib/components/items/dialogs/dialog-state.svelte.js";
 	import SidebarLabelSelector from "$lib/components/labels/SidebarLabelSelector.svelte";
 	import SidebarLocationSelector from "$lib/components/locations/SidebarLocationSelector.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
@@ -115,8 +115,8 @@
 		]}
 	></DashboardHeader>
 
-	<DashboardContent class="@container gap-0 p-0 md:gap-0 md:p-0" disableScroll>
-		<div class="flex flex-row items-center gap-6 border-b px-8 py-6">
+	<DashboardContent class="@container flex-1 gap-0 p-0 md:gap-0 md:p-0" disableScroll>
+		<div class="flex flex-row items-center gap-6 border-b px-7 py-6">
 			<div class="grid flex-1 gap-1">
 				<p class="text-xl font-medium">{item.name}</p>
 
@@ -140,7 +140,9 @@
 				</UpdateStringPopover>
 
 				{#if item.status_int < 2}
-					<Button><LucidePlus /> Create Listing</Button>
+					<Button onclick={() => OpenItemDialog(item, "list")}
+						><LucidePlus /> Create Listing</Button
+					>
 				{/if}
 
 				{#if item.status_int == 2}
@@ -155,45 +157,80 @@
 			</div>
 		</div>
 
-		<ScrollArea class="flex-1 overflow-hidden">
-			<div class="flex flex-col">
-				<div class="flex flex-col gap-2 border-b px-8 py-6">
-					<div class="flex flex-row items-center justify-between">
-						<p class="text-sm text-muted-foreground">Labels</p>
+		<div class="hidden flex-col gap-2 border-b px-7 py-6 @2xl:flex">
+			<div class="flex flex-row items-center justify-between">
+				<p class="text-sm text-muted-foreground">Labels</p>
 
-						<SidebarLabelSelector labels={item.labels} onLabelsChange={HandleLabelsChange} />
-					</div>
-
-					<div class="flex flex-row items-center justify-between">
-						<p class="text-sm text-muted-foreground">Storage Location</p>
-
-						<SidebarLocationSelector
-							location_id={item.storage_location}
-							onLocationChange={(location_id) =>
-								ItemsCollection.update(item.id, (item) => {
-									item.storage_location = location_id;
-								})}
-						/>
-					</div>
-				</div>
-
-				<div class="grid gap-8 p-4 @3xl:grid-cols-2">
-					{#if item.status_int == 3}
-						<ItemRefundView {item} />
-					{/if}
-
-					{#if item.status_int >= 2}
-						<ItemSoldView {item} />
-					{/if}
-
-					<ItemListingsView {item} />
-
-					<ItemPurchaseView {item} />
-				</div>
+				<SidebarLabelSelector labels={item.labels} onLabelsChange={HandleLabelsChange} />
 			</div>
-		</ScrollArea>
 
-		<div class="flex flex-col-reverse gap-3 border-b p-6 @2xl:hidden">
+			<div class="flex flex-row items-center justify-between">
+				<p class="text-sm text-muted-foreground">Storage Location</p>
+
+				<SidebarLocationSelector
+					location_id={item.storage_location}
+					onLocationChange={(location_id) =>
+						ItemsCollection.update(item.id, (item) => {
+							item.storage_location = location_id;
+						})}
+				/>
+			</div>
+		</div>
+
+		<div class="flex flex-1 flex-col overflow-hidden @4xl:flex-row @4xl:divide-x">
+			<ScrollArea class="flex-1 overflow-hidden">
+				<div class="flex min-h-full flex-col">
+					<div class="flex justify-center @2xl:hidden">
+						<div class="flex w-full max-w-3xl flex-col gap-2 border-b px-7 py-6">
+							<div class="flex flex-row items-center justify-between">
+								<p class="text-sm text-muted-foreground">Labels</p>
+
+								<SidebarLabelSelector
+									labels={item.labels}
+									onLabelsChange={HandleLabelsChange}
+								/>
+							</div>
+
+							<div class="flex flex-row items-center justify-between">
+								<p class="text-sm text-muted-foreground">Storage Location</p>
+
+								<SidebarLocationSelector
+									location_id={item.storage_location}
+									onLocationChange={(location_id) =>
+										ItemsCollection.update(item.id, (item) => {
+											item.storage_location = location_id;
+										})}
+								/>
+							</div>
+						</div>
+					</div>
+
+					<div class="flex flex-1 flex-col divide-y">
+						{#if item.status_int == 3}
+							<ItemRefundView {item} />
+						{/if}
+
+						{#if item.status_int >= 2}
+							<ItemSoldView {item} />
+						{/if}
+
+						<ItemListingsView {item} />
+
+						<ItemPurchaseView {item} />
+
+						<div class="flex @4xl:hidden">
+							<ItemJourney class="px-4" {item} />
+						</div>
+					</div>
+				</div>
+			</ScrollArea>
+
+			<div class="hidden w-96 flex-col overflow-hidden @4xl:flex">
+				<ItemJourney {item} />
+			</div>
+		</div>
+
+		<div class="flex flex-col-reverse gap-3 border-t bg-card p-6 @2xl:hidden">
 			<UpdateStringPopover
 				label="Update Item Name"
 				value={item.name}

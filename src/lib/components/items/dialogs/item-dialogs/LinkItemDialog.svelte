@@ -98,12 +98,14 @@
 					}
 				});
 			} else {
-				ItemAssociationsCollection.insert({
-					id: GenerateQuickId(),
-					item_id: item.id,
-					subject_id: selected_item.id,
-					type: "bundle-item",
-					workspace_id: session_state.workspace_id,
+				tx.mutate(() => {
+					ItemAssociationsCollection.insert({
+						id: GenerateQuickId(),
+						item_id: item.id,
+						subject_id: selected_item.id,
+						type: "bundle-item",
+						workspace_id: session_state.workspace_id,
+					});
 				});
 			}
 

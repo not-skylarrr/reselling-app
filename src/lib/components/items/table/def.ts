@@ -54,7 +54,7 @@ export const ItemTableColumns = [
 				multiLabel: "statuses",
 				options: [
 					{
-						icon: { component: LucideCircleCheck, props: { class: "stroke-emerald-400" } },
+						icon: { component: LucideCircleCheck, props: { class: "stroke-success" } },
 						label: "Completed",
 						value: "completed",
 					},

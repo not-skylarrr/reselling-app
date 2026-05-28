@@ -7,26 +7,19 @@
 	import FormCard from "$lib/components/settings/form/FormCard.svelte";
 	import FormCardSection from "$lib/components/settings/form/FormCardSection.svelte";
 	import { Button } from "$lib/components/ui/button";
-	import { ChartContainer, Tooltip, type ChartConfig } from "$lib/components/ui/chart";
-	import {
-		GetRefundTypeFriendlyName,
-		RefundTypeIcons,
-		type RefundType,
-	} from "$lib/items/utils";
-	import {
-		LucideCheck,
-		LucideChevronRight,
-		LucideCircle,
-		LucideDollarSign,
-		LucideFileChartColumn,
-	} from "@lucide/svelte";
+	import { LucideChevronRight, LucideCircle } from "@lucide/svelte";
 	import { useLiveQuery, eq, and, count, toArray } from "@tanstack/svelte-db";
-	import { BarChart, Html, Labels, Text } from "layerchart";
-	import { scaleBand } from "d3-scale";
-	import { cubicInOut } from "svelte/easing";
 	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import { GetAwareColour } from "$lib/components/ui/colour-picker/lib/utils";
 	import { mode } from "mode-watcher";
+	import { cn } from "$lib/utils";
+	import { Skeleton } from "$lib/components/ui/skeleton";
+
+	type Props = {
+		class?: string;
+	};
+
+	let { class: class_name }: Props = $props();
 
 	const item_count_query = useLiveQuery((q) =>
 		q.from({ item: ItemsCollection }).select(({ item }) => ({
@@ -46,6 +39,8 @@
 			),
 		})),
 	);
+
+	const is_loading = $derived(labels_query.isLoading || item_count_query.isLoading);
 
 	const label_item_counts = $derived.by(() => {
 		const item_count = item_count_query.data[0]?.count ?? 0;
@@ -78,105 +73,46 @@
 			.filter(({ count }) => count > 0)
 			.sort((a, b) => b.count - a.count);
 	});
-
-	const chart_config = {
-		count: { label: "Count", color: "var(--chart-4)" },
-	} satisfies ChartConfig;
 </script>
 
-<FormCard class="h-96">
-	<FormCardSection class="flex flex-row items-center justify-between p-2 pl-6">
-		<p class="text-sm font-medium">Inventory Overview</p>
+<FormCard class={cn("h-96 divide-transparent", class_name)}>
+	<FormCardSection class="flex flex-row items-center justify-between py-2 pr-1.5 pl-5">
+		<div class="flex flex-row items-center gap-2">
+			<p class="text-sm text-muted-foreground">Inventory By Type</p>
+		</div>
 
-		<Button href="/dashboard/analytics/inventory" size="sm"
-			>View Details <LucideChevronRight /></Button
+		<Button href="/dashboard/analytics/fees" size="icon" variant="ghost"
+			><LucideChevronRight /></Button
 		>
 	</FormCardSection>
-	<FormCardSection class="overflow-hidden p-2">
-		<ScrollArea class="flex-1 overflow-hidden">
-			<div class="relative">
-				<ChartContainer
-					class="aspect-auto min-h-0 overflow-hidden"
-					style="height: {label_item_counts.length * 48}px;"
-					config={chart_config}
-				>
-					<BarChart
-						axis="x"
-						class="max-h-full"
-						data={label_item_counts}
-						orientation="horizontal"
-						yScale={scaleBand().padding(0.25)}
-						y="name"
-						rule={false}
-						series={[{ key: "count", label: "Count", color: chart_config.count.color }]}
-						padding={{ right: 8, left: 8 }}
-						props={{
-							bars: {
-								stroke: "none",
-								radius: 10,
-								rounded: "all",
-								motion: { type: "tween", duration: 500, easing: cubicInOut },
-							},
-							highlight: { area: { fill: "none" } },
-							yAxis: {
-								tickLabelProps: {
-									textAnchor: "start",
-									dx: 8,
-									class: "stroke-none font-medium! fill-foreground!",
-								},
-								tickLength: 0,
-							},
-							xAxis: {
-								tickLabelProps: { display: "none" },
-							},
-							grid: {
-								class: "hidden",
-							},
-						}}
-					>
-						{#snippet labels({ context })}
-							<Labels>
-								{#snippet children({ textProps, data })}
-									<Text
-										{...textProps}
-										x={context.width - 8}
-										textAnchor="end"
-										value={`${data.xValue}`}
-									/>
-								{/snippet}
-							</Labels>
-						{/snippet}
 
-						{#snippet aboveContext({ context })}
-							<Html zIndex={50} pointerEvents={false}>
-								{#each context.data as row}
-									<div
-										class="absolute flex items-center gap-2 text-xs [&_svg]:size-4"
-										style={`left: 8px; top: ${context.yScale(row.name)}px; height: ${context.yScale.bandwidth?.()}px;`}
-									>
-										<LucideCircle style="color: {row.colour};" />
-										<span>{row.name}</span>
-									</div>
-								{/each}
-							</Html>
-						{/snippet}
-
-						{#snippet tooltip()}
-							<Tooltip hideLabel>
-								{#snippet formatter({ value })}
-									<div
-										class="flex items-center justify-between gap-4 rounded-xl p-1 text-xs text-muted-foreground"
-									>
-										<p>Total Items</p>
-
-										<p class="text-foreground">{value}</p>
-									</div>
-								{/snippet}
-							</Tooltip>
-						{/snippet}
-					</BarChart>
-				</ChartContainer>
-			</div>
-		</ScrollArea>
-	</FormCardSection>
+	{#if is_loading}
+		<FormCardSection class="flex-1 gap-2 overflow-hidden p-2 pt-0">
+			<Skeleton class="h-10 rounded-xl"></Skeleton>
+			<Skeleton class="h-10 rounded-xl"></Skeleton>
+			<Skeleton class="h-10 rounded-xl"></Skeleton>
+			<Skeleton class="h-10 rounded-xl"></Skeleton>
+			<Skeleton class="h-10 rounded-xl"></Skeleton>
+			<Skeleton class="h-10 rounded-xl"></Skeleton>
+			<Skeleton class="h-10 rounded-xl"></Skeleton>
+		</FormCardSection>
+	{:else}
+		<FormCardSection class="flex-1 overflow-hidden p-2 pt-0">
+			<ScrollArea class="flex-1 overflow-hidden">
+				<div class="flex flex-col gap-2">
+					{#each label_item_counts as label}
+						<div
+							class="flex h-10 flex-row items-center justify-between overflow-hidden rounded-xl bg-muted px-3"
+						>
+							<div class="flex flex-row items-center gap-2">
+								<LucideCircle class="size-4" style="color: {label.colour};" />
+								<p class="text-sm">{label.name}</p>
+							</div>
+							<p class="text-sm font-medium">{label.count}</p>
+						</div>
+					{/each}
+				</div>
+			</ScrollArea>
+		</FormCardSection>
+	{/if}
 </FormCard>

@@ -16,6 +16,7 @@
 	import { ListingsCollection, ItemsCollection } from "$lib/collections/def.svelte";
 	import FormCard from "$lib/components/settings/form/FormCard.svelte";
 	import FormCardSection from "$lib/components/settings/form/FormCardSection.svelte";
+	import UpdateDatePopover from "./components/UpdateDatePopover.svelte";
 
 	type Props = {
 		item: FullItem;
@@ -24,11 +25,11 @@
 	let { item }: Props = $props();
 </script>
 
-<div class="flex flex-col gap-2">
-	<p class="px-4 text-lg font-medium">Purchase Details</p>
+<div class="flex justify-center">
+	<div class="flex w-full max-w-3xl flex-col gap-4 px-3 py-6">
+		<p class="px-4 text-lg font-medium">Purchase Details</p>
 
-	<FormCard class="divide-transparent @3xl:h-78.5">
-		<FormCardSection>
+		<div class="flex flex-col gap-1 px-4">
 			<div class="flex flex-1 flex-col gap-2">
 				<div class="flex flex-row items-center justify-between">
 					<p class="text-sm text-muted-foreground">Purchase Price</p>
@@ -61,12 +62,14 @@
 				<div class="flex flex-row items-center justify-between">
 					<p class="text-sm text-muted-foreground">Purchase Date</p>
 
-					<UpdateItemPriceInput
-						label="Update Target Sale Price"
-						price={item.target_sale_price}
-						onPriceChange={(val) => {
+					<UpdateDatePopover
+						align="end"
+						value={item.purchased_at}
+						onValueChange={(val) => {
+							if (!val) return;
+
 							ItemsCollection.update(item.id, (draft) => {
-								draft.target_sale_price = val;
+								draft.purchased_at = val;
 							});
 						}}
 					/>
@@ -75,17 +78,19 @@
 				<div class="flex flex-row items-center justify-between">
 					<p class="text-sm text-muted-foreground">Register Date</p>
 
-					<UpdateItemPriceInput
-						label="Update Target Sale Price"
-						price={item.target_sale_price}
-						onPriceChange={(val) => {
+					<UpdateDatePopover
+						align="end"
+						value={item.added_at}
+						onValueChange={(val) => {
+							if (!val) return;
+
 							ItemsCollection.update(item.id, (draft) => {
-								draft.target_sale_price = val;
+								draft.added_at = val;
 							});
 						}}
 					/>
 				</div>
 			</div>
-		</FormCardSection>
-	</FormCard>
+		</div>
+	</div>
 </div>
