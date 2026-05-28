@@ -25,6 +25,6 @@
 		<ItemTypesAnalyticsCard />
 
 		<RefundAnalyticsCard />
-		<FeesAnalyticsCard class="xl:col-span-2" />
+		<FeesAnalyticsCard />
 	</DashboardContent>
 </DashboardLayoutRoot>

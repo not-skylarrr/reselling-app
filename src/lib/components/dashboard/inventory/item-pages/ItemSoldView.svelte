@@ -16,6 +16,8 @@
 	import { ListingsCollection } from "$lib/collections/def.svelte";
 	import FormCard from "$lib/components/settings/form/FormCard.svelte";
 	import FormCardSection from "$lib/components/settings/form/FormCardSection.svelte";
+	import { cn } from "$lib/utils";
+	import UpdateDatePopover from "./components/UpdateDatePopover.svelte";
 
 	type Props = {
 		item: FullItem;
@@ -40,12 +42,27 @@
 </script>
 
 {#if sold_listing}
-	<div class="flex flex-col gap-2">
-		<p class="px-4 text-lg font-medium">Sale Details</p>
+	<div class="flex justify-center">
+		<div class="flex w-full max-w-3xl flex-col gap-4 px-3 py-6">
+			<p class="px-4 text-lg font-medium">Sale Details</p>
 
-		<FormCard class="divide-transparent @3xl:h-78.5">
-			<FormCardSection class="flex-1 gap-6">
+			<div class="flex flex-col gap-1 px-4">
 				<div class="flex flex-1 flex-col gap-2">
+					<div class="flex flex-row items-center justify-between">
+						<p class="text-sm text-muted-foreground">Sale Date</p>
+
+						<UpdateDatePopover
+							value={sold_listing.ended_at}
+							onValueChange={(val) => {
+								if (!val) return;
+
+								ListingsCollection.update(sold_listing.id, (draft) => {
+									draft.ended_at = val;
+								});
+							}}
+						/>
+					</div>
+
 					<div class="flex flex-row items-center justify-between">
 						<p class="text-sm text-muted-foreground">Sale Price</p>
 
@@ -104,23 +121,35 @@
 						</ViewFeesDialog>
 					</div>
 				</div>
+			</div>
 
-				<Separator />
+			<Separator />
 
-				<div class="flex flex-col gap-2">
-					<div class="flex flex-row items-center justify-between">
-						<p class="text-sm text-muted-foreground">Fees & Postage</p>
+			<div class="flex flex-col gap-1 px-4">
+				<div class="flex flex-row items-center justify-between">
+					<p class="text-sm text-muted-foreground">Fees & Postage</p>
 
-						<p class="pr-2.5 text-sm">{FormatCurrency(total_fees)}</p>
-					</div>
-
-					<div class="flex flex-row items-center justify-between">
-						<p class="text-sm text-muted-foreground">Total Profit</p>
-
-						<p class="pr-2.5 text-sm">{FormatCurrency(final_profit ?? 0)}</p>
-					</div>
+					<p class="h-7 pr-2.5 text-sm">{FormatCurrency(total_fees)}</p>
 				</div>
-			</FormCardSection>
-		</FormCard>
+
+				<div class="flex flex-row items-center justify-between">
+					<p class="text-sm text-muted-foreground">Total Profit</p>
+
+					<p
+						class={cn(
+							"h-7 pr-2.5 text-sm",
+							final_profit != null &&
+								(final_profit == 0
+									? "text-muted-foreground"
+									: final_profit < 0
+										? "text-destructive"
+										: "text-success"),
+						)}
+					>
+						{FormatCurrency(final_profit ?? 0)}
+					</p>
+				</div>
+			</div>
+		</div>
 	</div>
 {/if}

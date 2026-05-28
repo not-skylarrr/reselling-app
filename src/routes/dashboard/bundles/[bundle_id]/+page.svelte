@@ -82,7 +82,7 @@
 	let can_package = $derived(completion.total_item_count == completion.completion_count);
 
 	// Remove the "header" items from the required items
-	const bundle_items_flat = $derived.by(() => {
+	const items_required_for_completion = $derived.by(() => {
 		const header_ids: Set<string> = new Set();
 
 		for (const item of bundle.items) {
@@ -102,7 +102,7 @@
 		const required_items = [];
 		const in_stock_items = [];
 
-		for (const item of bundle_items_flat) {
+		for (const item of items_required_for_completion) {
 			// @ts-expect-error Fix this type error later
 			const is_required = IsBundleItemNeeded(item);
 

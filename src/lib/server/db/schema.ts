@@ -36,6 +36,7 @@ export const items = pgTable("items", {
 	storage_location: text("storage_location"),
 	refund_type: text("refund_type"),
 	refund_reason: text("refund_reason"),
+	refunded_at: timestamp("refunded_at"),
 });
 
 export const items_relations = relations(items, ({ one, many }) => ({
@@ -58,6 +59,7 @@ export const new_item_schema = createInsertSchema(items, {
 	storage_location: true,
 	refund_type: true,
 	refund_reason: true,
+	refunded_at: true,
 });
 
 export const update_item_schema = createUpdateSchema(items, {
@@ -73,6 +75,7 @@ export const update_item_schema = createUpdateSchema(items, {
 	storage_location: true,
 	refund_type: true,
 	refund_reason: true,
+	refunded_at: true,
 });
 
 export type NewItem = z.infer<typeof new_item_schema>;
