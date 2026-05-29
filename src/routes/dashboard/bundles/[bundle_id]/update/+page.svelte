@@ -205,8 +205,6 @@
 
 					const item_diff = CalculateItemDiff(item, new_item);
 
-					console.log(item, new_item, item_diff);
-
 					// If item has changed, push diff
 					if (Object.keys(item_diff).length > 0) {
 						changed_items.push({ id: item.id, changes: item_diff });
@@ -217,6 +215,13 @@
 					// Item already existed, remove from insertion
 					inserted_items.splice(insertion_index, 1);
 				}
+
+				tx.mutate(() => {
+					BundlesCollection.update(data.bundle.id, (draft) => {
+						draft.name = value.name;
+						draft.completed_price = value.price;
+					});
+				});
 
 				if (inserted_items.length > 0) {
 					tx.mutate(() => {
