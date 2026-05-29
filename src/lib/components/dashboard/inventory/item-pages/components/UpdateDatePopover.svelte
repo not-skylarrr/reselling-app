@@ -12,7 +12,7 @@
 		value: Date | null;
 	};
 
-	let { align = "start", onValueChange, value }: Props = $props();
+	let { align = "end", onValueChange, value }: Props = $props();
 
 	function HandleCalendarDateChange(date: DateValue | undefined) {
 		if (!date) return;
@@ -34,7 +34,7 @@
 			</Button>
 		{/snippet}
 	</PopoverTrigger>
-	<PopoverContent {align} class="w-63 p-0" side="top">
+	<PopoverContent {align} class="w-63 p-0" side="bottom">
 		<Calendar
 			captionLayout="dropdown"
 			maxValue={fromDate(new Date(), getLocalTimeZone())}

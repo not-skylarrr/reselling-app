@@ -46,7 +46,7 @@
 			<CommandList>
 				<CommandGroup>
 					{#each Object.entries(RefundTypeFriendlyNames) as [value, label] (value)}
-						{@const TypeIcon = RefundTypeIcons[value]}
+						{@const TypeIcon = RefundTypeIcons[value as keyof typeof RefundTypeIcons]}
 
 						<CommandItem
 							class="[&_svg]:stroke-muted-foreground"

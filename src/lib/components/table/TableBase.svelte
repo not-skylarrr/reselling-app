@@ -14,7 +14,7 @@
 
 	// TODO: Integrate mobile row snippets
 	type Props = {
-		onRowDouble?: () => void;
+		onRowDouble?: (row: Row) => void;
 		onRowFocus?: (row: Row) => void;
 		table: Table<Row>;
 		getRowId: (row: Row) => string | null | undefined;

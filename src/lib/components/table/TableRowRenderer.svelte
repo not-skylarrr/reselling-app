@@ -1,8 +1,8 @@
 <script lang="ts" module>
 	export type TableRowProps<RData> = {
 		focused: boolean;
-		onDouble?: () => void;
-		onFocus?: () => void;
+		onDouble?: (data: RData) => void;
+		onFocus?: (data: RData) => void;
 		onFocusBlock?: () => void;
 		onFocusUnblock?: () => void;
 		row: Row<RData>;

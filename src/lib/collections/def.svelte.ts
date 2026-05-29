@@ -412,6 +412,8 @@ export const BundleItemsCollection = createCollection(
 			query_client.invalidateQueries({ queryKey: ["user-session", "bundle-items"] });
 		},
 		syncMode: "on-demand",
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
 	}),
 );
 
@@ -462,8 +464,13 @@ export const ItemAssociationsCollection = createCollection(
 
 			query_client.invalidateQueries({ queryKey: ["user-session", "item-associations"] });
 		},
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
 	}),
 );
+
+ItemAssociationsCollection.createIndex((row) => row.item_id);
+ItemAssociationsCollection.createIndex((row) => row.subject_id);
 
 export const FeeGroupsCollection = createCollection(
 	queryCollectionOptions({
