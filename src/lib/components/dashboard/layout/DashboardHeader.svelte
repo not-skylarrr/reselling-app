@@ -26,11 +26,12 @@
 		BreadcrumbSeparator,
 	} from "$lib/components/ui/breadcrumb";
 	import BreadcrumbEllipsis from "$lib/components/ui/breadcrumb/breadcrumb-ellipsis.svelte";
-
+	import { afterNavigate, beforeNavigate } from "$app/navigation";
 	import { Button } from "$lib/components/ui/button";
 	import { useSidebar } from "$lib/components/ui/sidebar";
 	import { LucidePanelLeft } from "@lucide/svelte";
 	import type { Snippet } from "svelte";
+	import { fade } from "svelte/transition";
 
 	type Props = {
 		actions?: Snippet;
@@ -40,10 +41,20 @@
 	let { actions, breadcrumbs }: Props = $props();
 
 	let sidebar_ctx = useSidebar();
+
+	let pending_nav = $state(false);
+
+	beforeNavigate(() => {
+		pending_nav = true;
+	});
+
+	afterNavigate(() => {
+		pending_nav = false;
+	});
 </script>
 
 <div
-	class="@container flex h-14 w-full shrink-0 flex-row items-center gap-3 overflow-hidden border-b px-2.5"
+	class="@container relative flex h-14 w-full shrink-0 flex-row items-center gap-3 overflow-hidden border-b px-2.5"
 >
 	<div class="flex shrink-0 flex-row items-center gap-3">
 		<Button
@@ -88,5 +99,12 @@
 		<div class="hidden flex-1 flex-row items-center justify-end gap-1.5 @lg:flex">
 			{@render actions()}
 		</div>
+	{/if}
+
+	{#if pending_nav}
+		<div
+			class="absolute right-0 bottom-0 left-0 h-px animate-pulse bg-primary/50"
+			transition:fade={{ duration: 200 }}
+		></div>
 	{/if}
 </div>
