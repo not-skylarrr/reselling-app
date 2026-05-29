@@ -23,6 +23,8 @@
 	import { createHotkey } from "@tanstack/svelte-hotkeys";
 	import { GenerateQuickId } from "$lib/utils/web-crypto";
 	import type { WorkspaceLabel } from "$lib/server/db/schema";
+	import RawMarker from "./RawMarker.svelte";
+	import { GetColourFromString } from "$lib/utils/colour/hash";
 
 	type Props = {
 		class?: string;
@@ -75,7 +77,7 @@
 			const tx = LabelsCollection.insert({
 				id: label_id,
 				content: label_name,
-				colour: CreateColourExportString(PLACEHOLDER_COLOUR_DATA),
+				colour: CreateColourExportString(GetColourFromString(label_name)),
 				created_at: new Date(),
 				workspace_id: session_state.workspace_id,
 			});
@@ -153,7 +155,7 @@
 
 						{#if filtered_labels.length == 0 && filter_query.length > 0}
 							<CommandItem class="rounded-4xl" onSelect={() => CreateNewLabel(filter_query)}
-								><LucidePlus class="stroke-muted-foreground" /> Create Label "{filter_query}"</CommandItem
+								><RawMarker colour_data={GetColourFromString(filter_query)} />Create Label "{filter_query}"</CommandItem
 							>
 						{/if}
 					</CommandGroup>

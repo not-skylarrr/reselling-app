@@ -22,6 +22,8 @@
 	import { cn } from "$lib/utils";
 	import { createHotkey } from "@tanstack/svelte-hotkeys";
 	import { GenerateQuickId } from "$lib/utils/web-crypto";
+	import RawMarker from "../labels/RawMarker.svelte";
+	import { GetColourFromString } from "$lib/utils/colour/hash";
 
 	type Props = {
 		class?: string;
@@ -70,7 +72,7 @@
 			const tx = LocationsCollection.insert({
 				id: new_location_id,
 				name: location_name,
-				colour: CreateColourExportString(PLACEHOLDER_COLOUR_DATA),
+				colour: CreateColourExportString(GetColourFromString(location_name)),
 				created_at: new Date(),
 				workspace_id: session_state.workspace_id,
 			});
@@ -129,7 +131,7 @@
 
 					{#if filtered_locations.length == 0 && filter_query.length > 0}
 						<CommandItem class="rounded-4xl" onSelect={() => CreateNewLocation(filter_query)}
-							><LucidePlus class="stroke-muted-foreground" /> Create Location "{filter_query}"</CommandItem
+							><RawMarker colour_data={GetColourFromString(filter_query)} /> Create Location "{filter_query}"</CommandItem
 						>
 					{/if}
 				</CommandGroup>
