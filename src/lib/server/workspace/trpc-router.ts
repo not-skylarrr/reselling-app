@@ -237,14 +237,24 @@ const labels_router = router({
 
 		const { workspace_id } = GetSessionWorkspaceID(session);
 
-		await db
-			.delete(workspace_labels)
-			.where(
-				and(
-					eq(workspace_labels.workspace_id, workspace_id),
-					inArray(workspace_labels.id, opts.input),
+		await Promise.all([
+			db
+				.delete(workspace_labels)
+				.where(
+					and(
+						eq(workspace_labels.workspace_id, workspace_id),
+						inArray(workspace_labels.id, opts.input),
+					),
 				),
-			);
+			db
+				.delete(label_join_table)
+				.where(
+					and(
+						eq(label_join_table.workspace_id, workspace_id),
+						inArray(workspace_labels.id, opts.input),
+					),
+				),
+		]);
 	}),
 	connections: label_joins_router,
 });
