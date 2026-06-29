@@ -1,7 +1,6 @@
 <script lang="ts">
 	import LabelMarkers from "$lib/components/labels/LabelMarkers.svelte";
 	import { Badge } from "$lib/components/ui/badge";
-	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import type { WorkspaceLabel } from "$lib/server/db/schema";
 
 	type Props = {

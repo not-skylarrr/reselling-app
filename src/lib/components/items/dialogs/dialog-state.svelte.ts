@@ -1,4 +1,4 @@
-import type { FullItem, Item, ItemListing } from "$lib/server/db/schema";
+import type { FullItem, Item, ItemFeeType, ItemListing } from "$lib/server/db/schema";
 
 type ItemDialogState = {
 	item: Item | null;
@@ -22,6 +22,7 @@ export type DialogDefinitions = {
 	"update-listing": DialogDefinition<{ listing: ItemListing }>;
 	"listing-history": DialogDefinition<never>;
 	"fee-details": DialogDefinition<never>;
+	"add-fee": DialogDefinition<{ type: ItemFeeType; listing_id: string | null }>;
 };
 
 export type ItemDialogProps<K extends keyof DialogDefinitions> = DialogDefinitions[K];

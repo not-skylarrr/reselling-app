@@ -41,8 +41,6 @@ export const listings_router = router({
 
 		const { workspace_id } = GetSessionWorkspaceID(session_data.session);
 
-		console.log(opts.input);
-
 		await db.insert(item_listings).values(
 			opts.input.map(
 				(listing): NewItemListing => ({

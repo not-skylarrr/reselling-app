@@ -32,13 +32,15 @@
 	import { LucidePanelLeft } from "@lucide/svelte";
 	import type { Snippet } from "svelte";
 	import { fade } from "svelte/transition";
+	import { cn } from "$lib/utils";
 
 	type Props = {
 		actions?: Snippet;
 		breadcrumbs?: BreadcrumbData[];
+		class?: string;
 	};
 
-	let { actions, breadcrumbs }: Props = $props();
+	let { actions, breadcrumbs, class: class_name }: Props = $props();
 
 	let sidebar_ctx = useSidebar();
 
@@ -54,7 +56,10 @@
 </script>
 
 <div
-	class="@container relative flex h-14 w-full shrink-0 flex-row items-center gap-3 overflow-hidden border-b px-2.5"
+	class={cn(
+		"@container relative flex h-14 w-full shrink-0 flex-row items-center gap-3 overflow-hidden border-b px-2.5",
+		class_name,
+	)}
 >
 	<div class="flex shrink-0 flex-row items-center gap-3">
 		<Button

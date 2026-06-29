@@ -154,7 +154,7 @@ export type ItemFeeType = z.infer<typeof item_fee_type_schema>;
 export const item_fees = pgTable("item_fees", {
 	id: text("id").primaryKey(),
 	item_id: text("item_id").notNull(),
-	listing_id: text("listing_id").notNull(),
+	listing_id: text("listing_id"),
 	workspace_id: text("workspace_id").notNull(),
 	type: text("type").notNull().$type<ItemFeeType>(),
 	reference_name: text("ref_name").notNull(),

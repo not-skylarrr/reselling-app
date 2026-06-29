@@ -84,7 +84,7 @@
 							<p class="text-sm text-muted-foreground">Listing Fees</p>
 						</div>
 
-						<ViewFeesDialog fees={listing_fees} title="Listing Fees">
+						<ViewFeesDialog {item} type="listing_fee" fees={listing_fees} title="Listing Fees">
 							{#snippet trigger({ props })}
 								<Button {...props} size="xs" variant="ghost"
 									>{FormatCurrency(total_listing_fees)}</Button
@@ -98,7 +98,7 @@
 							<p class="text-sm text-muted-foreground">Final Fees</p>
 						</div>
 
-						<ViewFeesDialog fees={final_fees} title="Final Fees">
+						<ViewFeesDialog {item} type="final_fee" fees={final_fees} title="Final Fees">
 							{#snippet trigger({ props })}
 								<Button {...props} size="xs" variant="ghost"
 									>{FormatCurrency(total_final_fees)}</Button
@@ -112,7 +112,7 @@
 							<p class="text-sm text-muted-foreground">Postage Costs</p>
 						</div>
 
-						<ViewFeesDialog fees={postage_fees} title="Postage Costs">
+						<ViewFeesDialog {item} type="postage_fee" fees={postage_fees} title="Postage Costs">
 							{#snippet trigger({ props })}
 								<Button {...props} size="xs" variant="ghost"
 									>{FormatCurrency(total_postage_fees)}</Button
