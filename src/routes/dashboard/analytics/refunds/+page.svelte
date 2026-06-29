@@ -41,7 +41,7 @@
 					multiLabel: "Types",
 					options: Object.entries(RefundTypeFriendlyNames).map(([value, label]) => ({
 						icon: {
-							component: RefundTypeIcons[value],
+							component: RefundTypeIcons[value as keyof typeof RefundTypeIcons],
 						},
 						label,
 						value,
@@ -76,18 +76,14 @@
 		LabelsCollection,
 		ListingsCollection,
 	} from "$lib/collections/def.svelte";
-	import { ItemsWithAllMetaCollection } from "$lib/collections/lib/items";
 	import DashboardContent from "$lib/components/dashboard/layout/DashboardContent.svelte";
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
 	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";
 	import CellCurrency from "$lib/components/items/table/components/cells/CellCurrency.svelte";
 	import TableFilterDisplay from "$lib/components/items/table/components/TableFilterDisplay.svelte";
 	import TableFilterDropdown from "$lib/components/items/table/components/TableFilterDropdown.svelte";
-	import ItemsTable from "$lib/components/items/table/ItemsTable.svelte";
 	import { AdvancedFilter } from "$lib/components/items/table/lib/filters";
 	import { OptionFilter } from "$lib/components/items/table/lib/filters/lib/functions";
-	import FormCard from "$lib/components/settings/form/FormCard.svelte";
-	import FormCardSection from "$lib/components/settings/form/FormCardSection.svelte";
 	import { TableBase } from "$lib/components/table";
 	import {
 		GetRefundTypeFriendlyName,

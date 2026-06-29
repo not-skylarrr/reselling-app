@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Dialog } from "$lib/components/ui/dialog";
 	import { item_dialog_state, type ItemDialogMeta } from "./dialog-state.svelte";
+	import AddFeeDialog from "./item-dialogs/AddFeeDialog.svelte";
 	import ItemFeesDialog from "./item-dialogs/ItemFeesDialog.svelte";
 	import ItemSaleDialog from "./item-dialogs/ItemSaleDialog.svelte";
 	import LinkItemDialog from "./item-dialogs/LinkItemDialog.svelte";
@@ -79,6 +80,14 @@
 				item={item_dialog_state.item}
 				request_close={RequestClose}
 				meta={item_dialog_state.dialog_meta as ItemDialogMeta<"update-listing">}
+			/>
+		{/if}
+
+		{#if item_dialog_state.dialog_type == "add-fee"}
+			<AddFeeDialog
+				item={item_dialog_state.item}
+				request_close={RequestClose}
+				meta={item_dialog_state.dialog_meta as ItemDialogMeta<"add-fee">}
 			/>
 		{/if}
 	</Dialog>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ItemFeesCollection } from "$lib/collections/def.svelte";
+	import { OpenItemDialog } from "$lib/components/items/dialogs/dialog-state.svelte";
 	import UpdateItemPriceInput from "$lib/components/items/item-page/UpdateItemPriceInput.svelte";
 	import { Button } from "$lib/components/ui/button";
 	import {
@@ -19,7 +20,7 @@
 	import { Select, SelectContent, SelectItem, SelectTrigger } from "$lib/components/ui/select";
 	import { Separator } from "$lib/components/ui/separator";
 	import { Tooltip, TooltipContent, TooltipTrigger } from "$lib/components/ui/tooltip";
-	import type { ItemFee, ItemListing } from "$lib/server/db/schema";
+	import type { Item, ItemFee, ItemFeeType, ItemListing } from "$lib/server/db/schema";
 	import { cn } from "$lib/utils";
 	import {
 		LucideBuilding,
@@ -32,12 +33,14 @@
 	import type { Snippet } from "svelte";
 
 	type Props = {
+		item: Item;
+		type: ItemFeeType;
 		fees: ItemFee[];
 		title: string;
 		trigger: Snippet<[{ props: Record<string, any> }]>;
 	};
 
-	let { fees, title, trigger }: Props = $props();
+	let { fees, item, title, trigger, type }: Props = $props();
 </script>
 
 <Dialog>
@@ -49,7 +52,11 @@
 				<DialogDescription>Explore the fees link to this item</DialogDescription>
 			</DialogHeader>
 
-			<Button size="sm" variant="outline"><LucidePlus /> Add New Fee</Button>
+			<Button
+				onclick={() => OpenItemDialog(item, "add-fee", { type, listing_id: null })}
+				size="sm"
+				variant="outline"><LucidePlus /> Add New Fee</Button
+			>
 		</div>
 
 		<ScrollArea class="flex-1 overflow-hidden">

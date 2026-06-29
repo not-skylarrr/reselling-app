@@ -114,7 +114,6 @@
 	import TableFilterDropdown from "$lib/components/items/table/components/TableFilterDropdown.svelte";
 	import TableFilterDisplay from "$lib/components/items/table/components/TableFilterDisplay.svelte";
 	import { FormatCurrency, FormatDateStd } from "$lib/utils/formatting";
-	import AnalyticsFeeSidebar from "$lib/components/analytics/fees/AnalyticsFeeSidebar.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
 
 	const table_state = new TableState({
@@ -262,6 +261,4 @@
 			/>
 		</DashboardContent>
 	</DashboardLayoutRoot>
-
-	<AnalyticsFeeSidebar data={focused_fee} open={show_details} />
 </div>

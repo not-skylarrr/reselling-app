@@ -44,12 +44,6 @@
 	--base-text-size: 15px;
 }
 
-@media (max-width: 788px) {
-	:root {
-		--base-text-size: 16px;
-	}
-}
-
 .dark {
 	--background: oklch(0.11 0 0);
 	--foreground: oklch(0.985 0 0);
@@ -134,12 +128,18 @@
 	--text-sm: 13px;
 }
 
+@media (max-width: 788px) {
+	:root {
+		--base-text-size: 16px;
+	}
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-base text-foreground;
 	}
 	html {
 		@apply font-sans;
