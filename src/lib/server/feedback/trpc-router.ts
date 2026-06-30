@@ -8,57 +8,37 @@ import {
 	type UserFeedback,
 } from "../db/schema";
 import { db } from "../db";
-import { CreateDrizzleFilters } from "../ts-db/filters";
-import { eq } from "drizzle-orm";
+import { FormatDateStd } from "$lib/utils/formatting";
+import { DISCORD_WEBHOOK_URL } from "$env/static/private";
 
 export const feedback_router = router({
-	insert_ts_db: auth_procedure.input(z.array(new_feedback_schema)).mutation(async (opts) => {
-		await db
-			.insert(feedback_table)
-			.values(
-				opts.input.map((feedback) => ({
-					...feedback,
-					created_by: opts.ctx.session_data.user.id,
-				})),
-			);
-	}),
-	get_ts_db: admin_procedure.input(TsDbFilterSchema).query(async (opts) => {
-		const { where, orderBy, limit } = CreateDrizzleFilters(
-			{
-				orderBy: opts.input.orderBy,
-				where: opts.input.where,
-				limit: opts.input.limit,
-			},
-			{ dbTable: feedback_table },
-		);
+	create_new: auth_procedure.input(new_feedback_schema).mutation(async (opts) => {
+		const user = opts.ctx.session_data.user;
+		const feedback = opts.input;
 
-		const feedback = await db.query.feedback_table.findMany({
-			where,
-			orderBy,
-			limit,
+		const payload = {
+			embeds: [
+				{
+					title: feedback.title,
+					description: feedback.content,
+					footer: {
+						text: `${FormatDateStd(new Date())} by ${user.name}`,
+					},
+				},
+			],
+		};
+
+		const res = await fetch(DISCORD_WEBHOOK_URL, {
+			method: "POST",
+			body: JSON.stringify(payload),
+			headers: {
+				"Content-Type": "application/json",
+			},
 		});
 
-		return feedback;
+		if (res.status != 200) {
+			console.log(res.statusText);
+			return new Error("Failed to send feedback");
+		}
 	}),
-	update_ts_db: admin_procedure
-		.input(TsDbUpdateSchema(update_feedback_schema))
-		.mutation(async (opts) => {
-			const update_results = await Promise.allSettled(
-				opts.input.map(async (update) => {
-					const raw_update: Partial<UserFeedback> = { ...update.changes };
-
-					return db
-						.update(feedback_table)
-						.set(raw_update)
-						.where(eq(feedback_table.id, update.id));
-				}),
-			);
-
-			const failed_updates = update_results.filter((r) => r.status == "rejected");
-
-			return {
-				failed_updates: failed_updates,
-				update_count: opts.input.length - failed_updates.length,
-			};
-		}),
 });
