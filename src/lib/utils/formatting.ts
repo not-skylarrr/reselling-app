@@ -23,3 +23,10 @@ export function Plural(count: number, singular: string, plural: string) {
 
 	return plural;
 }
+
+export function WithFallback(input: string | null | undefined, fallback: string) {
+	if (!input) return fallback;
+	if (input.trim().length == 0) return fallback;
+
+	return input;
+}
