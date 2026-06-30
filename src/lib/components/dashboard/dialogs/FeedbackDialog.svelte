@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { FeedbackCollection } from "$lib/collections/def.svelte";
 	import { Button } from "$lib/components/ui/button";
 	import {
 		Dialog,
@@ -15,11 +14,13 @@
 	import { Input } from "$lib/components/ui/input";
 	import { Textarea } from "$lib/components/ui/textarea";
 	import { Tooltip, TooltipContent, TooltipTrigger } from "$lib/components/ui/tooltip";
+	import { trpc_client } from "$lib/trpc/client";
 	import { session_state } from "$lib/utils/session.svelte";
 	import { GenerateQuickId } from "$lib/utils/web-crypto";
 	import { LucideCheck, LucideLoaderCircle, LucideMessageSquare } from "@lucide/svelte";
 	import { createForm } from "@tanstack/svelte-form";
 	import { toast } from "svelte-sonner";
+	import z from "zod";
 
 	let open = $state(false);
 
@@ -30,19 +31,14 @@
 		},
 		onSubmit: async ({ value }) => {
 			try {
-				const tx = FeedbackCollection.insert(
-					{
-						id: GenerateQuickId(),
-						title: value.title,
-						content: value.content,
-						created_at: new Date(),
-						created_by: session_state.user_id,
-						read: false,
-					},
-					{ optimistic: false },
-				);
-
-				await tx.isPersisted.promise;
+				await trpc_client.feedback.create_new.mutate({
+					id: GenerateQuickId(),
+					title: value.title,
+					content: value.content,
+					created_at: new Date(),
+					created_by: session_state.user_id,
+					read: false,
+				});
 
 				open = false;
 
@@ -85,7 +81,10 @@
 		</DialogHeader>
 
 		<div class="flex flex-col gap-6">
-			<form.Field name="title">
+			<form.Field
+				name="title"
+				validators={{ onSubmit: z.string().min(3, "Must be 3+ characters") }}
+			>
 				{#snippet children(field)}
 					<Field>
 						<FieldLabel>Title</FieldLabel>
@@ -99,7 +98,10 @@
 				{/snippet}
 			</form.Field>
 
-			<form.Field name="content">
+			<form.Field
+				name="content"
+				validators={{ onSubmit: z.string().min(3, "Must be 3+ characters") }}
+			>
 				{#snippet children(field)}
 					<Field>
 						<FieldLabel>Further Details</FieldLabel>
@@ -119,7 +121,7 @@
 				{#snippet children(is_submitting)}
 					<Button disabled={is_submitting} onclick={() => form.handleSubmit()}>
 						{#if is_submitting}
-							<LucideLoaderCircle /> Sending Feedback
+							<LucideLoaderCircle class="animate-spin" /> Sending Feedback
 						{:else}
 							<LucideCheck /> Send Feedback
 						{/if}
