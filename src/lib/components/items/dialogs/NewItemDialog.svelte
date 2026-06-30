@@ -68,6 +68,7 @@
 				refund_type: null,
 				refund_reason: null,
 				workspace_id: session_state.workspace_id,
+				refunded_at: null,
 			};
 
 			tx.mutate(() => {

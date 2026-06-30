@@ -22,6 +22,7 @@
 	import { Tooltip, TooltipContent, TooltipTrigger } from "$lib/components/ui/tooltip";
 	import type { Item, ItemFee, ItemFeeType, ItemListing } from "$lib/server/db/schema";
 	import { cn } from "$lib/utils";
+	import { WithFallback } from "$lib/utils/formatting";
 	import {
 		LucideBuilding,
 		LucideChevronDown,
@@ -68,7 +69,7 @@
 							<p class="line-clamp-1 truncate text-xs text-muted-foreground">
 								{fee.removed
 									? `Removed: ${fee.removal_reason ?? "No Reason Provided"}`
-									: fee.reference_details}
+									: WithFallback(fee.reference_details, "No futher details")}
 							</p>
 						</div>
 
