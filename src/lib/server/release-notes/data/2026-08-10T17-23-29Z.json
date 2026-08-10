@@ -1,0 +1,13 @@
+{
+	"title": "Untitled Release",
+	"released_at": "2026-08-10T17:23:29Z",
+	"changes": [
+		{
+			"title": "Bundle Utilities",
+			"type": "added",
+			"details": [
+				"Added the ability to jump to letters in the bundle table"
+			]
+		}
+	]
+}
