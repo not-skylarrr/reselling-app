@@ -100,7 +100,7 @@
 		get data() {
 			return bundles_query.data;
 		},
-		getRowId: (original) => original.id,
+		getRowId: (original: BundleTableData) => original.id,
 		...DefaultTableProps(table_state, {
 			enableColumnResizing: false,
 		}),

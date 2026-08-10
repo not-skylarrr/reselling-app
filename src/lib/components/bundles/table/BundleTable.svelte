@@ -16,6 +16,7 @@
 	const table_state = GetTableContext();
 
 	let scroll_container = $state<HTMLElement | null>(null);
+	let active_letter = $state<string | null>(null);
 
 	let table_rows = $derived(table.getRowModel().rows);
 
@@ -45,6 +46,18 @@
 			count: table_rows.length,
 		});
 	});
+
+	function JumpToLetter(letter: string) {
+		const normalized_letter = letter.toLowerCase();
+		const target_index = table_rows.findIndex((row) =>
+			row.original.name.trim().toLowerCase().startsWith(normalized_letter),
+		);
+
+		if (target_index === -1) return;
+
+		active_letter = normalized_letter;
+		$row_virtualizer.scrollToIndex(target_index, { align: "start" });
+	}
 </script>
 
 <ScrollArea
@@ -60,7 +73,8 @@
 		<div class="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<div bind:this={scroll_container} class="flex-1 overflow-x-hidden overflow-y-auto">
-				<BundleTableHeader {table} />
+				<BundleTableHeader {table} {table_rows} {active_letter} onLetterSelect={JumpToLetter} />
+
 				{#if table_rows.length > 0}
 					<div class="relative w-full" style="height: {total_virtual_size}px;">
 						{#each virtual_rows as virtual_row (virtual_row.key)}
