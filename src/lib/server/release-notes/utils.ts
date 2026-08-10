@@ -1,19 +1,22 @@
-import { readdir, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { ReleaseJsonSchema } from "./schema";
 import type { CompleteReleaseData, ReleaseApiData } from "./types";
 
 const RELEASE_FILE_NAME_REGEX = /^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z)\.json$/;
-
-function GetReleaseNotesDirectory() {
-	return join(dirname(fileURLToPath(import.meta.url)), "data");
-}
+const RELEASE_FILE_MODULES = import.meta.glob("./data/*.json", {
+	eager: true,
+	import: "default",
+});
 
 function GetReleaseSlug(file_name: string) {
 	const match = RELEASE_FILE_NAME_REGEX.exec(file_name);
 
 	return match?.[1] ?? null;
+}
+
+function GetReleaseFileName(module_path: string) {
+	const file_name = module_path.split("/").at(-1);
+
+	return file_name ?? null;
 }
 
 function GetIsoDateFromSlug(slug: string) {
@@ -39,23 +42,9 @@ async function ParseReleaseFile(file_name: string) {
 	const slug = GetReleaseSlug(file_name);
 	if (slug == null) return null;
 
-	const release_path = join(GetReleaseNotesDirectory(), file_name);
-
-	let raw_json: string;
-
-	try {
-		raw_json = await readFile(release_path, "utf8");
-	} catch (error) {
-		console.error(`[release-notes] Failed to read "${file_name}"`, error);
-		return null;
-	}
-
-	let parsed_json: unknown;
-
-	try {
-		parsed_json = JSON.parse(raw_json);
-	} catch (error) {
-		console.error(`[release-notes] Failed to parse JSON for "${file_name}"`, error);
+	const parsed_json = RELEASE_FILE_MODULES[`./data/${file_name}`];
+	if (parsed_json == null) {
+		console.error(`[release-notes] Missing bundled release file "${file_name}"`);
 		return null;
 	}
 
@@ -93,22 +82,9 @@ async function ParseReleaseFile(file_name: string) {
 }
 
 export async function GetAllPublishedReleases(now = new Date()) {
-	let file_names: string[];
-
-	try {
-		file_names = await readdir(GetReleaseNotesDirectory());
-	} catch (error) {
-		const is_missing_dir =
-			error != null && typeof error == "object" && "code" in error && error.code === "ENOENT";
-
-		if (is_missing_dir) return [];
-
-		console.error("[release-notes] Failed to read release notes directory", error);
-		return [];
-	}
-
-	const release_files = file_names
-		.filter((file_name) => RELEASE_FILE_NAME_REGEX.test(file_name))
+	const release_files = Object.keys(RELEASE_FILE_MODULES)
+		.map(GetReleaseFileName)
+		.filter((file_name) => file_name != null && RELEASE_FILE_NAME_REGEX.test(file_name))
 		.sort((a, b) => b.localeCompare(a));
 
 	const releases: CompleteReleaseData[] = [];
