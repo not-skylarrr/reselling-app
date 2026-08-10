@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import type { ReleaseChangeType } from "$lib/server/release-notes/types";
+import type { ReleaseApiData, ReleaseChangeType } from "$lib/server/release-notes/types";
 import { session_state } from "./session.svelte";
 
 const RELEASE_NOTES_STORAGE_KEY_PREFIX = "release_notes:last_checked";
@@ -39,6 +39,25 @@ export function SetPreviousReleaseCheckDate(date: Date, user_id?: string) {
 	if (Number.isNaN(date.getTime())) return;
 
 	window.localStorage.setItem(storage_key, date.toISOString());
+}
+
+export function SetPreviousReleaseCheckDateIso(iso_date: string, user_id?: string) {
+	const parsed_date = new Date(iso_date);
+	if (Number.isNaN(parsed_date.getTime())) return;
+
+	SetPreviousReleaseCheckDate(parsed_date, user_id);
+}
+
+export function SetPreviousReleaseCheckDateToLatest(releases: ReleaseApiData[], user_id?: string) {
+	if (releases.length === 0) return;
+
+	const latest_release = releases.reduce((latest, release) => {
+		return new Date(release.released_at).getTime() > new Date(latest.released_at).getTime()
+			? release
+			: latest;
+	});
+
+	SetPreviousReleaseCheckDateIso(latest_release.released_at, user_id);
 }
 
 export function ClearPreviousReleaseCheckDate(user_id?: string) {
