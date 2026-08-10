@@ -127,7 +127,9 @@ export async function GetAllPublishedReleases(now = new Date()) {
 
 export async function GetUnreadReleases(previous_checked_at?: string | null, now = new Date()) {
 	const previous_checked_date =
-		previous_checked_at == null ? null : ParseDateString(previous_checked_at);
+		previous_checked_at == null || previous_checked_at == undefined
+			? null
+			: ParseDateString(previous_checked_at);
 
 	const releases = await GetAllPublishedReleases(now);
 
