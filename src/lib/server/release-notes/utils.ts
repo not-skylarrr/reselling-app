@@ -97,8 +97,6 @@ export async function GetAllPublishedReleases(now = new Date()) {
 
 	try {
 		file_names = await readdir(GetReleaseNotesDirectory());
-
-		console.log(file_names);
 	} catch (error) {
 		const is_missing_dir =
 			error != null && typeof error == "object" && "code" in error && error.code === "ENOENT";

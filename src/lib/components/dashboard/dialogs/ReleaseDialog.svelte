@@ -12,12 +12,11 @@
 	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import { trpc_client } from "$lib/trpc/client";
 	import {
-		GetPreviousReleaseCheckDate,
 		GetPreviousReleaseCheckDateIso,
 		GetReleaseTypeLabel,
-		SetPreviousReleaseCheckDate,
+		SetPreviousReleaseCheckDateToLatest,
 	} from "$lib/utils/release-notes";
-	import { LucideCalendar, LucideChevronRight, LucideInbox } from "@lucide/svelte";
+	import { LucideChevronRight, LucideInbox } from "@lucide/svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { format } from "date-fns";
 
@@ -35,7 +34,7 @@
 	const releases = $derived(release_query.data ? release_query.data.releases : []);
 
 	async function HandleReleaseDismiss() {
-		SetPreviousReleaseCheckDate(new Date());
+		SetPreviousReleaseCheckDateToLatest(releases);
 
 		await release_query.refetch();
 
@@ -61,7 +60,11 @@
 			<AlertDialogTitle class="text-xl">What's New?</AlertDialogTitle>
 		</AlertDialogHeader>
 
-		{#if releases.length == 0}
+		{#if release_query.isLoading}
+			<div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 py-12">
+				<p class="text-sm text-muted-foreground">Checking for updates...</p>
+			</div>
+		{:else if releases.length == 0}
 			<div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 py-12">
 				<LucideInbox class="size-10 stroke-muted-foreground stroke-1" />
 				<p class="text-sm text-muted-foreground">No new changes to view</p>
