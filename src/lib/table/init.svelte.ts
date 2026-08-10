@@ -1,13 +1,24 @@
 import type { TsDbWhereNode } from "$lib/server/ts-db/validator";
 import { createContext } from "svelte";
 import {
-	getCoreRowModel,
-	getFilteredRowModel,
-	getSortedRowModel,
+	columnFilteringFeature,
+	columnResizingFeature,
+	columnSizingFeature,
+	columnVisibilityFeature,
+	createFilteredRowModel,
+	createSortedRowModel,
+	filterFns,
+	rowSelectionFeature,
+	rowSortingFeature,
+	sortFns,
+	tableFeatures,
+	type ColumnFiltersState,
+	type ColumnSizingState,
+	type RowData,
 	type RowSelectionState,
 	type SortingState,
 	type TableOptions,
-	type VisibilityState,
+	type ColumnVisibilityState,
 } from "@tanstack/svelte-table";
 import type { TableSearchFilter } from "./validators";
 import { Alphabet, GenerateRandomString } from "$lib/utils/web-crypto";
@@ -23,8 +34,8 @@ type TableStateInit = {
 	filters?: TableSearchFilter[];
 	sorting?: SortingState;
 	focused_id?: string | null;
-	column_visibility?: VisibilityState;
-	default_column_visibility: VisibilityState;
+	column_visibility?: ColumnVisibilityState;
+	default_column_visibility: ColumnVisibilityState;
 	col_sizing?: Record<string, number>;
 	selection_enabled?: boolean;
 	strict_visibility?: boolean;
@@ -34,12 +45,12 @@ type TableStateInit = {
 type TableStateStores = {
 	get_col_visiblity: (
 		key: string | undefined,
-		default_state: VisibilityState,
-	) => VisibilityState;
+		default_state: ColumnVisibilityState,
+	) => ColumnVisibilityState;
 	set_col_visiblity: (
 		key: string | undefined,
-		default_state: VisibilityState,
-		state: VisibilityState,
+		default_state: ColumnVisibilityState,
+		state: ColumnVisibilityState,
 	) => void;
 	get_col_sizing: (key: string | undefined) => Record<string, number>;
 	set_col_sizing: (key: string | undefined, state: Record<string, number>) => void;
@@ -51,8 +62,8 @@ export class TableState {
 	filters = $state<TableSearchFilter[]>([]);
 	sorting = $state<SortingState>([]);
 	focused_id = $state<string | null>(null);
-	column_visibility = $state<VisibilityState>({});
-	default_column_visibility = $state<VisibilityState>({});
+	column_visibility = $state<ColumnVisibilityState>({});
+	default_column_visibility = $state<ColumnVisibilityState>({});
 	row_selection = $state<RowSelectionState>({});
 	col_sizing = $state<Record<string, number>>({});
 	hotkey_container = $state<HTMLElement | null>(null);
@@ -181,14 +192,18 @@ export class TableState {
 					? next_filter.value.value
 					: [];
 
-				this.filters.splice(overwrite_index, 1, {
+				const merged_filter: TableSearchFilter = {
 					id: next_filter.id,
 					key: existing_filter.key ?? next_filter.key,
 					value: {
 						operator: next_filter.value.operator,
 						value: [...existing_values, ...next_values],
 					},
-				});
+				};
+
+				this.filters = this.filters.map((filter, index) =>
+					index === overwrite_index ? merged_filter : filter,
+				);
 
 				this.focused_id = null;
 				return;
@@ -230,7 +245,21 @@ export class TableState {
 		return this.filters.filter((filter) => filter.silent != true);
 	}
 
-	SetColumnVisibility(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) {
+	SetColumnFilters(
+		updater: ColumnFiltersState | ((prev: ColumnFiltersState) => ColumnFiltersState),
+	) {
+		const next_filters = typeof updater == "function" ? updater(this.filters) : updater;
+
+		this.filters = next_filters as TableSearchFilter[];
+	}
+
+	SetSorting(updater: SortingState | ((prev: SortingState) => SortingState)) {
+		this.sorting = typeof updater == "function" ? updater(this.sorting) : updater;
+	}
+
+	SetColumnVisibility(
+		updater: ColumnVisibilityState | ((prev: ColumnVisibilityState) => ColumnVisibilityState),
+	) {
 		this.column_visibility =
 			typeof updater == "function" ? updater(this.column_visibility) : updater;
 
@@ -248,9 +277,7 @@ export class TableState {
 	}
 
 	SetColumnSizing(
-		updater:
-			| Record<string, number>
-			| ((prev: Record<string, number>) => Record<string, number>),
+		updater: ColumnSizingState | ((prev: ColumnSizingState) => ColumnSizingState),
 	) {
 		const next_value = typeof updater == "function" ? updater({ ...this.col_sizing }) : updater;
 		const normalized = this.#NormalizeColumnSizing(next_value);
@@ -321,15 +348,37 @@ function CreateFilterKey() {
 
 export const [GetTableContext, SetTableContext] = createContext<TableState>();
 
-export function DefaultTableProps<T>(
+export const DefaultTableFeatures = tableFeatures({
+	columnFilteringFeature,
+	columnResizingFeature,
+	columnSizingFeature,
+	columnVisibilityFeature,
+	rowSelectionFeature,
+	rowSortingFeature,
+	filteredRowModel: createFilteredRowModel(),
+	sortedRowModel: createSortedRowModel(),
+	filterFns,
+	sortFns,
+});
+
+export type DefaultTableFeatures = typeof DefaultTableFeatures;
+export type AppTable<TData extends RowData> = import("@tanstack/svelte-table").Table<
+	DefaultTableFeatures,
+	TData
+>;
+export type AppRow<TData extends RowData> = import("@tanstack/svelte-table").Row<
+	DefaultTableFeatures,
+	TData
+>;
+
+type DefaultTableOptions<TData extends RowData> = TableOptions<DefaultTableFeatures, TData>;
+
+export function DefaultTableProps<T extends RowData>(
 	table_state: TableState,
-	opts: Omit<TableOptions<T>, "getCoreRowModel" | "columns" | "data" | "getRowId"> = {},
-): Omit<TableOptions<T>, "columns" | "data"> {
+	opts: Omit<DefaultTableOptions<T>, "features" | "columns" | "data" | "getRowId"> = {},
+): Omit<DefaultTableOptions<T>, "columns" | "data"> {
 	return {
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
-		groupedColumnMode: "reorder",
+		features: DefaultTableFeatures,
 		state: {
 			get columnFilters() {
 				return table_state.filters;
@@ -351,6 +400,8 @@ export function DefaultTableProps<T>(
 		onColumnVisibilityChange: (updater) => table_state.SetColumnVisibility(updater),
 		onRowSelectionChange: (updater) => table_state.SetRowSelection(updater),
 		onColumnSizingChange: (updater) => table_state.SetColumnSizing(updater),
+		onSortingChange: (updater) => table_state.SetSorting(updater),
+		onColumnFiltersChange: (updater) => table_state.SetColumnFilters(updater),
 		...opts,
 	};
 }

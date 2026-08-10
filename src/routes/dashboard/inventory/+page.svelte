@@ -15,17 +15,17 @@
 	import { CreateTableFilter } from "$lib/components/items/table/lib/filters/lib/utils";
 	import { TableBase } from "$lib/components/table";
 	import { Button } from "$lib/components/ui/button";
-	import { SetTableContext, TableState } from "$lib/table/init.svelte";
+	import {
+		DefaultTableFeatures,
+		DefaultTableProps,
+		SetTableContext,
+		TableState,
+	} from "$lib/table/init.svelte";
 	import { GetLocalDetailsOpenState, SetLocalDetailsOpenState } from "$lib/utils/dashboard";
 	import { LucidePanelRight, LucidePlus, LucideSearch } from "@lucide/svelte";
 	import { useLiveQuery } from "@tanstack/svelte-db";
 	import { createHotkey } from "@tanstack/svelte-hotkeys";
-	import {
-		createTable,
-		getCoreRowModel,
-		getFilteredRowModel,
-		getSortedRowModel,
-	} from "@tanstack/svelte-table";
+	import { createTable } from "@tanstack/svelte-table";
 	import { cn } from "$lib/utils";
 	import LabelBadgeDisplay from "$lib/components/labels/LabelBadgeDisplay.svelte";
 	import LocationBadge from "$lib/components/locations/LocationBadge.svelte";
@@ -46,37 +46,13 @@
 	let focused_item = $derived(items_query.data.find((i) => i.id == focused_item_id));
 	let show_details = $state(GetLocalDetailsOpenState());
 
-	const table = createTable<FullItem>({
+	const table = createTable<DefaultTableFeatures, FullItem>({
 		columns: ItemTableColumns,
 		get data() {
 			return items_query.data;
 		},
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
 		getRowId: (original) => original.id,
-		groupedColumnMode: "reorder",
-		state: {
-			get columnFilters() {
-				return table_state.filters;
-			},
-			get columnVisibility() {
-				return table_state.column_visibility;
-			},
-			get rowSelection() {
-				return table_state.row_selection;
-			},
-			get sorting() {
-				return table_state.sorting;
-			},
-			get columnSizing() {
-				return table_state.col_sizing;
-			},
-		},
-		columnResizeMode: "onChange",
-		onColumnVisibilityChange: (updater) => table_state.SetColumnVisibility(updater),
-		onRowSelectionChange: (updater) => table_state.SetRowSelection(updater),
-		onColumnSizingChange: (updater) => table_state.SetColumnSizing(updater),
+		...DefaultTableProps(table_state),
 	});
 
 	function ToggleDetailsSidebar() {

@@ -4,7 +4,7 @@
 		item: Item;
 	};
 
-	const column = createColumnHelper<FeeData>();
+	const column = createColumnHelper<DefaultTableFeatures, FeeData>();
 
 	const FeeTableColumns = [
 		column.accessor("item.name", {
@@ -81,7 +81,7 @@
 		}),
 	];
 
-	const DefaultColumnVisibility: VisibilityState = {
+	const DefaultColumnVisibility: ColumnVisibilityState = {
 		"fee.type": true,
 		"item.name": true,
 	};
@@ -102,13 +102,18 @@
 	import { TableBase } from "$lib/components/table";
 	import { FeeTypeFriendlyNames, GetFeeTypeFriendlyName } from "$lib/fees/utils";
 	import type { Item, ItemFee } from "$lib/server/db/schema";
-	import { DefaultTableProps, SetTableContext, TableState } from "$lib/table/init.svelte";
+	import {
+		DefaultTableFeatures,
+		DefaultTableProps,
+		SetTableContext,
+		TableState,
+	} from "$lib/table/init.svelte";
 	import { useLiveQuery, eq } from "@tanstack/svelte-db";
 	import {
 		createColumnHelper,
 		createTable,
 		renderComponent,
-		type VisibilityState,
+		type ColumnVisibilityState,
 	} from "@tanstack/svelte-table";
 	import { LucidePanelRight, LucideReceipt, LucideTextCursor } from "@lucide/svelte";
 	import TableFilterDropdown from "$lib/components/items/table/components/TableFilterDropdown.svelte";
@@ -138,7 +143,7 @@
 		return fee_data;
 	});
 
-	const table = createTable<FeeData>({
+	const table = createTable<DefaultTableFeatures, FeeData>({
 		columns: FeeTableColumns,
 		get data() {
 			return fees_query.data;

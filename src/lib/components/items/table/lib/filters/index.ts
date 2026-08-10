@@ -6,7 +6,8 @@ export function AdvancedFilter<T>(
 	filter_val: any,
 	addMeta: (meta: any) => void,
 ) {
-	const cell = row._getAllCellsByColumnId()[column_id];
+	const cell = row.getAllCellsByColumnId()[column_id];
+	if (!cell) return true;
 	const meta = cell.column.columnDef.meta;
 
 	if (!meta || !meta.filter) return true;

@@ -1,6 +1,6 @@
 import type { User, Session } from "better-auth/minimal";
 import type { FilterDef } from "@/components/items/table/filters/types";
-import "@tanstack/svelte-table";
+import type { RowData, TableFeatures } from "@tanstack/svelte-table";
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
@@ -19,7 +19,7 @@ declare global {
 }
 
 declare module "@tanstack/svelte-table" {
-	interface ColumnMeta<TData extends RowData, TValue> {
+	interface ColumnMeta<TFeatures extends TableFeatures, TData extends RowData, TValue> {
 		align?: "left" | "right";
 		filter?: FilterDef<TData>;
 		flex?: boolean;

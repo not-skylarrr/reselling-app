@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	const column = createColumnHelper<Item>();
+	const column = createColumnHelper<DefaultTableFeatures, Item>();
 
 	const TableColumns = [
 		column.accessor("name", {
@@ -38,7 +38,12 @@
 	import { createColumnHelper, createTable, renderComponent } from "@tanstack/svelte-table";
 	import type { BundleItemData } from "./+page.js";
 	import type { Item } from "$lib/server/db/schema.js";
-	import { DefaultTableProps, SetTableContext, TableState } from "$lib/table/init.svelte.js";
+	import {
+		DefaultTableFeatures,
+		DefaultTableProps,
+		SetTableContext,
+		TableState,
+	} from "$lib/table/init.svelte.js";
 	import { TableBase } from "$lib/components/table/index.js";
 	import {
 		CellLocation,
@@ -54,7 +59,7 @@
 
 	let { data } = $props();
 
-	const table = createTable<Item>({
+	const table = createTable<DefaultTableFeatures, Item>({
 		columns: TableColumns,
 		get data() {
 			return data.bundle_item.instances;

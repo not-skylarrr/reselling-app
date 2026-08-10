@@ -257,6 +257,9 @@ export const LabelJoinsCollection = createCollection(
 	}),
 );
 
+LabelJoinsCollection.createIndex((row) => row.type);
+LabelJoinsCollection.createIndex((row) => row.label_id);
+
 export const LocationsCollection = createCollection(
 	queryCollectionOptions({
 		id: "workspace_locations",

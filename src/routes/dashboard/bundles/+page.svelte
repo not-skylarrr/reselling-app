@@ -65,7 +65,12 @@
 	import { Button } from "$lib/components/ui/button";
 	import { InputGroup, InputGroupAddon, InputGroupInput } from "$lib/components/ui/input-group";
 	import type { BundleItem, Item, ItemAssociation, ItemBundle } from "$lib/server/db/schema";
-	import { SetTableContext, TableState } from "$lib/table/init.svelte";
+	import {
+		DefaultTableProps,
+		DefaultTableFeatures,
+		SetTableContext,
+		TableState,
+	} from "$lib/table/init.svelte";
 	import { CreateMediaQueryBreakpoint } from "$lib/utils/reactivity";
 	import { LucidePlus, LucideSearch } from "@lucide/svelte";
 	import {
@@ -76,12 +81,7 @@
 		inArray,
 		createLiveQueryCollection,
 	} from "@tanstack/svelte-db";
-	import {
-		createTable,
-		getCoreRowModel,
-		getSortedRowModel,
-		getFilteredRowModel,
-	} from "@tanstack/svelte-table";
+	import { createTable } from "@tanstack/svelte-table";
 
 	const table_state = new TableState({
 		key: "bundle-table",
@@ -95,38 +95,15 @@
 
 	const bundles_query = useLiveQuery(BundleTableDataCollection);
 
-	const table = createTable({
+	const table = createTable<DefaultTableFeatures, BundleTableData>({
 		columns: BundleTableColumns,
 		get data() {
 			return bundles_query.data;
 		},
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
 		getRowId: (original) => original.id,
-		groupedColumnMode: "reorder",
-		state: {
-			get columnFilters() {
-				return table_state.filters;
-			},
-			get columnVisibility() {
-				return table_state.column_visibility;
-			},
-			get rowSelection() {
-				return table_state.row_selection;
-			},
-			get sorting() {
-				return table_state.sorting;
-			},
-			get columnSizing() {
-				return table_state.col_sizing;
-			},
-		},
-		columnResizeMode: "onChange",
-		onColumnVisibilityChange: (updater) => table_state.SetColumnVisibility(updater),
-		onRowSelectionChange: (updater) => table_state.SetRowSelection(updater),
-		onColumnSizingChange: (updater) => table_state.SetColumnSizing(updater),
-		enableColumnResizing: false,
+		...DefaultTableProps(table_state, {
+			enableColumnResizing: false,
+		}),
 	});
 
 	function HandleQueryChange(query: string) {

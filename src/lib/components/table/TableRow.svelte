@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { FlexRender, type Row } from "@tanstack/svelte-table";
+	import { FlexRender } from "@tanstack/svelte-table";
 	import { cn } from "$lib/utils";
 	import { onDestroy } from "svelte";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { GetColumnSizingCssVarWithFallback } from "$lib/table/utils";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppRow } from "$lib/table/init.svelte";
 
 	type Props = {
 		focused: boolean;
@@ -12,7 +12,7 @@
 		onFocus: () => void;
 		onFocusBlock: () => void;
 		onFocusUnblock: () => void;
-		row: Row<any>;
+		row: AppRow<any>;
 		strictColVisibility?: boolean;
 	};
 

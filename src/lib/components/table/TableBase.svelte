@@ -1,8 +1,7 @@
 <script lang="ts" generics="Row extends any">
-	import type { Table } from "@tanstack/svelte-table";
 	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import { GetColumnSizingCssVarName } from "$lib/table/utils";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppTable } from "$lib/table/init.svelte";
 	import TableHeader from "./TableHeader.svelte";
 	import type { Snippet } from "svelte";
 	import TableRowRenderer, { type TableRowProps } from "./TableRowRenderer.svelte";
@@ -12,7 +11,7 @@
 	type Props = {
 		onRowDouble?: (row: Row) => void;
 		onRowFocus?: (row: Row) => void;
-		table: Table<Row>;
+		table: AppTable<Row>;
 		getRowId: (row: Row) => string | null | undefined;
 		mobile_row?: Snippet<[TableRowProps<Row>]>;
 		mobile_row_height?: number;

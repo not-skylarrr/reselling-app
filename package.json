@@ -63,7 +63,7 @@
 		"@tanstack/svelte-form": "^1.29.0",
 		"@tanstack/svelte-hotkeys": "^0.9.1",
 		"@tanstack/svelte-query": "^6.1.18",
-		"@tanstack/svelte-table": "9.0.0-alpha.10",
+		"@tanstack/svelte-table": "9.1.2",
 		"@tanstack/svelte-virtual": "^3.13.24",
 		"@trpc/client": "^11.16.0",
 		"@trpc/server": "^11.16.0",

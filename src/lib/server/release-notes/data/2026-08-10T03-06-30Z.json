@@ -1,0 +1,26 @@
+{
+	"title": "Performance and updates improvements",
+	"released_at": "2026-08-10T03:06:30Z",
+	"changes": [
+		{
+			"type": "improved",
+			"title": "Faster table performance",
+			"details": [
+				"The table rendering pipeline has been updated to the latest version.",
+				"Tables should appear more responsive and have faster loading and filtering times."
+			]
+		},
+		{
+			"type": "added",
+			"title": "What's New updates dialog",
+			"details": [
+				"From now on updates to the app will displayed here to keep you up to date with new features and changes."
+			]
+		},
+		{
+			"type": "upcoming",
+			"title": "A-Z Bundle Shortcuts",
+			"details": ["Add the ability to jump to a bundle via the starting letter"]
+		}
+	]
+}
