@@ -11,7 +11,7 @@ export const release_notes_router = router({
 
 			return {
 				releases: SerializeReleasesForApi(releases),
-				all_releases: all_releases,
+				all_releases: SerializeReleasesForApi(all_releases),
 			};
 		}),
 });
