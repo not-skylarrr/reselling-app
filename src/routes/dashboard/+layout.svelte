@@ -1,4 +1,5 @@
 <script>
+	import ReleaseDialog from "$lib/components/dashboard/dialogs/ReleaseDialog.svelte";
 	import DashboardSidebar from "$lib/components/dashboard/sidebar/DashboardSidebar.svelte";
 	import ItemDialogProvider from "$lib/components/items/dialogs/ItemDialogProvider.svelte";
 	import NewItemDialog from "$lib/components/items/dialogs/NewItemDialog.svelte";
@@ -23,3 +24,4 @@
 <NewItemDialog />
 <ItemDialogProvider />
 <DestructiveDialogProvider />
+<ReleaseDialog />

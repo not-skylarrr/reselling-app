@@ -1,27 +1,29 @@
 <script lang="ts" module>
+	import type { AppRow } from "$lib/table/init.svelte";
+
 	export type TableRowProps<RData> = {
 		focused: boolean;
 		onDouble?: (data: RData) => void;
 		onFocus?: (data: RData) => void;
 		onFocusBlock?: () => void;
 		onFocusUnblock?: () => void;
-		row: Row<RData>;
+		row: AppRow<RData>;
 	};
 </script>
 
 <script lang="ts" generics="RData extends any">
 	import { GetTableContext } from "$lib/table/init.svelte";
 	import { createHotkeyAttachment } from "@tanstack/svelte-hotkeys";
-	import type { Row, Table } from "@tanstack/svelte-table";
 	import { createVirtualizer } from "@tanstack/svelte-virtual";
 	import type { Snippet } from "svelte";
 	import TableRow from "./TableRow.svelte";
 	import { cn } from "$lib/utils";
+	import type { AppTable } from "$lib/table/init.svelte";
 
 	type Props = {
 		mobile_row?: Snippet<[TableRowProps<RData>]>;
 		row_height?: number;
-		table: Table<RData>;
+		table: AppTable<RData>;
 
 		getRowId: (row: RData) => string | null | undefined;
 		onRowFocus?: (row: RData) => void;

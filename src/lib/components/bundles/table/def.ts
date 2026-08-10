@@ -1,11 +1,12 @@
-import { createColumnHelper, type VisibilityState } from "@tanstack/svelte-table";
+import { createColumnHelper, type ColumnVisibilityState } from "@tanstack/svelte-table";
 import { type BundleTableData } from "../../../../routes/dashboard/bundles/+page.svelte";
 import { GetBundleCompletionStats } from "./lib/utils";
 import { StringFilter } from "$lib/components/items/table/lib/filters/lib/functions";
 import { LucideTextCursor } from "@lucide/svelte";
 import { AdvancedFilter } from "$lib/components/items/table/lib/filters";
+import { DefaultTableFeatures } from "$lib/table/init.svelte";
 
-const column = createColumnHelper<BundleTableData>();
+const column = createColumnHelper<DefaultTableFeatures, BundleTableData>();
 
 export const BundleTableColumns = [
 	column.accessor("name", {
@@ -53,7 +54,7 @@ export const BundleTableColumns = [
 	}),
 ];
 
-export const BundleTableDefaultColumnVis: VisibilityState = {
+export const BundleTableDefaultColumnVis: ColumnVisibilityState = {
 	name: true,
 	"item-count": true,
 	completion: true,

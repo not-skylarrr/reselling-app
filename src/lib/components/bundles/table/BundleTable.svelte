@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { ScrollArea } from "$lib/components/ui/scroll-area";
-	import type { Table } from "@tanstack/svelte-table";
 	import type { BundleTableData } from "../../../../routes/dashboard/bundles/+page.svelte";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppTable } from "$lib/table/init.svelte";
 	import { GetColumnSizingCssVarName } from "$lib/table/utils";
 	import BundleTableHeader from "./components/BundleTableHeader.svelte";
 	import { createVirtualizer } from "@tanstack/svelte-virtual";
 	import BundleTableRow from "./components/BundleTableRow.svelte";
 
 	type Props = {
-		table: Table<BundleTableData>;
+		table: AppTable<BundleTableData>;
 	};
 
 	let { table }: Props = $props();

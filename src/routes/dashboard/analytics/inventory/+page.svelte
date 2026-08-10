@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	const column = createColumnHelper<FullItem>();
+	const column = createColumnHelper<DefaultTableFeatures, FullItem>();
 
 	const ItemAnalyticsTableColumns = [
 		column.accessor("name", {
@@ -40,7 +40,7 @@
 		}),
 	];
 
-	const DefaultColVisibility: VisibilityState = {
+	const DefaultColVisibility: ColumnVisibilityState = {
 		name: true,
 	};
 </script>
@@ -60,7 +60,12 @@
 	import { TableBase } from "$lib/components/table";
 	import { CalculateTotalFees, GetItemSalePrice } from "$lib/items/utils";
 	import type { FullItem } from "$lib/server/db/schema";
-	import { DefaultTableProps, SetTableContext, TableState } from "$lib/table/init.svelte";
+	import {
+		DefaultTableFeatures,
+		DefaultTableProps,
+		SetTableContext,
+		TableState,
+	} from "$lib/table/init.svelte";
 	import { FormatCurrency } from "$lib/utils/formatting";
 	import { LucideTextCursor } from "@lucide/svelte";
 	import { useLiveQuery } from "@tanstack/svelte-db";
@@ -68,7 +73,7 @@
 		createColumnHelper,
 		createTable,
 		renderComponent,
-		type VisibilityState,
+		type ColumnVisibilityState,
 	} from "@tanstack/svelte-table";
 
 	const table_state = new TableState({
@@ -82,7 +87,7 @@
 
 	const items_query = useLiveQuery(ItemsWithAllMetaCollection);
 
-	const table = createTable<FullItem>({
+	const table = createTable<DefaultTableFeatures, FullItem>({
 		columns: ItemTableColumns,
 		get data() {
 			return items_query.data;

@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	const column = createColumnHelper<FullItem>();
+	const column = createColumnHelper<DefaultTableFeatures, FullItem>();
 
 	const RefundTableColumns = [
 		column.accessor("name", {
@@ -62,7 +62,7 @@
 		}),
 	];
 
-	const DefaultColVisibility: VisibilityState = {
+	const DefaultColVisibility: ColumnVisibilityState = {
 		name: true,
 		refund_type: true,
 	};
@@ -91,7 +91,12 @@
 		RefundTypeIcons,
 	} from "$lib/items/utils";
 	import type { FullItem, WorkspaceLabel } from "$lib/server/db/schema";
-	import { DefaultTableProps, SetTableContext, TableState } from "$lib/table/init.svelte";
+	import {
+		DefaultTableFeatures,
+		DefaultTableProps,
+		SetTableContext,
+		TableState,
+	} from "$lib/table/init.svelte";
 	import { FormatCurrency } from "$lib/utils/formatting";
 	import { LucideIterationCw } from "@lucide/svelte";
 	import { eq, isUndefined, not, toArray, useLiveQuery } from "@tanstack/svelte-db";
@@ -99,7 +104,7 @@
 		createColumnHelper,
 		createTable,
 		renderComponent,
-		type VisibilityState,
+		type ColumnVisibilityState,
 	} from "@tanstack/svelte-table";
 
 	const table_state = new TableState({
@@ -137,7 +142,7 @@
 			})),
 	);
 
-	const table = createTable({
+	const table = createTable<DefaultTableFeatures, FullItem>({
 		...DefaultTableProps<FullItem>(table_state),
 		columns: RefundTableColumns,
 		get data() {

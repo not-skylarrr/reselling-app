@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { cn } from "$lib/utils.js";
 	import { LucideChevronDown } from "@lucide/svelte";
-	import { FlexRender, type SortingState, type Table } from "@tanstack/svelte-table";
+	import { FlexRender, type SortingState } from "@tanstack/svelte-table";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { GetColumnSizingCssVarWithFallback } from "$lib/table/utils";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppTable } from "$lib/table/init.svelte";
 
 	type Props = {
-		table: Table<any>;
+		table: AppTable<any>;
 	};
 
 	let { table }: Props = $props();
@@ -87,7 +87,7 @@
 			fallback_min_size,
 		)}
 		{@const align = column_def.meta?.align ?? "right"}
-		{@const resize_delta = table.getState().columnSizingInfo.deltaOffset ?? 0}
+		{@const resize_delta = table.atoms.columnResizing.get().deltaOffset ?? 0}
 
 		{@const sort_data = GetColumnSortingData(table_state.sorting, header.column.id)}
 

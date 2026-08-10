@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	const column = createColumnHelper<ServerWorkspaceMember>();
+	const column = createColumnHelper<DefaultTableFeatures, ServerWorkspaceMember>();
 
 	const MemberTableColumns = [
 		column.accessor("user", {
@@ -18,7 +18,7 @@
 				align: "left",
 			},
 			minSize: 160,
-			sortingFn: (a, b) => {
+			sortFn: (a, b) => {
 				const role_order: AuthOrganizationRole[] = ["owner", "admin", "member"];
 
 				return role_order.indexOf(b.original.role) - role_order.indexOf(a.original.role);
@@ -69,7 +69,12 @@
 	} from "$lib/components/ui/dropdown-menu";
 	import { query_client } from "$lib/queries/client.svelte.js";
 	import type { ServerWorkspaceMember } from "$lib/server/auth";
-	import { DefaultTableProps, SetTableContext, TableState } from "$lib/table/init.svelte";
+	import {
+		DefaultTableFeatures,
+		DefaultTableProps,
+		SetTableContext,
+		TableState,
+	} from "$lib/table/init.svelte";
 	import { CreateMediaQueryBreakpoint } from "$lib/utils/reactivity";
 	import { Alphabet, GenerateRandomString } from "$lib/utils/web-crypto.js";
 	import {
@@ -112,7 +117,7 @@
 		sorting: [{ id: "role", desc: true }],
 	});
 
-	const table = createTable<ServerWorkspaceMember>({
+	const table = createTable<DefaultTableFeatures, ServerWorkspaceMember>({
 		columns: MemberTableColumns,
 		get data() {
 			return org_members_query.data ?? [];

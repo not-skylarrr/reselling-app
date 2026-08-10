@@ -1,4 +1,4 @@
-import type { VisibilityState } from "@tanstack/svelte-table";
+import type { ColumnVisibilityState } from "@tanstack/svelte-table";
 import { z } from "zod";
 
 const ColumnDisplayStateSchema = z.record(z.string(), z.coerce.boolean());
@@ -17,8 +17,8 @@ function SizingKey(key?: string) {
 
 export function GetLocalColumnDisplayState(
 	key: string | undefined,
-	default_state: VisibilityState,
-): VisibilityState {
+	default_state: ColumnVisibilityState,
+): ColumnVisibilityState {
 	if (typeof window == "undefined") return default_state;
 
 	const local_state = window.localStorage.getItem(VisibilityKey(key));
@@ -38,7 +38,7 @@ export function GetLocalColumnDisplayState(
 
 export function SetLocalColumnDisplayState(
 	key: string | undefined,
-	default_state: VisibilityState,
+	default_state: ColumnVisibilityState,
 	state: Record<string, boolean>,
 ) {
 	if (typeof window == "undefined") return;
@@ -51,7 +51,7 @@ export function SetLocalColumnDisplayState(
 
 function GetColumnDisplayDiff(
 	state: Record<string, boolean>,
-	default_state: VisibilityState,
+	default_state: ColumnVisibilityState,
 ): Record<string, boolean> {
 	let diff: Record<string, boolean> = {};
 
@@ -64,7 +64,10 @@ function GetColumnDisplayDiff(
 	return diff;
 }
 
-function CompleteDisplayDiff(diff: Record<string, boolean>, default_state: VisibilityState) {
+function CompleteDisplayDiff(
+	diff: Record<string, boolean>,
+	default_state: ColumnVisibilityState,
+) {
 	let complete: Record<string, boolean> = diff;
 
 	for (const [key, value] of Object.entries(default_state)) {

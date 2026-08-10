@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { FlexRender, type Row } from "@tanstack/svelte-table";
+	import { FlexRender } from "@tanstack/svelte-table";
 	import type { BundleTableData } from "../../../../../routes/dashboard/bundles/+page.svelte";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppRow } from "$lib/table/init.svelte";
 	import { GetColumnSizingCssVarWithFallback } from "$lib/table/utils";
 	import { cn } from "$lib/utils";
 
 	type Props = {
-		row: Row<BundleTableData>;
+		row: AppRow<BundleTableData>;
 	};
 
 	let { row }: Props = $props();
