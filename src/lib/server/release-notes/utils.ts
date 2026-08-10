@@ -85,12 +85,12 @@ export async function GetAllPublishedReleases(now = new Date()) {
 	const release_files = Object.keys(RELEASE_FILE_MODULES)
 		.map(GetReleaseFileName)
 		.filter((file_name) => file_name != null && RELEASE_FILE_NAME_REGEX.test(file_name))
-		.sort((a, b) => b.localeCompare(a));
+		.sort((a, b) => b!.localeCompare(a!));
 
 	const releases: CompleteReleaseData[] = [];
 
 	for (const file_name of release_files) {
-		const release = await ParseReleaseFile(file_name);
+		const release = await ParseReleaseFile(file_name!);
 		if (release == null) continue;
 
 		if (release.released_at.getTime() > now.getTime()) continue;

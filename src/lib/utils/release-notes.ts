@@ -48,7 +48,10 @@ export function SetPreviousReleaseCheckDateIso(iso_date: string, user_id?: strin
 	SetPreviousReleaseCheckDate(parsed_date, user_id);
 }
 
-export function SetPreviousReleaseCheckDateToLatest(releases: ReleaseApiData[], user_id?: string) {
+export function SetPreviousReleaseCheckDateToLatest(
+	releases: ReleaseApiData[],
+	user_id?: string,
+) {
 	if (releases.length === 0) return;
 
 	const latest_release = releases.reduce((latest, release) => {
@@ -69,10 +72,10 @@ export function ClearPreviousReleaseCheckDate(user_id?: string) {
 	window.localStorage.removeItem(storage_key);
 }
 
-const ReleaseTypeLabels: Record<ReleaseChangeType, string> = {
+export const ReleaseTypeLabels: Record<ReleaseChangeType, string> = {
 	added: "Added",
 	fixed: "Fixed",
-	improved: "Improved",
+	improved: "Improvement",
 	removed: "Removed",
 	upcoming: "Upcoming",
 };

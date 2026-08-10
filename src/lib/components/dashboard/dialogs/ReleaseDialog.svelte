@@ -53,7 +53,7 @@
 
 <AlertDialog bind:open={display_dialog}>
 	<AlertDialogContent
-		class="flex max-h-128 min-h-0 w-full flex-col overflow-hidden"
+		class="flex max-h-160 min-h-0 w-full flex-col gap-3 overflow-hidden"
 		size="large"
 	>
 		<AlertDialogHeader>
