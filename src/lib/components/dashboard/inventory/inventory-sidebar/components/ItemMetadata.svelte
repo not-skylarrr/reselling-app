@@ -35,7 +35,7 @@
 </script>
 
 {#if item && metadata_query.isReady}
-	<div class="flex flex-col gap-2 py-2">
+	<div class="flex min-h-44 flex-col gap-2 py-2">
 		<div class="flex h-8 flex-row items-center justify-between gap-1.5 px-4 pr-2">
 			<p class="text-sm font-medium">Additional Metadata</p>
 
@@ -45,13 +45,13 @@
 			/>
 		</div>
 
-		<div class="flex flex-col gap-1 px-4 pr-2 pb-2">
+		<div class="flex flex-1 flex-col gap-1 px-4 pr-2 pb-2">
 			{#each metadata_query.data as metadata (metadata.id)}
 				<MetadataSidebarEntry {metadata} />
 			{/each}
 
 			{#if metadata_query.data.length == 0}
-				<div class="flex flex-col items-center justify-center gap-3 py-6">
+				<div class="flex flex-1 flex-col items-center justify-center gap-3">
 					<LucideInbox class="size-8 stroke-1 text-muted-foreground" />
 					<p class="text-xs text-muted-foreground">No Additional Metadata</p>
 				</div>
