@@ -1,0 +1,13 @@
+{
+	"title": "Untitled Release",
+	"released_at": "2026-09-15T13:28:46Z",
+	"changes": [
+		{
+			"title": "Item Metadata",
+			"type": "improved",
+			"details": [
+				"Item metadata can now be updated in the inventory item sidebar. Just like the item details page, just click the value to open a popover with the metadata field"
+			]
+		}
+	]
+}

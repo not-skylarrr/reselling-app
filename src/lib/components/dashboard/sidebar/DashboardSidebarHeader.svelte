@@ -51,8 +51,10 @@
 									<Hashvatar class="size-8 shrink-0" hash={org_query.data.org.name} />
 
 									<div class="grid flex-1 overflow-hidden">
-										<p class="line-clamp-1">{org_query.data.org.name}</p>
-										<p class="text-xs leading-none text-muted-foreground capitalize">
+										<p class="line-clamp-1 select-none">{org_query.data.org.name}</p>
+										<p
+											class="text-xs leading-none text-muted-foreground capitalize select-none"
+										>
 											{org_query.data.role}
 										</p>
 									</div>
