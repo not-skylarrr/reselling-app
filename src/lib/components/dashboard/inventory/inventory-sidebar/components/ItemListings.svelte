@@ -53,7 +53,7 @@
 </script>
 
 {#if item.status_int < 2}
-	<div class="flex flex-col gap-2 py-4 pt-2">
+	<div class="flex min-h-44 flex-col gap-2 py-4 pt-2">
 		<div class="flex h-8 flex-row items-center justify-between gap-1.5 px-4 pr-2">
 			<p class="text-sm font-medium">Active Listings</p>
 
@@ -69,7 +69,7 @@
 			</div>
 		</div>
 
-		<div class="flex flex-col gap-4">
+		<div class="flex flex-1 flex-col gap-4">
 			{#each active_item_listings as listing (listing.id)}
 				{@const marketplace = GetMarketplaceData(listing.marketplace_id)}
 
@@ -117,7 +117,7 @@
 			{/each}
 
 			{#if active_item_listings.length == 0}
-				<div class="flex flex-col items-center justify-center gap-3 py-6">
+				<div class="flex flex-1 flex-col items-center justify-center gap-3">
 					<LucideInbox class="size-8 stroke-1 text-muted-foreground" />
 					<p class="text-xs text-muted-foreground">This item is not currently listed</p>
 				</div>
