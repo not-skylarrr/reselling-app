@@ -56,8 +56,9 @@
 			</ItemContent>
 
 			<ItemActions>
-				<div class="flex flex-row items-center gap-1.5 pr-2">
+				<div class="flex flex-row items-center gap-1.5 px-2">
 					<ItemStatusMarker status={item.status} />
+
 					<p>
 						{GetStatusFriendlyName(item.status)}
 					</p>

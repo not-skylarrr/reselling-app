@@ -39,6 +39,7 @@
 	import { FormatCurrency } from "$lib/utils/formatting";
 	import { slideFade } from "$lib/utils/transition";
 	import { SerializeItemMetadataField } from "$lib/items/metadata";
+	import { GetItemLabelJoinId } from "$lib/collections/lib/utils";
 
 	type MetadataObject = Record<string, any>;
 
@@ -98,7 +99,7 @@
 
 				for (const label_id of value.labels) {
 					LabelJoinsCollection.insert({
-						id: GenerateQuickId(),
+						id: GetItemLabelJoinId(item.id, label_id),
 						type: "item-label",
 						label_id: label_id,
 						subject_id: item.id,
