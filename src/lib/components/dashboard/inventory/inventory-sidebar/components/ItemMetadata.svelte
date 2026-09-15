@@ -7,6 +7,9 @@
 	import Item from "$lib/components/ui/item/item.svelte";
 	import type { ItemWithLabels } from "$lib/server/db/schema";
 	import { eq, useLiveQuery } from "@tanstack/svelte-db";
+	import MetadataSidebarEntry from "../../item-metadata/MetadataSidebarEntry.svelte";
+	import AddMetadataDropdown from "../../item-metadata/AddMetadataDropdown.svelte";
+	import { LucideInbox } from "@lucide/svelte";
 
 	type Props = {
 		item: ItemWithLabels;
@@ -31,28 +34,28 @@
 	);
 </script>
 
-{#if metadata_query.data.length > 0 && item}
+{#if item && metadata_query.isReady}
 	<div class="flex flex-col gap-2 py-2">
 		<div class="flex h-8 flex-row items-center justify-between gap-1.5 px-4 pr-2">
-			<p class="text-sm font-medium">Item Metadata (Read Only)</p>
+			<p class="text-sm font-medium">Additional Metadata</p>
+
+			<AddMetadataDropdown
+				{item}
+				used_meta_ids={metadata_query.data.map((meta) => meta.definition.id)}
+			/>
 		</div>
 
 		<div class="flex flex-col gap-1 px-4 pr-2 pb-2">
 			{#each metadata_query.data as metadata (metadata.id)}
-				<Item class="h-7 p-0">
-					<ItemContent>
-						<ItemTitle class="text-sm font-normal text-muted-foreground"
-							>{metadata.definition.name}</ItemTitle
-						>
-					</ItemContent>
-
-					<ItemActions>
-						<p>
-							{metadata.value_string}
-						</p>
-					</ItemActions>
-				</Item>
+				<MetadataSidebarEntry {metadata} />
 			{/each}
+
+			{#if metadata_query.data.length == 0}
+				<div class="flex flex-col items-center justify-center gap-3 py-6">
+					<LucideInbox class="size-8 stroke-1 text-muted-foreground" />
+					<p class="text-xs text-muted-foreground">No Additional Metadata</p>
+				</div>
+			{/if}
 		</div>
 	</div>
 {/if}

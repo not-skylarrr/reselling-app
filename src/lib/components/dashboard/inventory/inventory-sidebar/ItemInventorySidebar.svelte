@@ -82,6 +82,8 @@
 
 			<ItemDetails {item} />
 
+			<ItemMetadata {item} />
+
 			{#if item.status_int > 1}
 				<ItemSaleDetails {item} />
 			{/if}
@@ -89,8 +91,6 @@
 			{#if item.status_int < 2}
 				<ItemListings {item} />
 			{/if}
-
-			<ItemMetadata {item} />
 
 			<ItemAssociations {item} />
 		</div>

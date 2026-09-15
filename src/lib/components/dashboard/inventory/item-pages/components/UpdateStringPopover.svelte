@@ -80,12 +80,12 @@
 				{#snippet child({ props })}
 					<Button
 						{...props}
-						class={cn("text-sm font-normal", class_name)}
+						class={cn("max-w-full min-w-0 shrink! text-sm font-normal", class_name)}
 						{disabled}
 						size="xs"
 						variant="ghost"
 					>
-						{disabled ? disabled_text : value}
+						<span class="min-w-0 flex-1 truncate">{disabled ? disabled_text : value}</span>
 					</Button>
 				{/snippet}
 			</PopoverTrigger>
@@ -118,14 +118,14 @@
 					<Button
 						{...props}
 						class={cn(
-							"h-auto! min-h-7 py-1.5 text-left text-sm leading-snug font-normal text-pretty whitespace-normal",
+							"h-auto! min-h-7 max-w-full min-w-0 shrink! py-1.5 text-left text-sm leading-snug font-normal text-pretty whitespace-normal",
 							class_name,
 						)}
 						{disabled}
 						size="xs"
 						variant="ghost"
 					>
-						{disabled ? disabled_text : value}
+						<span class="min-w-0 flex-1 truncate">{disabled ? disabled_text : value}</span>
 					</Button>
 				{/snippet}
 			</DialogTrigger>

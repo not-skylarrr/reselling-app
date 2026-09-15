@@ -123,7 +123,7 @@
 	<Popover bind:open onOpenChangeComplete={HandleOpenChangeComplete}>
 		<PopoverTrigger>
 			{#snippet child({ props })}
-				<Button {...props} class={cn("font-normal", class_name)} size="xs" variant="ghost">
+				<Button {...props} class={cn("px-2 font-normal", class_name)} size="xs" variant="ghost">
 					{#if labels.length == 0}
 						<p class="text-sm text-muted-foreground">No Labels</p>
 					{:else}
