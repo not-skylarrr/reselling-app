@@ -1,0 +1,15 @@
+{
+	"title": "Item Metadata Definitions",
+	"released_at": "2026-09-15T01:06:53Z",
+	"changes": [
+		{
+			"title": "Item Metadata",
+			"type": "added",
+			"details": [
+				"Added workspace metadata definitions that can be assigned to one or more labels.",
+				"Create a definition from Settings > Workspace > Item Metadata: select New Field, enter a name, choose its type, and select the labels that should use it.",
+				"Metadata data is currently read-only; item metadata values cannot yet be edited after the item is created."
+			]
+		}
+	]
+}

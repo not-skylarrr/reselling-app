@@ -19,8 +19,11 @@
 	import {
 		FeeGroupsCollection,
 		ItemAssociationsCollection,
+		ItemMetadataCollection,
+		ItemMetadataDefinitionsCollection,
 		ItemsCollection,
 		LabelJoinsCollection,
+		MetadataLabelJoinsCollection,
 	} from "$lib/collections/def.svelte";
 	import { session_state } from "$lib/utils/session.svelte";
 	import PurchaseDatePopover from "./components/PurchaseDatePopover.svelte";
@@ -35,6 +38,9 @@
 	import type { Prettify } from "$lib/utils/types";
 	import { FormatCurrency } from "$lib/utils/formatting";
 	import { slideFade } from "$lib/utils/transition";
+	import { SerializeItemMetadataField } from "$lib/items/metadata";
+
+	type MetadataObject = Record<string, any>;
 
 	const form = createForm(() => ({
 		defaultValues: {
@@ -46,6 +52,7 @@
 			storage_location: null as string | null,
 			list_on_submit: false,
 			associated_bundle_item: null as string | null,
+			metadata: {} as MetadataObject,
 		},
 		onSubmit: async ({ value }) => {
 			const tx = createTransaction({
@@ -71,6 +78,21 @@
 				refunded_at: null,
 			};
 
+			const metadata_fields = GetCurrentMetadataFields();
+
+			// Check all required fields are handled before starting mutation
+			for (const field of metadata_fields) {
+				if (!field.required) continue;
+
+				if (
+					value.metadata[field.id] == undefined ||
+					(field.type == "string" && value.metadata.length == 0)
+				) {
+					toast.error(`${field.name} is required`);
+					return;
+				}
+			}
+
 			tx.mutate(() => {
 				ItemsCollection.insert(item);
 
@@ -81,6 +103,21 @@
 						label_id: label_id,
 						subject_id: item.id,
 						workspace_id: session_state.workspace_id,
+					});
+				}
+
+				for (const field of metadata_fields) {
+					if (!value.metadata[field.id]) continue;
+
+					const value_string = SerializeItemMetadataField(field.type, value.metadata[field.id]);
+
+					ItemMetadataCollection.insert({
+						id: GenerateQuickId(),
+						item_id: item.id,
+						workspace_id: session_state.workspace_id,
+						metadata_id: field.id,
+						value_string: value_string,
+						created_at: new Date(),
 					});
 				}
 
@@ -150,6 +187,23 @@
 
 		return fee_value;
 	});
+
+	const metadata_fields_query = useLiveQuery((q) =>
+		q
+			.from({ metadata_label_join: MetadataLabelJoinsCollection })
+			.where(({ metadata_label_join }) =>
+				inArray(metadata_label_join.label_id, item_label_ids.current),
+			)
+			.innerJoin(
+				{ field: ItemMetadataDefinitionsCollection },
+				({ field, metadata_label_join }) => eq(field.id, metadata_label_join.definition_id),
+			)
+			.select(({ field }) => field),
+	);
+
+	function GetCurrentMetadataFields() {
+		return metadata_fields_query.data;
+	}
 
 	function HandleOpenChangeComplete(open: boolean) {
 		if (open == false) {
@@ -222,6 +276,46 @@
 						</Field>
 					{/snippet}
 				</form.Field>
+
+				{#if metadata_fields_query.data.length > 0}
+					<form.Field name="metadata">
+						{#snippet children(field)}
+							<div
+								class="grid grid-cols-1 gap-6 md:col-span-2 md:grid-cols-2"
+								transition:slideFade={{ axis: "y" }}
+							>
+								<div class="-mb-2 flex flex-row md:col-span-2">
+									<p class="text-muted-foreground">Additional Fields</p>
+								</div>
+
+								{#each metadata_fields_query.data as meta_field (meta_field.id)}
+									<Field>
+										<FieldLabel>{meta_field.name}</FieldLabel>
+
+										{#if meta_field.type == "string"}
+											<Input
+												placeholder={meta_field.required ? "Required" : "Optional"}
+												onchange={(ev) =>
+													field.handleChange({
+														...field.state.value,
+														[meta_field.id]: ev.currentTarget.value,
+													})}
+												value={field.state.value[meta_field.id] ?? ""}
+											/>
+										{:else if meta_field.type == "currency"}
+											<CurrencyInput
+												onValueChange={(val) => {
+													field.handleChange({ ...field.state.value, [meta_field.id]: val });
+												}}
+												value={field.state.value[meta_field.id] ?? 0}
+											/>
+										{/if}
+									</Field>
+								{/each}
+							</div>
+						{/snippet}
+					</form.Field>
+				{/if}
 
 				<div class="flex flex-row flex-wrap gap-2 md:col-span-2">
 					<form.Field name="purchase_date">

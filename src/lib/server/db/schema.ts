@@ -236,6 +236,79 @@ export const update_label_join_schema = createUpdateSchema(label_join_table, {
 
 export type LabelJoin = InferSelectModel<typeof label_join_table>;
 
+export const item_label_metadata_type_schema = z.union([
+	z.literal("string"),
+	z.literal("number"),
+	z.literal("currency"),
+]);
+
+export type ItemMetadataType = z.infer<typeof item_label_metadata_type_schema>;
+
+export const item_metadata_definition = pgTable("item_metadata_definition", {
+	id: text("id").primaryKey(),
+	workspace_id: text("workspace_id").notNull(),
+	type: text("type").notNull().$type<ItemMetadataType>(),
+	name: text("name").notNull(),
+	required: boolean("required").notNull().default(false),
+	created_at: timestamp("created_at").notNull(),
+});
+
+export const new_item_metadata_definition_schema = createInsertSchema(
+	item_metadata_definition,
+	{
+		type: item_label_metadata_type_schema,
+	},
+).omit({ workspace_id: true });
+
+export const update_item_metadata_definition_schema = createUpdateSchema(
+	item_metadata_definition,
+	{
+		type: item_label_metadata_type_schema,
+	},
+).pick({
+	type: true,
+	name: true,
+	required: true,
+});
+
+export type ItemMetadataDefinition = InferSelectModel<typeof item_metadata_definition>;
+
+export const metadata_label_join = pgTable("metadata_label_join", {
+	id: text("id").primaryKey(),
+	definition_id: text("definition_id").notNull(),
+	label_id: text("label_id").notNull(),
+	workspace_id: text("workspace_id").notNull(),
+	created_at: timestamp("created_at").notNull(),
+});
+
+export const new_metadata_label_join_schema = createInsertSchema(metadata_label_join).omit({
+	workspace_id: true,
+});
+export const update_metadata_label_join_schema = createUpdateSchema(metadata_label_join).pick({
+	definition_id: true,
+	label_id: true,
+});
+
+export type MetadataLabelJoin = InferSelectModel<typeof metadata_label_join>;
+
+export const item_metadata = pgTable("item_metadata", {
+	id: text("id").primaryKey(),
+	item_id: text("item_id").notNull(),
+	workspace_id: text("workspace_id").notNull(),
+	metadata_id: text("metadata_id").notNull(),
+	value_string: text("value_string").notNull(),
+	created_at: timestamp("created_at").notNull(),
+});
+
+export const new_item_metadata_schema = createInsertSchema(item_metadata).omit({
+	workspace_id: true,
+});
+export const update_item_metadata_schema = createUpdateSchema(item_metadata).pick({
+	value_string: true,
+});
+
+export type ItemMetadata = InferSelectModel<typeof item_metadata>;
+
 export const workspace_locations = pgTable("workspace_locations", {
 	id: text("id").primaryKey(),
 	workspace_id: text("workspace_id").notNull(),

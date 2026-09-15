@@ -4,14 +4,18 @@ import { TsDbOrderByNode, TsDbWhereNode } from "../ts-db/validator";
 import { CreateDrizzleFilters } from "../ts-db/filters";
 import {
 	item_associations,
+	item_metadata,
 	items,
 	label_join_table,
 	new_item_association_schema,
+	new_item_metadata_schema,
 	new_item_schema,
 	update_item_association_schema,
+	update_item_metadata_schema,
 	update_item_schema,
 	type Item,
 	type ItemAssociation,
+	type ItemMetadata,
 } from "../db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { GetSessionWorkspaceID } from "../auth";
@@ -118,6 +122,63 @@ const association_router = router({
 				and(
 					eq(label_join_table.workspace_id, workspace_id),
 					inArray(label_join_table.item_id, opts.input),
+				),
+			);
+	}),
+});
+
+const metadata_router = router({
+	get_ts_db: auth_procedure.input(TsDbFilterSchema).query(async (opts) => {
+		const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+		const { where, orderBy, limit } = CreateDrizzleFilters(
+			{ orderBy: opts.input.orderBy, where: opts.input.where, limit: opts.input.limit },
+			{ dbTable: item_metadata, defaultWhere: eq(item_metadata.workspace_id, workspace_id) },
+		);
+
+		return db.query.item_metadata.findMany({ where, orderBy, limit });
+	}),
+	insert_ts_db: auth_procedure
+		.input(z.array(new_item_metadata_schema))
+		.mutation(async (opts) => {
+			const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+			const insert_results = await Promise.allSettled(
+				opts.input.map((insertion) =>
+					db.insert(item_metadata).values({ ...insertion, workspace_id }),
+				),
+			);
+			const failed_insertions = insert_results.filter((result) => result.status === "rejected");
+
+			return { failed_insertions, insert_count: opts.input.length - failed_insertions.length };
+		}),
+	update_ts_db: auth_procedure
+		.input(TsDbUpdateSchema(update_item_metadata_schema))
+		.mutation(async (opts) => {
+			const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+			const update_results = await Promise.allSettled(
+				opts.input.map((update) =>
+					db
+						.update(item_metadata)
+						.set(update.changes as Partial<ItemMetadata>)
+						.where(
+							and(
+								eq(item_metadata.id, update.id),
+								eq(item_metadata.workspace_id, workspace_id),
+							),
+						),
+				),
+			);
+			const failed_updates = update_results.filter((result) => result.status === "rejected");
+
+			return { failed_updates, update_count: opts.input.length - failed_updates.length };
+		}),
+	delete_ts_db: auth_procedure.input(z.array(z.string())).mutation(async (opts) => {
+		const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+		await db
+			.delete(item_metadata)
+			.where(
+				and(
+					inArray(item_metadata.id, opts.input),
+					eq(item_metadata.workspace_id, workspace_id),
 				),
 			);
 	}),
@@ -231,4 +292,5 @@ export const items_router = router({
 	}),
 
 	assocations: association_router,
+	metadata: metadata_router,
 });

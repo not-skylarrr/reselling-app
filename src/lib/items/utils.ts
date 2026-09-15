@@ -1,4 +1,10 @@
-import type { Item, ItemFee, ItemListing, ItemStatus } from "$lib/server/db/schema";
+import type {
+	Item,
+	ItemFee,
+	ItemMetadataType,
+	ItemListing,
+	ItemStatus,
+} from "$lib/server/db/schema";
 import {
 	LucideBadgeAlert,
 	LucideBan,
