@@ -21,6 +21,7 @@
 		LucideArrowLeftRight,
 		LucideLogOut,
 		LucideDollarSign,
+		LucideBraces,
 	} from "@lucide/svelte";
 	import DashboardSidebarHeader from "./DashboardSidebarHeader.svelte";
 	import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -128,6 +129,16 @@
 							{#snippet child({ props })}
 								<a href="/settings/workspace/fees" {...props}>
 									<LucideDollarSign /> Fee Calculation
+								</a>
+							{/snippet}
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+
+					<SidebarMenuItem>
+						<SidebarMenuButton>
+							{#snippet child({ props })}
+								<a href="/settings/workspace/metadata" {...props}>
+									<LucideBraces /> Item Metadata
 								</a>
 							{/snippet}
 						</SidebarMenuButton>

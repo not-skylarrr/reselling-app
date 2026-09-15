@@ -475,6 +475,173 @@ export const ItemAssociationsCollection = createCollection(
 ItemAssociationsCollection.createIndex((row) => row.item_id);
 ItemAssociationsCollection.createIndex((row) => row.subject_id);
 
+export const ItemMetadataCollection = createCollection(
+	queryCollectionOptions({
+		id: "item-metadata",
+		queryKey: ({ where }) => {
+			const parsed_where = ParseWhereFilters(where);
+
+			if (parsed_where) return ["user-session", "item-metadata", "ts-db", parsed_where];
+
+			return ["user-session", "item-metadata", "ts-db"];
+		},
+		queryFn: async (ctx) => {
+			const { limit, sorts, where } = ParseSubsetOptions(ctx.meta?.loadSubsetOptions);
+
+			return trpc_client.items.metadata.get_ts_db.query({
+				where,
+				orderBy: sorts,
+				limit,
+			});
+		},
+		queryClient: query_client,
+		getKey: (metadata) => metadata.id,
+		onInsert: async ({ transaction }) => {
+			const insertions = transaction.mutations.map((mutation) => mutation.modified);
+
+			await trpc_client.items.metadata.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "item-metadata"] });
+		},
+		onUpdate: async ({ transaction }) => {
+			const updates = transaction.mutations.map((mutation) => ({
+				id: mutation.key,
+				changes: mutation.changes,
+			}));
+
+			await trpc_client.items.metadata.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "item-metadata"] });
+		},
+		onDelete: async ({ transaction }) => {
+			const deletions = transaction.mutations.map((mutation) => mutation.key);
+
+			await trpc_client.items.metadata.delete_ts_db.mutate(deletions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "item-metadata"] });
+		},
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
+	}),
+);
+
+ItemMetadataCollection.createIndex((row) => row.item_id);
+ItemMetadataCollection.createIndex((row) => row.metadata_id);
+
+export const ItemMetadataDefinitionsCollection = createCollection(
+	queryCollectionOptions({
+		id: "item-metadata-definitions",
+		queryKey: ({ where }) => {
+			const parsed_where = ParseWhereFilters(where);
+
+			if (parsed_where)
+				return ["user-session", "item-metadata-definitions", "ts-db", parsed_where];
+
+			return ["user-session", "item-metadata-definitions", "ts-db"];
+		},
+		queryFn: async (ctx) => {
+			const { limit, sorts, where } = ParseSubsetOptions(ctx.meta?.loadSubsetOptions);
+
+			return trpc_client.workspace.item_metadata.get_ts_db.query({
+				where,
+				orderBy: sorts,
+				limit,
+			});
+		},
+		queryClient: query_client,
+		getKey: (definition) => definition.id,
+		onInsert: async ({ transaction }) => {
+			const insertions = transaction.mutations.map((mutation) => mutation.modified);
+
+			await trpc_client.workspace.item_metadata.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({
+				queryKey: ["user-session", "item-metadata-definitions"],
+			});
+		},
+		onUpdate: async ({ transaction }) => {
+			const updates = transaction.mutations.map((mutation) => ({
+				id: mutation.key,
+				changes: mutation.changes,
+			}));
+
+			await trpc_client.workspace.item_metadata.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({
+				queryKey: ["user-session", "item-metadata-definitions"],
+			});
+		},
+		onDelete: async ({ transaction }) => {
+			const deletions = transaction.mutations.map((mutation) => mutation.key);
+
+			await trpc_client.workspace.item_metadata.delete_ts_db.mutate(deletions);
+
+			query_client.invalidateQueries({
+				queryKey: ["user-session", "item-metadata-definitions"],
+			});
+			query_client.invalidateQueries({ queryKey: ["user-session", "metadata-label-joins"] });
+			query_client.invalidateQueries({ queryKey: ["user-session", "item-metadata"] });
+		},
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
+	}),
+);
+
+ItemMetadataDefinitionsCollection.createIndex((row) => row.type);
+
+export const MetadataLabelJoinsCollection = createCollection(
+	queryCollectionOptions({
+		id: "metadata-label-joins",
+		queryKey: ({ where }) => {
+			const parsed_where = ParseWhereFilters(where);
+
+			if (parsed_where) return ["user-session", "metadata-label-joins", "ts-db", parsed_where];
+
+			return ["user-session", "metadata-label-joins", "ts-db"];
+		},
+		queryFn: async (ctx) => {
+			const { limit, sorts, where } = ParseSubsetOptions(ctx.meta?.loadSubsetOptions);
+
+			return trpc_client.workspace.item_metadata.label_joins.get_ts_db.query({
+				where,
+				orderBy: sorts,
+				limit,
+			});
+		},
+		queryClient: query_client,
+		getKey: (metadata_label_join) => metadata_label_join.id,
+		onInsert: async ({ transaction }) => {
+			const insertions = transaction.mutations.map((mutation) => mutation.modified);
+
+			await trpc_client.workspace.item_metadata.label_joins.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "metadata-label-joins"] });
+		},
+		onUpdate: async ({ transaction }) => {
+			const updates = transaction.mutations.map((mutation) => ({
+				id: mutation.key,
+				changes: mutation.changes,
+			}));
+
+			await trpc_client.workspace.item_metadata.label_joins.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "metadata-label-joins"] });
+		},
+		onDelete: async ({ transaction }) => {
+			const deletions = transaction.mutations.map((mutation) => mutation.key);
+
+			await trpc_client.workspace.item_metadata.label_joins.delete_ts_db.mutate(deletions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "metadata-label-joins"] });
+		},
+		autoIndex: "eager",
+		defaultIndexType: BasicIndex,
+	}),
+);
+
+MetadataLabelJoinsCollection.createIndex((row) => row.definition_id);
+MetadataLabelJoinsCollection.createIndex((row) => row.label_id);
+
 export const FeeGroupsCollection = createCollection(
 	queryCollectionOptions({
 		id: "fee-groups",

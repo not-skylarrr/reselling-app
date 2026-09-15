@@ -19,6 +19,15 @@ import {
 	fee_prediction_catagories,
 	new_fee_catagory_schema,
 	update_fee_catagory_schema,
+	item_metadata_definition,
+	item_metadata,
+	metadata_label_join,
+	new_item_metadata_definition_schema,
+	update_item_metadata_definition_schema,
+	new_metadata_label_join_schema,
+	update_metadata_label_join_schema,
+	type ItemMetadataDefinition,
+	type MetadataLabelJoin,
 } from "../db/schema";
 import { auth, GetSessionWorkspaceID } from "../auth";
 import { db } from "../db";
@@ -369,6 +378,145 @@ const locations_router = router({
 	}),
 });
 
+const metadata_label_joins_router = router({
+	get_ts_db: auth_procedure.input(TsDbFilterSchema).query(async (opts) => {
+		const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+		const { where, orderBy, limit } = CreateDrizzleFilters(
+			{ orderBy: opts.input.orderBy, where: opts.input.where, limit: opts.input.limit },
+			{
+				dbTable: metadata_label_join,
+				defaultWhere: eq(metadata_label_join.workspace_id, workspace_id),
+			},
+		);
+
+		return db.query.metadata_label_join.findMany({ where, orderBy, limit });
+	}),
+	insert_ts_db: auth_procedure
+		.input(z.array(new_metadata_label_join_schema))
+		.mutation(async (opts) => {
+			const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+			const insert_results = await Promise.allSettled(
+				opts.input.map((insertion) =>
+					db.insert(metadata_label_join).values({ ...insertion, workspace_id }),
+				),
+			);
+			const failed_insertions = insert_results.filter((result) => result.status === "rejected");
+
+			return { failed_insertions, insert_count: opts.input.length - failed_insertions.length };
+		}),
+	update_ts_db: auth_procedure
+		.input(TsDbUpdateSchema(update_metadata_label_join_schema))
+		.mutation(async (opts) => {
+			const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+			const update_results = await Promise.allSettled(
+				opts.input.map((update) =>
+					db
+						.update(metadata_label_join)
+						.set(update.changes as Partial<MetadataLabelJoin>)
+						.where(
+							and(
+								eq(metadata_label_join.id, update.id),
+								eq(metadata_label_join.workspace_id, workspace_id),
+							),
+						),
+				),
+			);
+			const failed_updates = update_results.filter((result) => result.status === "rejected");
+
+			return { failed_updates, update_count: opts.input.length - failed_updates.length };
+		}),
+	delete_ts_db: auth_procedure.input(z.array(z.string())).mutation(async (opts) => {
+		const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+		await db
+			.delete(metadata_label_join)
+			.where(
+				and(
+					inArray(metadata_label_join.id, opts.input),
+					eq(metadata_label_join.workspace_id, workspace_id),
+				),
+			);
+	}),
+});
+
+const item_metadata_router = router({
+	get_ts_db: auth_procedure.input(TsDbFilterSchema).query(async (opts) => {
+		const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+		const { where, orderBy, limit } = CreateDrizzleFilters(
+			{ orderBy: opts.input.orderBy, where: opts.input.where, limit: opts.input.limit },
+			{
+				dbTable: item_metadata_definition,
+				defaultWhere: eq(item_metadata_definition.workspace_id, workspace_id),
+			},
+		);
+
+		return db.query.item_metadata_definition.findMany({ where, orderBy, limit });
+	}),
+	insert_ts_db: auth_procedure
+		.input(z.array(new_item_metadata_definition_schema))
+		.mutation(async (opts) => {
+			const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+			const insert_results = await Promise.allSettled(
+				opts.input.map((insertion) =>
+					db.insert(item_metadata_definition).values({ ...insertion, workspace_id }),
+				),
+			);
+			const failed_insertions = insert_results.filter((result) => result.status === "rejected");
+
+			return { failed_insertions, insert_count: opts.input.length - failed_insertions.length };
+		}),
+	update_ts_db: auth_procedure
+		.input(TsDbUpdateSchema(update_item_metadata_definition_schema))
+		.mutation(async (opts) => {
+			const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+			const update_results = await Promise.allSettled(
+				opts.input.map((update) =>
+					db
+						.update(item_metadata_definition)
+						.set(update.changes as Partial<ItemMetadataDefinition>)
+						.where(
+							and(
+								eq(item_metadata_definition.id, update.id),
+								eq(item_metadata_definition.workspace_id, workspace_id),
+							),
+						),
+				),
+			);
+			const failed_updates = update_results.filter((result) => result.status === "rejected");
+
+			return { failed_updates, update_count: opts.input.length - failed_updates.length };
+		}),
+	delete_ts_db: auth_procedure.input(z.array(z.string())).mutation(async (opts) => {
+		const { workspace_id } = GetSessionWorkspaceID(opts.ctx.session_data.session);
+		await db.transaction(async (tx) => {
+			await tx
+				.delete(item_metadata)
+				.where(
+					and(
+						inArray(item_metadata.metadata_id, opts.input),
+						eq(item_metadata.workspace_id, workspace_id),
+					),
+				);
+			await tx
+				.delete(metadata_label_join)
+				.where(
+					and(
+						inArray(metadata_label_join.definition_id, opts.input),
+						eq(metadata_label_join.workspace_id, workspace_id),
+					),
+				);
+			await tx
+				.delete(item_metadata_definition)
+				.where(
+					and(
+						inArray(item_metadata_definition.id, opts.input),
+						eq(item_metadata_definition.workspace_id, workspace_id),
+					),
+				);
+		});
+	}),
+	label_joins: metadata_label_joins_router,
+});
+
 const fee_calculation_router = router({
 	get_ts_db: auth_procedure.input(TsDbFilterSchema).query(async (opts) => {
 		const { session } = opts.ctx.session_data;
@@ -454,6 +602,7 @@ const fee_calculation_router = router({
 export const workspace_router = router({
 	labels: labels_router,
 	locations: locations_router,
+	item_metadata: item_metadata_router,
 	fee_groups: fee_calculation_router,
 	delete: auth_procedure.mutation(async (opts) => {
 		const { session } = opts.ctx.session_data;
@@ -489,6 +638,12 @@ export const workspace_router = router({
 		const delete_item_associations = db
 			.delete(item_associations)
 			.where(eq(item_associations.workspace_id, workspace_id));
+		const delete_item_metadata_definitions = db
+			.delete(item_metadata_definition)
+			.where(eq(item_metadata_definition.workspace_id, workspace_id));
+		const delete_metadata_label_joins = db
+			.delete(metadata_label_join)
+			.where(eq(metadata_label_join.workspace_id, workspace_id));
 
 		const delete_label_joins = db
 			.delete(label_join_table)
@@ -501,6 +656,8 @@ export const workspace_router = router({
 			delete_bundles,
 			delete_bundle_items,
 			delete_item_associations,
+			delete_item_metadata_definitions,
+			delete_metadata_label_joins,
 			delete_fees,
 			delete_listings,
 			delete_label_joins,

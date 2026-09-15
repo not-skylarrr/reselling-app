@@ -7,6 +7,9 @@ import type {
 	ItemBundle,
 	ItemFee,
 	ItemListing,
+	ItemMetadataDefinition,
+	ItemMetadata,
+	MetadataLabelJoin,
 	LabelJoin,
 	WorkspaceLabel,
 	WorkspaceLocation,
@@ -143,6 +146,65 @@ export const MutationHandlerMap = {
 			await client.items.assocations.delete_ts_db.mutate(deletions);
 
 			query_client.invalidateQueries({ queryKey: ["user-session", "item-associations"] });
+		},
+	}),
+	"item-metadata": CreateMutationHandler<ItemMetadata>({
+		insert: async (insertions, client) => {
+			await client.items.metadata.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "item-metadata"] });
+		},
+		update: async (updates, client) => {
+			await client.items.metadata.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "item-metadata"] });
+		},
+		delete: async (deletions, client) => {
+			await client.items.metadata.delete_ts_db.mutate(deletions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "item-metadata"] });
+		},
+	}),
+	"item-metadata-definitions": CreateMutationHandler<ItemMetadataDefinition>({
+		insert: async (insertions, client) => {
+			await client.workspace.item_metadata.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({
+				queryKey: ["user-session", "item-metadata-definitions"],
+			});
+		},
+		update: async (updates, client) => {
+			await client.workspace.item_metadata.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({
+				queryKey: ["user-session", "item-metadata-definitions"],
+			});
+		},
+		delete: async (deletions, client) => {
+			await client.workspace.item_metadata.delete_ts_db.mutate(deletions);
+
+			query_client.invalidateQueries({
+				queryKey: ["user-session", "item-metadata-definitions"],
+			});
+			query_client.invalidateQueries({ queryKey: ["user-session", "metadata-label-joins"] });
+			query_client.invalidateQueries({ queryKey: ["user-session", "item-metadata"] });
+		},
+	}),
+	"metadata-label-joins": CreateMutationHandler<MetadataLabelJoin>({
+		insert: async (insertions, client) => {
+			await client.workspace.item_metadata.label_joins.insert_ts_db.mutate(insertions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "metadata-label-joins"] });
+		},
+		update: async (updates, client) => {
+			await client.workspace.item_metadata.label_joins.update_ts_db.mutate(updates);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "metadata-label-joins"] });
+		},
+		delete: async (deletions, client) => {
+			await client.workspace.item_metadata.label_joins.delete_ts_db.mutate(deletions);
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "metadata-label-joins"] });
 		},
 	}),
 	"label-joins": CreateMutationHandler<LabelJoin>({

@@ -29,11 +29,18 @@
 	type Props = {
 		class?: string;
 		enableHotkey?: boolean;
+		single?: boolean;
 		labels: WorkspaceLabel[];
 		onLabelsChange: (label_ids: string[]) => void;
 	};
 
-	let { class: class_name, enableHotkey = false, labels, onLabelsChange }: Props = $props();
+	let {
+		class: class_name,
+		enableHotkey = false,
+		single = false,
+		labels,
+		onLabelsChange,
+	}: Props = $props();
 
 	let open = $state(false);
 	let filter_query = $state("");
@@ -64,9 +71,11 @@
 
 	function ToggleLabel(label_id: string) {
 		if (selected_label_set.has(label_id)) {
+			if (single) return;
+
 			onLabelsChange(labels.filter((l) => l.id != label_id).map((l) => l.id));
 		} else {
-			onLabelsChange([...labels.map((l) => l.id), label_id]);
+			onLabelsChange(single ? [label_id] : [...labels.map((l) => l.id), label_id]);
 		}
 	}
 

@@ -1,20 +1,9 @@
 <script lang="ts">
-	import type { InventoryItemData } from "$lib/collections/query-collections";
 	import { Button } from "$lib/components/ui/button";
-	import {
-		Item,
-		ItemContent,
-		ItemActions,
-		ItemTitle,
-		ItemDescription,
-	} from "$lib/components/ui/item";
 	import type { FullItem, WorkspaceLabel } from "$lib/server/db/schema";
 	import {
-		LucideCalendar,
-		LucideCheck,
 		LucideCopy,
 		LucideLink,
-		LucideArchive,
 		LucideTrash,
 		LucideReceiptText,
 		LucideRotateCw,
@@ -23,17 +12,12 @@
 	import ItemListings from "./components/ItemListings.svelte";
 	import { OpenItemDialog } from "$lib/components/items/dialogs/dialog-state.svelte";
 	import ItemDetails from "./components/ItemDetails.svelte";
-	import { eq, isUndefined, not, toArray, useLiveQuery } from "@tanstack/svelte-db";
-	import {
-		ItemsCollection,
-		LabelJoinsCollection,
-		LabelsCollection,
-	} from "$lib/collections/def.svelte";
+	import { ItemsCollection } from "$lib/collections/def.svelte";
 	import { OpenDestructiveActionDialog } from "$lib/components/utils/dialogs/destructive-dialog-state.svelte";
 	import ItemSaleDetails from "./components/ItemSaleDetails.svelte";
 	import { SyncItemStatus } from "$lib/collections/actions/listing";
 	import ItemAssociations from "./components/ItemAssociations.svelte";
-	import { ItemsWithLabelsCollection } from "$lib/collections/lib/items";
+	import ItemMetadata from "./components/ItemMetadata.svelte";
 
 	type Props = {
 		item: FullItem | undefined;
@@ -105,6 +89,8 @@
 			{#if item.status_int < 2}
 				<ItemListings {item} />
 			{/if}
+
+			<ItemMetadata {item} />
 
 			<ItemAssociations {item} />
 		</div>
