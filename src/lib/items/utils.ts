@@ -11,7 +11,6 @@ import {
 	LucideMessageSquareWarning,
 	LucidePackageX,
 } from "@lucide/svelte";
-import type { Component } from "svelte";
 
 export const ItemStatusOrder: ItemStatus[] = ["unlisted", "listed", "sold", "refunded"];
 
@@ -21,6 +20,10 @@ export function GetStatusIndex(status: ItemStatus) {
 
 export function GetStatusInt(status: ItemStatus) {
 	return GetStatusIndex(status);
+}
+
+export function ItemIsOrPassedStatus(item: Item, status: ItemStatus) {
+	return GetStatusIndex(item.status) >= GetStatusIndex(status);
 }
 
 const StatusFriendlyNames: { [K in ItemStatus]: string } = {

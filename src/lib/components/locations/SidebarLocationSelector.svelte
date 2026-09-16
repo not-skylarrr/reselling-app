@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { LocationsCollection } from "$lib/collections/def.svelte";
 	import { useLiveQuery } from "@tanstack/svelte-db";
-	import { Button } from "../ui/button";
+	import { Button, type ButtonVariant } from "../ui/button";
 	import { LucideLoaderCircle, LucidePlus } from "@lucide/svelte";
 	import LocationMarker from "./LocationMarker.svelte";
 	import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -26,6 +26,7 @@
 	import { GetColourFromString } from "$lib/utils/colour/hash";
 
 	type Props = {
+		button_variant?: ButtonVariant;
 		class?: string;
 		enableHotkey?: boolean;
 		location_id: string | null;
@@ -33,6 +34,7 @@
 	};
 
 	let {
+		button_variant = "ghost",
 		class: class_name,
 		enableHotkey = false,
 		location_id,
@@ -103,7 +105,12 @@
 <Popover bind:open onOpenChangeComplete={HandleOpenChangeComplete}>
 	<PopoverTrigger>
 		{#snippet child({ props })}
-			<Button {...props} class={cn("font-normal", class_name)} size="xs" variant="ghost">
+			<Button
+				{...props}
+				class={cn("font-normal", class_name)}
+				size="xs"
+				variant={button_variant}
+			>
 				{#if locations_query.isLoading}
 					<LucideLoaderCircle class="animate-spin" />
 					<p class="text-sm text-muted-foreground">Loading</p>

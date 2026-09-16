@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
+	import { Button, type ButtonVariant } from "$lib/components/ui/button";
 	import {
 		Dialog,
 		DialogContent,
@@ -18,6 +18,7 @@
 	import { toast } from "svelte-sonner";
 
 	type Props = {
+		button_variant?: ButtonVariant;
 		class?: string;
 		disabled?: boolean;
 		disabled_text?: string;
@@ -31,6 +32,7 @@
 	};
 
 	let {
+		button_variant = "ghost",
 		class: class_name,
 		disabled,
 		disabled_text = "N/A",
@@ -83,7 +85,7 @@
 						class={cn("max-w-full min-w-0 shrink! text-sm font-normal", class_name)}
 						{disabled}
 						size="xs"
-						variant="ghost"
+						variant={button_variant}
 					>
 						<span class="min-w-0 flex-1 truncate">{disabled ? disabled_text : value}</span>
 					</Button>
@@ -123,7 +125,7 @@
 						)}
 						{disabled}
 						size="xs"
-						variant="ghost"
+						variant={button_variant}
 					>
 						<span class="min-w-0 flex-1 truncate">{disabled ? disabled_text : value}</span>
 					</Button>

@@ -1,7 +1,15 @@
 <script lang="ts">
-	let { children } = $props();
+	import { cn } from "$lib/utils";
+	import type { HTMLAttributes } from "svelte/elements";
+
+	type Props = HTMLAttributes<HTMLDivElement>;
+
+	let { children, class: class_name, ...props }: Props = $props();
 </script>
 
-<div class="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-	{@render children()}
+<div
+	class={cn("relative flex min-h-0 w-full flex-1 flex-col overflow-hidden", class_name)}
+	{...props}
+>
+	{@render children?.()}
 </div>

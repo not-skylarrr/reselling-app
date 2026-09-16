@@ -1,5 +1,5 @@
 import { eq, isUndefined, not, queryOnce, toArray } from "@tanstack/svelte-db";
-import type { PageLoad } from "./$types";
+import type { LayoutLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 import { ItemsWithAllMetaCollection } from "$lib/collections/lib/items";
 import {
@@ -12,7 +12,7 @@ import {
 } from "$lib/collections/def.svelte";
 import type { WorkspaceLabel } from "$lib/server/db/schema";
 
-export const load: PageLoad = async ({ params }) => {
+export const load: LayoutLoad = async ({ params }) => {
 	const item = await queryOnce((q) =>
 		q
 			.from({ item: ItemsCollection })

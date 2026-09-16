@@ -3,7 +3,7 @@
 	import type { HTMLAttributes } from "svelte/elements";
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
-		size?: "sm" | "md" | "lg" | "full";
+		size?: "sm" | "md" | "lg" | "xl" | "full";
 	};
 
 	let { class: class_name, children, size = "md", ...props }: Props = $props();
@@ -15,6 +15,7 @@
 		size == "sm" && "max-w-lg",
 		size == "md" && "max-w-2xl",
 		size == "lg" && "max-w-4xl",
+		size == "xl" && "max-w-7xl",
 		class_name,
 	)}
 	{...props}
