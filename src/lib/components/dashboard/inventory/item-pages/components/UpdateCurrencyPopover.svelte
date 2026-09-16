@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
+	import { Button, type ButtonVariant } from "$lib/components/ui/button";
 	import CurrencyInput from "$lib/components/ui/currency-input/CurrencyInput.svelte";
 	import {
 		Dialog,
@@ -16,6 +16,7 @@
 	import type { Snippet } from "svelte";
 
 	type Props = {
+		button_variant?: ButtonVariant;
 		class?: string;
 		disabled?: boolean;
 		disabled_text?: string;
@@ -27,6 +28,7 @@
 	};
 
 	let {
+		button_variant = "ghost",
 		class: class_name,
 		disabled,
 		disabled_text = "N/A",
@@ -72,7 +74,7 @@
 						class={cn("text-sm font-normal", class_name)}
 						{disabled}
 						size="xs"
-						variant="ghost"
+						variant={button_variant}
 					>
 						{disabled ? disabled_text : FormatCurrency(value)}
 					</Button>
@@ -112,7 +114,7 @@
 						)}
 						{disabled}
 						size="xs"
-						variant="ghost"
+						variant={button_variant}
 					>
 						{disabled ? disabled_text : FormatCurrency(value)}
 					</Button>

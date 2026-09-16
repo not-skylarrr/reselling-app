@@ -100,7 +100,12 @@
 <DropdownMenu>
 	<DropdownMenuTrigger>
 		{#snippet child({ props })}
-			<Button {...props} size="icon-xs" variant="ghost">
+			<Button
+				{...props}
+				disabled={used_meta_ids.length == metadata_query.data.length}
+				size="icon-xs"
+				variant="ghost"
+			>
 				<LucidePlus class="size-4" />
 			</Button>
 		{/snippet}

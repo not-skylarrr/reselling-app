@@ -1,0 +1,13 @@
+{
+	"title": "Untitled Release",
+	"released_at": "2026-09-16T16:02:27Z",
+	"changes": [
+		{
+			"title": "Item Details UI",
+			"type": "improved",
+			"details": [
+				"Updated the item details UI to provide more detail and better access to actions. This is still work in progress, but the majority of features are complete"
+			]
+		}
+	]
+}

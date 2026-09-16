@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
+	import { Button, type ButtonVariant } from "$lib/components/ui/button";
 	import Calendar from "$lib/components/ui/calendar/calendar.svelte";
 	import { Popover, PopoverContent, PopoverTrigger } from "$lib/components/ui/popover";
 	import { cn } from "$lib/utils";
@@ -8,11 +8,12 @@
 
 	type Props = {
 		align?: "start" | "center" | "end";
+		button_variant?: ButtonVariant;
 		onValueChange: (date: Date | null) => void;
 		value: Date | null;
 	};
 
-	let { align = "end", onValueChange, value }: Props = $props();
+	let { align = "end", button_variant = "ghost", onValueChange, value }: Props = $props();
 
 	function HandleCalendarDateChange(date: DateValue | undefined) {
 		if (!date) return;
@@ -28,7 +29,7 @@
 				{...props}
 				class={cn("text-sm font-normal", value == null && "text-muted-foreground")}
 				size="xs"
-				variant="ghost"
+				variant={button_variant}
 			>
 				{value ? FormatDateStd(value) : "No Date"}
 			</Button>

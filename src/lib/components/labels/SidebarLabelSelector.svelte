@@ -3,7 +3,7 @@
 	import { useLiveQuery } from "@tanstack/svelte-db";
 	import LabelMarkers from "./LabelMarkers.svelte";
 	import { LucideCheck, LucideLoader, LucidePlus } from "@lucide/svelte";
-	import Button from "../ui/button/button.svelte";
+	import Button, { type ButtonVariant } from "../ui/button/button.svelte";
 	import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 	import {
 		Command,
@@ -27,6 +27,7 @@
 	import { GetColourFromString } from "$lib/utils/colour/hash";
 
 	type Props = {
+		button_variant?: ButtonVariant;
 		class?: string;
 		enableHotkey?: boolean;
 		single?: boolean;
@@ -35,6 +36,7 @@
 	};
 
 	let {
+		button_variant = "ghost",
 		class: class_name,
 		enableHotkey = false,
 		single = false,
@@ -115,7 +117,12 @@
 </script>
 
 {#if labels_query.isLoading}
-	<Button class={cn("font-normal", class_name)} disabled={true} size="xs" variant="ghost">
+	<Button
+		class={cn("font-normal", class_name)}
+		disabled={true}
+		size="xs"
+		variant={button_variant}
+	>
 		<LucideLoader class="size-3 animate-spin" />
 		<p class="text-sm text-muted-foreground">Loading</p>
 	</Button>
@@ -123,7 +130,12 @@
 	<Popover bind:open onOpenChangeComplete={HandleOpenChangeComplete}>
 		<PopoverTrigger>
 			{#snippet child({ props })}
-				<Button {...props} class={cn("px-2 font-normal", class_name)} size="xs" variant="ghost">
+				<Button
+					{...props}
+					class={cn("px-2 font-normal", class_name)}
+					size="xs"
+					variant={button_variant}
+				>
 					{#if labels.length == 0}
 						<p class="text-sm text-muted-foreground">No Labels</p>
 					{:else}
