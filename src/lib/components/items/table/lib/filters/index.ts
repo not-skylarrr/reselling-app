@@ -1,7 +1,8 @@
-import type { Row } from "@tanstack/svelte-table";
+import type { DefaultTableFeatures } from "$lib/table/init.svelte";
+import type { Row, RowData } from "@tanstack/svelte-table";
 
-export function AdvancedFilter<T>(
-	row: Row<T>,
+export function AdvancedFilter<T extends RowData>(
+	row: Row<DefaultTableFeatures, T>,
 	column_id: string,
 	filter_val: any,
 	addMeta: (meta: any) => void,

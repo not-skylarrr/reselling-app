@@ -70,6 +70,7 @@ export class TableState {
 	hotkey_active = $state(false);
 	selection_enabled = $state(true);
 	strict_visiblity = $state(false);
+	hide_archived = $state(true);
 
 	local = $state<TableStateStores>({
 		get_col_sizing: GetLocalColumnSizingState,

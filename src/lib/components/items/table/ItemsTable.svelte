@@ -24,13 +24,13 @@
 	import ItemsTableRow from "./components/ItemsTableRow.svelte";
 	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import { GetColumnSizingCssVarName } from "$lib/table/utils";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { DefaultTableFeatures, GetTableContext } from "$lib/table/init.svelte";
 	import type { FullItem } from "$lib/server/db/schema";
 
 	type Props = {
 		onRowDouble?: () => void;
 		onRowFocus: (item: FullItem) => void;
-		table: Table<FullItem>;
+		table: Table<DefaultTableFeatures, FullItem>;
 	};
 
 	let { onRowFocus, onRowDouble, table }: Props = $props();

@@ -8,6 +8,7 @@
 		LucideReceiptText,
 		LucideRotateCw,
 		LucideArchive,
+		LucideRotateCcw,
 	} from "@lucide/svelte";
 	import { slide } from "svelte/transition";
 	import ItemListings from "./components/ItemListings.svelte";
@@ -26,6 +27,14 @@
 	};
 
 	let { item, open }: Props = $props();
+
+	function HandleItemToggleArchive() {
+		if (!item) return;
+
+		ItemsCollection.update(item.id, (draft) => {
+			draft.archived = !draft.archived;
+		});
+	}
 
 	function HandleItemDelete() {
 		OpenDestructiveActionDialog({
@@ -68,12 +77,13 @@
 						</Button>
 					</div>
 					<div class="flex flex-row items-center gap-1.5">
-						<Button onclick={() => SyncItemStatus(item.id)} size="icon-xs" variant="outline"
-							><LucideRotateCw /></Button
-						>
-						<Button onclick={() => HandleItemDelete()} size="icon-xs" variant="outline"
-							><LucideArchive /></Button
-						>
+						<Button onclick={() => HandleItemToggleArchive()} size="icon-xs" variant="outline">
+							{#if item.archived}
+								<LucideRotateCcw />
+							{:else}
+								<LucideArchive />
+							{/if}
+						</Button>
 					</div>
 				</div>
 			</div>
