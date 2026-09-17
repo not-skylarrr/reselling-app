@@ -1,14 +1,16 @@
 <script lang="ts">
 	import { Button } from "$lib/components/ui/button";
 	import { Popover, PopoverContent, PopoverTrigger } from "$lib/components/ui/popover";
-	import { LucideSettings } from "@lucide/svelte";
+	import { LucideArchive, LucideSettings } from "@lucide/svelte";
 	import type { Table } from "@tanstack/svelte-table";
 	import { cn } from "$lib/utils";
 	import { GetTableContext } from "$lib/table/init.svelte";
 	import type { FullItem } from "$lib/server/db/schema";
+	import { Switch } from "$lib/components/ui/switch";
+	import { Separator } from "$lib/components/ui/separator";
 
 	type Props = {
-		table: Table<any>;
+		table: Table<any, any>;
 	};
 
 	let { table }: Props = $props();
@@ -49,6 +51,7 @@
 	<PopoverContent align="end">
 		<div class="grid gap-3">
 			<p class="text-xs text-muted-foreground">Displayed Columns</p>
+
 			<div class="flex flex-row flex-wrap gap-2">
 				{#each all_columns as column (column.id)}
 					{@const header =
@@ -72,6 +75,19 @@
 					</button>
 				{/each}
 			</div>
+		</div>
+
+		<Separator />
+
+		<div class="flex items-center justify-between gap-3">
+			<p class="text-xs text-muted-foreground">Hide Archived</p>
+			<Switch bind:checked={table_state.hide_archived} />
+		</div>
+
+		<Separator />
+
+		<div class="grid gap-3">
+			<Button size="sm" variant="outline"><LucideArchive /> Archive Inactive</Button>
 		</div>
 	</PopoverContent>
 </Popover>

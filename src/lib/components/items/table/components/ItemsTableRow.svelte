@@ -98,18 +98,18 @@
 			fallback_min_size,
 		)}
 
-			<div
-				class={cn(
-					"flex h-full shrink-0 flex-row items-center justify-end truncate overflow-hidden px-3 text-sm select-none",
-					cell.column.columnDef.meta?.align == "left" && "justify-start",
-					cell.column.columnDef.meta?.flex && "flex-1",
-				)}
-				style={cell.column.getCanResize()
-					? `width: ${column_size_var}; min-width: ${cell.column.columnDef.minSize}px;`
-					: cell.column.columnDef.meta?.flex
-						? `min-width: ${cell.column.columnDef.minSize}px;`
-						: `min-width: ${cell.column.columnDef.minSize}px; max-width: ${cell.column.columnDef.minSize}px; `}
-			>
+		<div
+			class={cn(
+				"flex h-full shrink-0 flex-row items-center justify-end truncate overflow-hidden px-3 text-sm select-none",
+				cell.column.columnDef.meta?.align == "left" && "justify-start",
+				cell.column.columnDef.meta?.flex && "flex-1",
+			)}
+			style={cell.column.getCanResize()
+				? `width: ${column_size_var}; min-width: ${cell.column.columnDef.minSize}px;`
+				: cell.column.columnDef.meta?.flex
+					? `min-width: ${cell.column.columnDef.minSize}px;`
+					: `min-width: ${cell.column.columnDef.minSize}px; max-width: ${cell.column.columnDef.minSize}px; `}
+		>
 			<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
 		</div>
 	{/each}

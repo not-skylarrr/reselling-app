@@ -6,6 +6,7 @@ import {
 	CellLocation,
 	CellMarketplace,
 	CellStatus,
+	CellString,
 } from "./components/cells";
 import type { InventoryItemData } from "$lib/collections/query-collections";
 import { OptionFilter, StringFilter } from "./lib/filters/lib/functions";
@@ -26,13 +27,18 @@ import { trpc_client } from "$lib/trpc/client";
 import LabelMarkers from "../../labels/LabelMarkers.svelte";
 import LocationMarker from "../../locations/LocationMarker.svelte";
 import type { FullItem, WorkspaceLabel } from "$lib/server/db/schema";
+import { DefaultTableFeatures } from "$lib/table/init.svelte";
 
-const column = createColumnHelper<FullItem>();
+const column = createColumnHelper<DefaultTableFeatures, FullItem>();
 
 export const ItemTableColumns = [
 	column.accessor("name", {
 		header: "Name",
-		cell: (info) => info.getValue(),
+		cell: (info) =>
+			renderComponent(CellString, {
+				value: info.getValue(),
+				muted: info.cell.row.original.archived,
+			}),
 		meta: {
 			align: "left",
 			filter: StringFilter({

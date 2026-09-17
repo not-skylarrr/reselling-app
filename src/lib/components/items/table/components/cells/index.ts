@@ -5,6 +5,7 @@ import CellMarketplace from "./CellMarketplace.svelte";
 import CellLabels from "./CellLabels.svelte";
 import CellLocation from "./CellLocation.svelte";
 import CellLocationLazy from "./CellLocationLazy.svelte";
+import CellString from "./CellString.svelte";
 
 export {
 	CellCurrency,
@@ -14,4 +15,5 @@ export {
 	CellLabels,
 	CellLocation,
 	CellLocationLazy,
+	CellString,
 };

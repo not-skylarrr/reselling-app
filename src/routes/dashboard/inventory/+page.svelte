@@ -43,13 +43,21 @@
 	let focused_item_id = $state<string | null>(null);
 	let search_query = $state<string>("");
 
-	let focused_item = $derived(items_query.data.find((i) => i.id == focused_item_id));
+	let processed_items = $derived.by(() => {
+		if (table_state.hide_archived) {
+			return [...items_query.data].filter((item) => item.archived == false);
+		}
+
+		return items_query.data;
+	});
+
+	let focused_item = $derived(processed_items.find((i) => i.id == focused_item_id));
 	let show_details = $state(GetLocalDetailsOpenState());
 
 	const table = createTable<DefaultTableFeatures, FullItem>({
 		columns: ItemTableColumns,
 		get data() {
-			return items_query.data;
+			return processed_items;
 		},
 		getRowId: (original) => original.id,
 		...DefaultTableProps(table_state),

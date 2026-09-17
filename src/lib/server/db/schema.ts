@@ -78,6 +78,7 @@ export const update_item_schema = createUpdateSchema(items, {
 	refund_type: true,
 	refund_reason: true,
 	refunded_at: true,
+	archived: true,
 });
 
 export type NewItem = z.infer<typeof new_item_schema>;
