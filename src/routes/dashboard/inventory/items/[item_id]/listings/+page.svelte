@@ -76,7 +76,7 @@
 			</EmptyMedia>
 
 			<EmptyTitle>Nothing to display</EmptyTitle>
-			<EmptyDescription>This item has not been marked as refunded</EmptyDescription>
+			<EmptyDescription>This item has not been listed</EmptyDescription>
 		</EmptyHeader>
 
 		<EmptyContent>

@@ -76,7 +76,7 @@
 	});
 </script>
 
-<SettingsLayout class="p-6! pt-12! md:gap-6">
+<SettingsLayout class="p-6! pt-12!">
 	{#if listings_by_status.sold.length > 0}
 		<SettingsGroup>
 			<SettingsGroupHeader>Sold Listing</SettingsGroupHeader>

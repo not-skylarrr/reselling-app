@@ -65,7 +65,7 @@
 					labels: toArray(
 						q
 							.from({ label_join: LabelJoinsCollection })
-							.where(({ label_join }) => eq(label_join.item_id, item.id))
+							.where(({ label_join }) => eq(label_join.subject_id, item.id))
 							.leftJoin({ label: LabelsCollection }, ({ label_join, label }) =>
 								eq(label.id, label_join.label_id),
 							)

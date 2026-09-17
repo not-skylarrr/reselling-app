@@ -30,9 +30,11 @@
 			{/snippet}
 		</TabsTrigger>
 
-		<TabsTrigger value="fees">
+		<TabsTrigger value="financials">
 			{#snippet child({ props })}
-				<a {...props} href={`/dashboard/inventory/items/${item.id}/fees`}>Manage Fees</a>
+				<a {...props} href={`/dashboard/inventory/items/${item.id}/financials`}
+					>Manage Financials</a
+				>
 			{/snippet}
 		</TabsTrigger>
 

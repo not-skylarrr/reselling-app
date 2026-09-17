@@ -37,6 +37,8 @@ export const items = pgTable("items", {
 	refund_type: text("refund_type"),
 	refund_reason: text("refund_reason"),
 	refunded_at: timestamp("refunded_at"),
+
+	archived: boolean("archived").notNull().default(false),
 });
 
 export const items_relations = relations(items, ({ one, many }) => ({
@@ -89,7 +91,7 @@ export type ItemWithLabels = Item & {
 export type FullItem = ItemWithLabels & {
 	listings: ItemListing[];
 	fees: ItemFee[];
-	location: WorkspaceLocation | undefined;
+	location?: WorkspaceLocation | undefined;
 };
 
 export const item_listing_status_schema = z.union([

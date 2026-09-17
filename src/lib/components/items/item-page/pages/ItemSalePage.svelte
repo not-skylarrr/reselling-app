@@ -42,12 +42,20 @@
 		CalculateTotalFees(sold_listing_fees.filter((f) => f.type == "final_fee")),
 	);
 
+	const profit_excluding_refund = $derived(
+		CalculateItemProfit({
+			item,
+			listings: item.listings,
+			fees: [...item.fees].filter((f) => f.type != "refunded_amount"),
+		}) ?? 0,
+	);
+
 	const item_profit = $derived(
 		CalculateItemProfit({ item, listings: item.listings, fees: item.fees }) ?? 0,
 	);
 
 	const initial_listing = $derived(
-		item.listings.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())[0],
+		[...item.listings].sort((a, b) => b.created_at.getTime() - a.created_at.getTime())[0],
 	);
 
 	function HandlePurchasePriceChange(val: number) {
@@ -168,30 +176,83 @@
 								size="xs"
 								variant="outline"
 							>
-								{FormatCurrency(CalculateTotalFees(item.fees) * -1)}</Button
+								{FormatCurrency(
+									CalculateTotalFees(
+										[...item.fees].filter((f) => f.type != "refunded_amount"),
+									) * -1,
+								)}</Button
 							>
 						</FieldContent>
 					</Field>
+
 					<Field orientation="responsive-centered">
 						<FieldContent>
-							<FieldTitle>Final Profit</FieldTitle>
-							<FieldDescription>The final profit after deducting fees</FieldDescription>
+							<FieldTitle>Final Sale Profit</FieldTitle>
+							<FieldDescription>The total profit after fees have been deducted</FieldDescription
+							>
 						</FieldContent>
 
 						<FieldContent>
 							<Button
 								class="text-sm font-normal data-[negative=true]:text-destructive data-[positive=true]:text-success"
-								data-negative={item_profit < 0}
-								data-positive={item_profit > 0}
+								data-negative={profit_excluding_refund < 0}
+								data-positive={profit_excluding_refund > 0}
 								size="xs"
 								variant="outline"
 							>
-								{FormatCurrency(item_profit)}</Button
+								{FormatCurrency(profit_excluding_refund)}</Button
 							>
 						</FieldContent>
 					</Field>
 				</FieldGroup>
 			</FormCardSection>
+
+			{#if item.status == "refunded"}
+				{@const refund_fee = item.fees.find((f) => f.type == "refunded_amount")}
+
+				<FormCardSection>
+					<FieldGroup>
+						{#if refund_fee}
+							<Field orientation="responsive-centered">
+								<FieldContent>
+									<FieldTitle>Refund Amount</FieldTitle>
+									<FieldDescription>The amount refunded to the buyer</FieldDescription>
+								</FieldContent>
+
+								<FieldContent>
+									<Button
+										class="text-sm font-normal"
+										href={`/dashboard/inventory/items/${item.id}/refund`}
+										size="xs"
+										variant="outline"
+									>
+										{FormatCurrency(refund_fee.amount)}</Button
+									>
+								</FieldContent>
+							</Field>
+						{/if}
+
+						<Field orientation="responsive-centered">
+							<FieldContent>
+								<FieldTitle>Final Profit</FieldTitle>
+								<FieldDescription>The total profit after fees and refunds</FieldDescription>
+							</FieldContent>
+
+							<FieldContent>
+								<Button
+									class="text-sm font-normal data-[negative=true]:text-destructive data-[positive=true]:text-success"
+									data-negative={item_profit < 0}
+									data-positive={item_profit > 0}
+									size="xs"
+									variant="outline"
+								>
+									{FormatCurrency(item_profit)}</Button
+								>
+							</FieldContent>
+						</Field>
+					</FieldGroup>
+				</FormCardSection>
+			{/if}
 		</FormCard>
 	</SettingsGroup>
 

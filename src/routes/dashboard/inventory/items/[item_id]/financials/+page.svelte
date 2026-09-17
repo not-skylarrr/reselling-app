@@ -73,23 +73,11 @@
 	<Empty>
 		<EmptyHeader>
 			<EmptyMedia variant="icon">
-				<LucideInbox />
+				<LucideX />
 			</EmptyMedia>
 
 			<EmptyTitle>Nothing to display</EmptyTitle>
-			<EmptyDescription>This item has not been sold yet</EmptyDescription>
+			<EmptyDescription>This item has no fees attached</EmptyDescription>
 		</EmptyHeader>
-
-		<EmptyContent>
-			{#if item.status == "unlisted"}
-				<Button onclick={() => OpenItemDialog(item, "list")}
-					>Create Item Listing <LucideChevronRight /></Button
-				>
-			{:else}
-				<Button onclick={() => OpenItemDialog(item, "sell", { listing_id: undefined })}>
-					Mark Item as Sold <LucideChevronRight />
-				</Button>
-			{/if}
-		</EmptyContent>
 	</Empty>
 {/if}
