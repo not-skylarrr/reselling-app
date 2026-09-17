@@ -55,7 +55,7 @@
 	});
 </script>
 
-<SettingsLayout class="p-6! pt-12! md:gap-6">
+<SettingsLayout class="p-6! pt-12!">
 	{#if fees_by_type.refunded_amount.length > 0}
 		<SettingsGroup>
 			<div class="flex flex-row items-center justify-between px-4">

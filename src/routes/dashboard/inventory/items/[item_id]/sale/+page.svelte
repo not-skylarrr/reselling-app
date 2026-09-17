@@ -8,7 +8,6 @@
 		LocationsCollection,
 	} from "$lib/collections/def.svelte.js";
 	import { OpenItemDialog } from "$lib/components/items/dialogs/dialog-state.svelte.js";
-	import ItemListingsPage from "$lib/components/items/item-page/pages/ItemListingsPage.svelte";
 	import ItemSalePage from "$lib/components/items/item-page/pages/ItemSalePage.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
 	import {
@@ -73,11 +72,11 @@
 	<Empty>
 		<EmptyHeader>
 			<EmptyMedia variant="icon">
-				<LucideInbox />
+				<LucideX />
 			</EmptyMedia>
 
 			<EmptyTitle>Nothing to display</EmptyTitle>
-			<EmptyDescription>This item has not been sold yet</EmptyDescription>
+			<EmptyDescription>This item has not yet been marked as sold</EmptyDescription>
 		</EmptyHeader>
 
 		<EmptyContent>

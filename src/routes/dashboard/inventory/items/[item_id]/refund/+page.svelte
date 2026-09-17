@@ -71,7 +71,7 @@
 	<Empty>
 		<EmptyHeader>
 			<EmptyMedia variant="icon">
-				<LucideInbox />
+				<LucideX />
 			</EmptyMedia>
 
 			<EmptyTitle>Nothing to display</EmptyTitle>

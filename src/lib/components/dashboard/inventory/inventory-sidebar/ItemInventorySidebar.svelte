@@ -7,6 +7,7 @@
 		LucideTrash,
 		LucideReceiptText,
 		LucideRotateCw,
+		LucideArchive,
 	} from "@lucide/svelte";
 	import { slide } from "svelte/transition";
 	import ItemListings from "./components/ItemListings.svelte";
@@ -70,11 +71,8 @@
 						<Button onclick={() => SyncItemStatus(item.id)} size="icon-xs" variant="outline"
 							><LucideRotateCw /></Button
 						>
-						<Button
-							class="[&_svg]:stroke-destructive"
-							onclick={() => HandleItemDelete()}
-							size="icon-xs"
-							variant="outline"><LucideTrash /></Button
+						<Button onclick={() => HandleItemDelete()} size="icon-xs" variant="outline"
+							><LucideArchive /></Button
 						>
 					</div>
 				</div>
