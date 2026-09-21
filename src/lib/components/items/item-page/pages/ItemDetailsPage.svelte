@@ -25,6 +25,7 @@
 		FieldTitle,
 	} from "$lib/components/ui/field";
 	import FieldControl from "$lib/components/ui/field/field-control.svelte";
+	import { OpenDestructiveActionDialog } from "$lib/components/utils/dialogs/destructive-dialog-state.svelte";
 	import {
 		ParseItemMetadataField,
 		SerializeItemMetadataField,
@@ -32,7 +33,7 @@
 	} from "$lib/items/metadata";
 	import type { ItemWithLabels } from "$lib/server/db/schema";
 	import { session_state } from "$lib/utils/session.svelte";
-	import { LucideCopy, LucideInbox } from "@lucide/svelte";
+	import { LucideCopy, LucideInbox, LucideX } from "@lucide/svelte";
 	import { eq, useLiveQuery } from "@tanstack/svelte-db";
 	import { toast } from "svelte-sonner";
 
@@ -89,6 +90,18 @@
 
 		ItemMetadataCollection.update(metadata_id, (meta) => {
 			meta.value_string = val_string;
+		});
+	}
+
+	function RemoveMetadata(metadata_id: string) {
+		OpenDestructiveActionDialog({
+			title: "Are you sure?",
+			description:
+				"Are you sure you want to remove this metadata entry. It cannot be recovered",
+			action_label: "Remove Metadata",
+			onConfirm: () => {
+				ItemMetadataCollection.delete(metadata_id);
+			},
 		});
 	}
 </script>
@@ -289,14 +302,23 @@
 					<FieldGroup>
 						{#each metadata_query.data as metadata (metadata.id)}
 							<Field orientation="responsive-centered">
-								<FieldContent>
-									<FieldTitle>{metadata.definition.name}</FieldTitle>
-									<FieldDescription
-										>No Description Provided | {metadata.definition.required
-											? "Required"
-											: "Optional"}</FieldDescription
+								<div class="flex flex-1 flex-row items-center">
+									<FieldContent>
+										<FieldTitle>{metadata.definition.name}</FieldTitle>
+										<FieldDescription
+											>No Description Provided | {metadata.definition.required
+												? "Required"
+												: "Optional"}</FieldDescription
+										>
+									</FieldContent>
+
+									<Button
+										class="text-muted-foreground"
+										onclick={() => RemoveMetadata(metadata.id)}
+										size="icon-xs"
+										variant="ghost"><LucideX class="size-4" /></Button
 									>
-								</FieldContent>
+								</div>
 
 								<FieldControl>
 									{#if metadata.definition.type == "string"}

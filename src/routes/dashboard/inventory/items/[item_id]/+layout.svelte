@@ -13,14 +13,16 @@
 	import DashboardHeader from "$lib/components/dashboard/layout/DashboardHeader.svelte";
 	import DashboardLayoutRoot from "$lib/components/dashboard/layout/DashboardLayoutRoot.svelte";
 	import ItemNavigationTabs from "$lib/components/items/item-page/ItemNavigationTabs.svelte";
+	import ItemQuickActions from "$lib/components/items/item-page/ItemQuickActions.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
 	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import { Tabs } from "$lib/components/ui/tabs";
 	import { GetStatusFriendlyName } from "$lib/items/utils";
 	import type { WorkspaceLabel } from "$lib/server/db/schema.js";
-	import { LucideChevronDown } from "@lucide/svelte";
+	import { LucideArchive, LucideChevronDown } from "@lucide/svelte";
 	import { eq, isUndefined, not, toArray, useLiveQuery } from "@tanstack/svelte-db";
 	import { onMount } from "svelte";
+	import { fade } from "svelte/transition";
 
 	let { children, data } = $props();
 
@@ -104,11 +106,20 @@
 			<DashboardContent class="@container flex-1 gap-0 p-0 md:gap-0 md:p-0" disableScroll>
 				<div class="flex flex-row items-center gap-6 border-b px-7 py-6">
 					<div class="grid flex-1 gap-1">
-						<p class="text-xl font-medium">{item.name}</p>
+						<div class="flex h-7 flex-row items-center gap-3">
+							<p class="text-xl font-medium">{item.name}</p>
+
+							{#if item.archived}
+								<div transition:fade={{ duration: 200 }}>
+									<LucideArchive class="size-4 stroke-muted-foreground" />
+								</div>
+							{/if}
+						</div>
+
 						<p class="text-sm text-muted-foreground">{GetStatusFriendlyName(item.status)}</p>
 					</div>
 
-					<Button>Quick Actions <LucideChevronDown /></Button>
+					<ItemQuickActions {item} />
 				</div>
 
 				<ItemNavigationTabs {item} />

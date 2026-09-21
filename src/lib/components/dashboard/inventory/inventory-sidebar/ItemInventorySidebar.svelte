@@ -9,6 +9,7 @@
 		LucideRotateCw,
 		LucideArchive,
 		LucideRotateCcw,
+		LucideArchiveRestore,
 	} from "@lucide/svelte";
 	import { slide } from "svelte/transition";
 	import ItemListings from "./components/ItemListings.svelte";
@@ -79,7 +80,7 @@
 					<div class="flex flex-row items-center gap-1.5">
 						<Button onclick={() => HandleItemToggleArchive()} size="icon-xs" variant="outline">
 							{#if item.archived}
-								<LucideRotateCcw />
+								<LucideArchiveRestore />
 							{:else}
 								<LucideArchive />
 							{/if}

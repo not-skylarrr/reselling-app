@@ -32,6 +32,7 @@
 	import { Field, FieldLabel } from "$lib/components/ui/field";
 	import type { FullItem } from "$lib/server/db/schema";
 	import { Input } from "$lib/components/ui/input";
+	import Plural from "$lib/components/utils/Plural.svelte";
 
 	const table_state = new TableState({
 		key: "inventory-table",
@@ -44,7 +45,9 @@
 	let search_query = $state<string>("");
 
 	let processed_items = $derived.by(() => {
-		if (table_state.hide_archived) {
+		const has_archive_filter = table_state.filters.find((f) => f.id == "archived") != undefined;
+
+		if (table_state.hide_archived && !has_archive_filter) {
 			return [...items_query.data].filter((item) => item.archived == false);
 		}
 
@@ -62,6 +65,8 @@
 		getRowId: (original) => original.id,
 		...DefaultTableProps(table_state),
 	});
+
+	const item_count = $derived(table.getRowModel().rows.length);
 
 	function ToggleDetailsSidebar() {
 		if (items_query.data.length == 0) {
@@ -150,6 +155,13 @@
 				<Button onclick={ToggleDetailsSidebar} size="icon-sm" variant="outline">
 					<LucidePanelRight />
 				</Button>
+			{/snippet}
+
+			{#snippet details()}
+				<p class="block text-muted-foreground">
+					{item_count}
+					<Plural count={item_count} singular="Item" plural="Items" />
+				</p>
 			{/snippet}
 		</DashboardHeader>
 

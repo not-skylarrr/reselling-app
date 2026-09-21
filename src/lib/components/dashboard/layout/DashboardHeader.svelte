@@ -38,9 +38,10 @@
 		actions?: Snippet;
 		breadcrumbs?: BreadcrumbData[];
 		class?: string;
+		details?: Snippet;
 	};
 
-	let { actions, breadcrumbs, class: class_name }: Props = $props();
+	let { actions, breadcrumbs, class: class_name, details }: Props = $props();
 
 	let sidebar_ctx = useSidebar();
 
@@ -61,47 +62,57 @@
 		class_name,
 	)}
 >
-	<div class="flex shrink-0 flex-row items-center gap-3">
-		<Button
-			class="text-muted-foreground"
-			onclick={() => sidebar_ctx.toggle()}
-			size="icon-sm"
-			variant="ghost"
-		>
-			<LucidePanelLeft />
-		</Button>
+	<div class="flex flex-1 shrink-0 flex-row items-center justify-between gap-3">
+		<div class="@container flex flex-row items-center gap-6">
+			<div class="flex shrink-0 flex-row items-center gap-3">
+				<Button
+					class="text-muted-foreground"
+					onclick={() => sidebar_ctx.toggle()}
+					size="icon-sm"
+					variant="ghost"
+				>
+					<LucidePanelLeft />
+				</Button>
 
-		{#if breadcrumbs && breadcrumbs.length > 0}
-			<Breadcrumb>
-				<BreadcrumbList>
-					{#each breadcrumbs as breadcrumb, index}
-						{@const is_last = index == breadcrumbs.length - 1}
+				{#if breadcrumbs && breadcrumbs.length > 0}
+					<Breadcrumb class="shrink-0">
+						<BreadcrumbList>
+							{#each breadcrumbs as breadcrumb, index}
+								{@const is_last = index == breadcrumbs.length - 1}
 
-						{#if breadcrumb.type == "link"}
-							<BreadcrumbItem>
-								<BreadcrumbLink href={breadcrumb.href}>{breadcrumb.text}</BreadcrumbLink>
-							</BreadcrumbItem>
-						{:else if breadcrumb.type == "page"}
-							<BreadcrumbItem>
-								<BreadcrumbPage>{breadcrumb.text}</BreadcrumbPage>
-							</BreadcrumbItem>
-						{:else}
-							<BreadcrumbItem>
-								<BreadcrumbEllipsis />
-							</BreadcrumbItem>
-						{/if}
+								{#if breadcrumb.type == "link"}
+									<BreadcrumbItem>
+										<BreadcrumbLink href={breadcrumb.href}>{breadcrumb.text}</BreadcrumbLink>
+									</BreadcrumbItem>
+								{:else if breadcrumb.type == "page"}
+									<BreadcrumbItem>
+										<BreadcrumbPage>{breadcrumb.text}</BreadcrumbPage>
+									</BreadcrumbItem>
+								{:else}
+									<BreadcrumbItem>
+										<BreadcrumbEllipsis />
+									</BreadcrumbItem>
+								{/if}
 
-						{#if !is_last}
-							<BreadcrumbSeparator />
-						{/if}
-					{/each}
-				</BreadcrumbList>
-			</Breadcrumb>
-		{/if}
+								{#if !is_last}
+									<BreadcrumbSeparator />
+								{/if}
+							{/each}
+						</BreadcrumbList>
+					</Breadcrumb>
+				{/if}
+			</div>
+
+			{#if details}
+				<div class="flex shrink-0 text-sm">
+					{@render details()}
+				</div>
+			{/if}
+		</div>
 	</div>
 
 	{#if actions}
-		<div class="hidden flex-1 flex-row items-center justify-end gap-1.5 @lg:flex">
+		<div class="hidden flex-row items-center justify-end gap-1.5 @lg:flex">
 			{@render actions()}
 		</div>
 	{/if}
