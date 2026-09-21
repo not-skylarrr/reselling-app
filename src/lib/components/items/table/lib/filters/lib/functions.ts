@@ -190,6 +190,61 @@ export const OptionFilter = <T>({
 	};
 };
 
+type BooleanFilterOptions<T> = BaseFilterOptions<T> & {
+	falseLabel?: string;
+	trueLabel?: string;
+};
+
+export const BooleanFilter = <T>({
+	accessor_fn,
+	falseLabel = "False",
+	hidden = false,
+	icon,
+	name,
+	trueLabel = "True",
+}: BooleanFilterOptions<T>): FilterDef<T> => {
+	const available_operations: FilterOperation[] = [
+		{ id: "boolean:is", label: "is" },
+		{ id: "boolean:is-not", label: "is not" },
+	];
+
+	return {
+		id: "boolean",
+		accessor_fn,
+		allow_swap: true,
+		available_operations,
+		display_meta: {
+			icon,
+			name,
+		},
+		func: (row, col_id, filter, value) => {
+			const filter_value_validation = z.boolean().safeParse(value.value);
+			if (!filter_value_validation.success) return true;
+
+			const column_value = filter.accessor_fn
+				? filter.accessor_fn(row.original)
+				: NavigateDataObject(row.original, col_id);
+			if (typeof column_value != "boolean") return true;
+
+			switch (value.operator) {
+				case "boolean:is":
+					return column_value === filter_value_validation.data;
+				case "boolean:is-not":
+					return column_value !== filter_value_validation.data;
+			}
+
+			return false;
+		},
+		hidden,
+		meta: {
+			falseLabel,
+			trueLabel,
+		},
+		multi: false,
+		merge_behavior: "overwrite",
+	};
+};
+
 type DateFilterOptions<T> = BaseFilterOptions<T>;
 
 export const DateFilter = <T>({

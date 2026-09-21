@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	export const DefaultItemTableColVisibility = {
+		archived: false,
 		name: true,
 		status: true,
 		labels: true,

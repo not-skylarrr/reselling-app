@@ -8,6 +8,7 @@
 	import FilterPillNumberValue from "./filters/FilterPillNumberValue.svelte";
 	import FilterPillStringValue from "./filters/FilterPillStringValue.svelte";
 	import FilterPillDateValue from "./filters/FilterPillDateValue.svelte";
+	import FilterPillBooleanValue from "./filters/FilterPillBooleanValue.svelte";
 	import { onDestroy } from "svelte";
 	import type { TableSearchFilter } from "$lib/table/validators";
 	import Plural from "$lib/components/utils/Plural.svelte";
@@ -187,6 +188,15 @@
 						onValueChange={(val) =>
 							UpdateFilter(filter_key, { value: val }, { debounce: true })}
 						value={filter.value.value as string}
+					/>
+				{/if}
+
+				{#if filter_def.id == "boolean"}
+					<FilterPillBooleanValue
+						falseLabel={filter_def.meta.falseLabel}
+						trueLabel={filter_def.meta.trueLabel}
+						value={filter.value.value as boolean}
+						onValueChange={(value) => UpdateFilter(filter_key, { value })}
 					/>
 				{/if}
 

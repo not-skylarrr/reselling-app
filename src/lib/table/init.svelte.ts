@@ -25,8 +25,10 @@ import { Alphabet, GenerateRandomString } from "$lib/utils/web-crypto";
 import {
 	GetLocalColumnDisplayState,
 	GetLocalColumnSizingState,
+	GetLocalHideArchivedState,
 	SetLocalColumnDisplayState,
 	SetLocalColumnSizingState,
+	SetLocalHideArchivedState,
 } from "./stores";
 
 type TableStateInit = {
@@ -54,6 +56,8 @@ type TableStateStores = {
 	) => void;
 	get_col_sizing: (key: string | undefined) => Record<string, number>;
 	set_col_sizing: (key: string | undefined, state: Record<string, number>) => void;
+	get_hide_archived: (key: string | undefined) => boolean | undefined;
+	set_hide_archived: (key: string | undefined, state: boolean) => void;
 };
 
 export class TableState {
@@ -77,6 +81,8 @@ export class TableState {
 		set_col_sizing: SetLocalColumnSizingState,
 		get_col_visiblity: GetLocalColumnDisplayState,
 		set_col_visiblity: SetLocalColumnDisplayState,
+		get_hide_archived: GetLocalHideArchivedState,
+		set_hide_archived: SetLocalHideArchivedState,
 	});
 
 	constructor(initial: TableStateInit) {
@@ -97,6 +103,14 @@ export class TableState {
 
 			if (initial.local.set_col_visiblity) {
 				this.local.set_col_visiblity = initial.local.set_col_visiblity;
+			}
+
+			if (initial.local.get_hide_archived) {
+				this.local.get_hide_archived = initial.local.get_hide_archived;
+			}
+
+			if (initial.local.set_hide_archived) {
+				this.local.set_hide_archived = initial.local.set_hide_archived;
 			}
 		}
 
@@ -130,6 +144,11 @@ export class TableState {
 
 		if (initial?.selection_enabled != undefined) {
 			this.selection_enabled = initial.selection_enabled;
+		}
+
+		const local_hide_archived = this.local.get_hide_archived(this.key);
+		if (local_hide_archived != undefined) {
+			this.hide_archived = local_hide_archived;
 		}
 	}
 
@@ -275,6 +294,11 @@ export class TableState {
 		updater: RowSelectionState | ((prev: RowSelectionState) => RowSelectionState),
 	) {
 		this.row_selection = typeof updater == "function" ? updater(this.row_selection) : updater;
+	}
+
+	SetHideArchived(hide_archived: boolean) {
+		this.hide_archived = hide_archived;
+		this.local.set_hide_archived(this.key, hide_archived);
 	}
 
 	SetColumnSizing(

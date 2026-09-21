@@ -22,6 +22,7 @@ import { GetSessionWorkspaceID } from "../auth";
 import { db } from "../db";
 import { TsDbFilterSchema, TsDbUpdateSchema } from "../ts-db/utils";
 import { GetStatusInt } from "$lib/items/utils";
+import { isBefore, subDays } from "date-fns";
 
 const association_router = router({
 	get_ts_db: auth_procedure.input(TsDbFilterSchema).query(async (opts) => {
@@ -289,6 +290,48 @@ export const items_router = router({
 		});
 
 		const mapped_rows = workspace_items.map((item) => ({}));
+	}),
+
+	auto_archive_items: auth_procedure.mutation(async (opts) => {
+		const { session } = opts.ctx.session_data;
+
+		const { workspace_id } = GetSessionWorkspaceID(session);
+
+		const archive_date = subDays(new Date(), 7);
+
+		const non_archived_sold_items = await db.query.items.findMany({
+			where: (table, ops) =>
+				ops.and(
+					ops.eq(table.archived, false),
+					ops.gte(table.status_int, 2),
+					ops.eq(table.workspace_id, workspace_id),
+				),
+			with: {
+				listings: {
+					where: (table, ops) => ops.eq(table.status, "sold"),
+				},
+			},
+		});
+
+		const eligible_items = non_archived_sold_items.filter((item) => {
+			if (item.listings.length == 0) return false;
+
+			const sold_listing = item.listings[0];
+
+			// Should not be possible but ignore the item if so
+			if (!sold_listing.ended_at) return false;
+
+			return isBefore(sold_listing.ended_at, archive_date);
+		});
+
+		const ids_to_archive = eligible_items.map((item) => item.id);
+
+		await db
+			.update(items)
+			.set({ archived: true })
+			.where(and(inArray(items.id, ids_to_archive), eq(items.workspace_id, workspace_id)));
+
+		return ids_to_archive.length;
 	}),
 
 	assocations: association_router,

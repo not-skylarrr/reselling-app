@@ -127,6 +127,17 @@
 							{/if}
 						{/each}
 					{/if}
+
+					{#if column.filter.id == "boolean"}
+						{#each column.filter.available_operations as operation (operation.id)}
+							<DropdownMenuItem
+								onSelect={() => HandleFilterAdd(column.filter, column.id, operation.id, true)}
+							>
+								{operation.label}
+								{column.filter.meta.trueLabel ?? "True"}
+							</DropdownMenuItem>
+						{/each}
+					{/if}
 				</DropdownMenuSubContent>
 			</DropdownMenuSub>
 		{/each}

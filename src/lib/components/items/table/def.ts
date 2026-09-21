@@ -2,6 +2,7 @@ import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import {
 	CellCurrency,
 	CellCurrencyRange,
+	CellItemName,
 	CellLabels,
 	CellLocation,
 	CellMarketplace,
@@ -9,7 +10,7 @@ import {
 	CellString,
 } from "./components/cells";
 import type { InventoryItemData } from "$lib/collections/query-collections";
-import { OptionFilter, StringFilter } from "./lib/filters/lib/functions";
+import { BooleanFilter, OptionFilter, StringFilter } from "./lib/filters/lib/functions";
 import {
 	LucideArchive,
 	LucideCircle,
@@ -32,12 +33,25 @@ import { DefaultTableFeatures } from "$lib/table/init.svelte";
 const column = createColumnHelper<DefaultTableFeatures, FullItem>();
 
 export const ItemTableColumns = [
+	column.accessor("archived", {
+		header: "Archived",
+		meta: {
+			hidden: true,
+			filter: BooleanFilter({
+				icon: { component: LucideArchive },
+				name: "Archived",
+				falseLabel: "Not archived",
+				trueLabel: "Archived",
+			}),
+		},
+		filterFn: AdvancedFilter,
+	}),
 	column.accessor("name", {
 		header: "Name",
 		cell: (info) =>
-			renderComponent(CellString, {
+			renderComponent(CellItemName, {
 				value: info.getValue(),
-				muted: info.cell.row.original.archived,
+				archived: info.cell.row.original.archived,
 			}),
 		meta: {
 			align: "left",

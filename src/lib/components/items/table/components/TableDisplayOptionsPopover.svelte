@@ -1,13 +1,17 @@
 <script lang="ts">
 	import { Button } from "$lib/components/ui/button";
 	import { Popover, PopoverContent, PopoverTrigger } from "$lib/components/ui/popover";
-	import { LucideArchive, LucideSettings } from "@lucide/svelte";
+	import { LucideArchive, LucideLoaderCircle, LucideSettings } from "@lucide/svelte";
 	import type { Table } from "@tanstack/svelte-table";
 	import { cn } from "$lib/utils";
 	import { GetTableContext } from "$lib/table/init.svelte";
 	import type { FullItem } from "$lib/server/db/schema";
 	import { Switch } from "$lib/components/ui/switch";
 	import { Separator } from "$lib/components/ui/separator";
+	import { trpc_client } from "$lib/trpc/client";
+	import { toast } from "svelte-sonner";
+	import { Plural } from "$lib/utils/formatting";
+	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 
 	type Props = {
 		table: Table<any, any>;
@@ -16,6 +20,7 @@
 	let { table }: Props = $props();
 
 	const table_state = GetTableContext();
+	const query_client = useQueryClient();
 
 	let open = $state(false);
 
@@ -38,6 +43,19 @@
 
 		table_state.SetColumnVisibility(visibility_obj);
 	}
+
+	const AutoArchiveMutation = createMutation(() => ({
+		onMutate: async () => {
+			const affected_item_count = await trpc_client.items.auto_archive_items.mutate();
+			if (affected_item_count == 0) return toast.info("No items to archive");
+
+			query_client.invalidateQueries({ queryKey: ["user-session", "items"] });
+
+			toast.success(
+				`Archived ${affected_item_count} ${Plural(affected_item_count, "Item", "Items")}`,
+			);
+		},
+	}));
 </script>
 
 <Popover bind:open>
@@ -81,13 +99,28 @@
 
 		<div class="flex items-center justify-between gap-3">
 			<p class="text-xs text-muted-foreground">Hide Archived</p>
-			<Switch bind:checked={table_state.hide_archived} />
+			<Switch
+				checked={table_state.hide_archived}
+				onCheckedChange={(checked) => table_state.SetHideArchived(checked)}
+			/>
 		</div>
 
 		<Separator />
 
 		<div class="grid gap-3">
-			<Button size="sm" variant="outline"><LucideArchive /> Archive Inactive</Button>
+			<Button
+				disabled={AutoArchiveMutation.isPending}
+				onclick={() => AutoArchiveMutation.mutate()}
+				size="sm"
+				variant="outline"
+			>
+				{#if AutoArchiveMutation.isPending}
+					<LucideLoaderCircle class="animate-spin" />
+				{:else}
+					<LucideArchive />
+				{/if}
+				Archive Inactive
+			</Button>
 		</div>
 	</PopoverContent>
 </Popover>

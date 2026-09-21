@@ -3,9 +3,13 @@ import { z } from "zod";
 
 const ColumnDisplayStateSchema = z.record(z.string(), z.coerce.boolean());
 const ColumnSizingStateSchema = z.record(z.string(), z.coerce.number());
+const HideArchivedStateSchema = z
+	.enum(["true", "false"])
+	.transform((value) => value === "true");
 
 const LocalVisibilityKey = "table_cols_visibility";
 const LocalSizingKey = "table_cols_sizing";
+const LocalHideArchivedKey = "table_hide_archived";
 
 function VisibilityKey(key?: string) {
 	return key ? `${LocalVisibilityKey}_${key}` : LocalVisibilityKey;
@@ -13,6 +17,10 @@ function VisibilityKey(key?: string) {
 
 function SizingKey(key?: string) {
 	return key ? `${LocalSizingKey}_${key}` : LocalSizingKey;
+}
+
+function HideArchivedKey(key?: string) {
+	return key ? `${LocalHideArchivedKey}_${key}` : LocalHideArchivedKey;
 }
 
 export function GetLocalColumnDisplayState(
@@ -98,4 +106,20 @@ export function SetLocalColumnSizingState(
 	if (typeof window == "undefined") return;
 
 	window.localStorage.setItem(SizingKey(key), JSON.stringify(state));
+}
+
+export function GetLocalHideArchivedState(key?: string): boolean | undefined {
+	if (typeof window == "undefined") return undefined;
+
+	const local_state = window.localStorage.getItem(HideArchivedKey(key));
+	if (local_state == null) return undefined;
+
+	const parsed_state = HideArchivedStateSchema.safeParse(local_state);
+	return parsed_state.success ? parsed_state.data : undefined;
+}
+
+export function SetLocalHideArchivedState(key: string | undefined, state: boolean) {
+	if (typeof window == "undefined") return;
+
+	window.localStorage.setItem(HideArchivedKey(key), String(state));
 }
