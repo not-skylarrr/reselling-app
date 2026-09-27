@@ -3,13 +3,12 @@
 	import { Button } from "$lib/components/ui/button";
 	import { InputGroup, InputGroupAddon, InputGroupInput } from "$lib/components/ui/input-group";
 	import { LucidePlus, LucideSearch } from "@lucide/svelte";
-	import type { Table } from "@tanstack/svelte-table";
 	import { OpenNewItemDialog } from "../../dialogs/dialog-state.svelte";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppTable } from "$lib/table/init.svelte";
 	import type { FullItem } from "$lib/server/db/schema";
 
 	type Props = {
-		table: Table<FullItem>;
+		table: AppTable<FullItem>;
 	};
 
 	let { table }: Props = $props();

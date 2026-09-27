@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { FlexRender, type Row } from "@tanstack/svelte-table";
+	import { FlexRender } from "@tanstack/svelte-table";
 	import { cn } from "$lib/utils";
 	import { onDestroy } from "svelte";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import type { InventoryItemData } from "$lib/collections/query-collections";
 	import { GetColumnSizingCssVarWithFallback } from "$lib/table/utils";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppRow } from "$lib/table/init.svelte";
 	import type { FullItem } from "$lib/server/db/schema";
 
 	type Props = {
@@ -16,7 +16,7 @@
 		onFocus: () => void;
 		onFocusBlock: () => void;
 		onFocusUnblock: () => void;
-		row: Row<FullItem>;
+		row: AppRow<FullItem>;
 		strictColVisibility?: boolean;
 	};
 

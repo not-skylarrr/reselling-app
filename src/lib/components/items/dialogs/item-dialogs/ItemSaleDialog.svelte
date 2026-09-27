@@ -9,12 +9,7 @@
 	import { and, eq, useLiveQuery } from "@tanstack/svelte-db";
 	import type { ItemDialogProps } from "../dialog-state.svelte";
 	import { ListingsCollection } from "$lib/collections/def.svelte";
-	import {
-		LucideCheck,
-		LucideChevronLeft,
-		LucideChevronRight,
-		LucideLoaderCircle,
-	} from "@lucide/svelte";
+	import { LucideCheck, LucideChevronRight, LucideLoaderCircle } from "@lucide/svelte";
 	import MarketplaceMedia from "$lib/components/listings/MarketplaceMedia.svelte";
 	import { GetMarketplaceData } from "$lib/data/marketplaces/utils";
 	import { GetListingDurationString, GetListingStatusFriendlyName } from "$lib/listings/utils";

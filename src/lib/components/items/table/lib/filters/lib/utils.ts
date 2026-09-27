@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/svelte-query";
-import type { Table } from "@tanstack/svelte-table";
+import type { RowData } from "@tanstack/svelte-table";
 import { Alphabet, GenerateRandomString } from "$lib/utils/web-crypto";
+import type { AppTable } from "$lib/table/init.svelte";
 import type { TableSearchFilter } from "$lib/table/validators";
 
 export type CreateFilterOptions = {
@@ -31,7 +32,10 @@ export function CreateTableFilter(
 	};
 }
 
-export function PrefetchFilterQueries(table: Table<any>, query_client: QueryClient) {
+export function PrefetchFilterQueries<TData extends RowData>(
+	table: AppTable<TData>,
+	query_client: QueryClient,
+) {
 	const columns = table.getAllColumns();
 
 	for (const column of columns) {

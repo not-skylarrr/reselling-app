@@ -9,7 +9,6 @@ import {
 	CellStatus,
 	CellString,
 } from "./components/cells";
-import type { InventoryItemData } from "$lib/collections/query-collections";
 import { BooleanFilter, OptionFilter, StringFilter } from "./lib/filters/lib/functions";
 import {
 	LucideArchive,
@@ -74,19 +73,9 @@ export const ItemTableColumns = [
 				multiLabel: "statuses",
 				options: [
 					{
-						icon: { component: LucideCircleCheck, props: { class: "stroke-success" } },
-						label: "Completed",
-						value: "completed",
-					},
-					{
 						icon: { component: LucideX, props: { class: "stroke-destructive" } },
 						label: "Refunded",
 						value: "refunded",
-					},
-					{
-						icon: { component: LucidePackage, props: { class: "stroke-amber-500" } },
-						label: "Posted",
-						value: "posted",
 					},
 					{
 						icon: { component: LucideDollarSign, props: { class: "stroke-cyan-400" } },
@@ -109,7 +98,7 @@ export const ItemTableColumns = [
 		},
 		minSize: 184,
 		filterFn: AdvancedFilter,
-		sortingFn: (a, b) => {
+		sortFn: (a, b) => {
 			return b.original.status_int - a.original.status_int;
 		},
 	}),

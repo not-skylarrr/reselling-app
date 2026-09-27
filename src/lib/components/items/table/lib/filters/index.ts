@@ -5,7 +5,7 @@ export function AdvancedFilter<T extends RowData>(
 	row: Row<DefaultTableFeatures, T>,
 	column_id: string,
 	filter_val: any,
-	addMeta: (meta: any) => void,
+	addMeta?: (meta: any) => void,
 ) {
 	const cell = row.getAllCellsByColumnId()[column_id];
 	if (!cell) return true;
