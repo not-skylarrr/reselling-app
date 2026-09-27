@@ -15,6 +15,7 @@
 		LucideLink,
 		LucidePackage,
 		LucideSettings,
+		LucideTrash,
 		LucideX,
 	} from "@lucide/svelte";
 	import {
@@ -33,6 +34,9 @@
 	} from "$lib/components/ui/item/index.js";
 	import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
 	import type { BundleAssociationData } from "../+page.svelte";
+	import { OpenDestructiveActionDialog } from "$lib/components/utils/dialogs/destructive-dialog-state.svelte";
+	import { trpc_client } from "$lib/trpc/client";
+	import { goto } from "$app/navigation";
 
 	let { data } = $props();
 
@@ -115,6 +119,45 @@
 
 		return [required_items, in_stock_items] as const;
 	});
+
+	function HandleBundleDelete(bundle_id: string) {
+		OpenDestructiveActionDialog({
+			title: "Are you sure?",
+			description: "This bundle cannot be recovered once it has been deleted",
+			onConfirm: async () => {
+				const bundle_items = await queryOnce((q) =>
+					q
+						.from({ bundle_item: BundleItemsCollection })
+						.where(({ bundle_item }) => eq(bundle_item.bundle_id, bundle_id)),
+				);
+
+				const bundle_item_ids = [...bundle_items].map((item) => item.id);
+
+				for (const item of bundle_items) {
+					BundleItemsCollection.delete(item.id);
+				}
+
+				const associations = await queryOnce((q) =>
+					q
+						.from({ association: ItemAssociationsCollection })
+						.where(({ association }) =>
+							and(
+								inArray(association.subject_id, bundle_item_ids),
+								eq(association.type, "bundle-item"),
+							),
+						),
+				);
+
+				for (const association of associations) {
+					ItemAssociationsCollection.delete(association.id);
+				}
+
+				BundlesCollection.delete(bundle_id);
+
+				goto("/dashboard/bundles");
+			},
+		});
+	}
 </script>
 
 <svelte:head>
@@ -147,6 +190,10 @@
 				{#if can_package}
 					<Button><LucidePackage /> Package Items</Button>
 				{/if}
+
+				<Button onclick={() => HandleBundleDelete(bundle.id)} size="icon" variant="destructive"
+					><LucideTrash /></Button
+				>
 			</div>
 		</div>
 

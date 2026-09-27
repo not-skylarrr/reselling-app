@@ -1,8 +1,9 @@
-import { type Row } from "@tanstack/svelte-table";
+import type { AppRow } from "$lib/table/init.svelte";
+import type { RowData } from "@tanstack/svelte-table";
 import type { Component } from "svelte";
 import type { TableSearchFilter } from "../validators";
 
-export type FilterDef<T> = {
+export type FilterDef<T extends RowData> = {
 	id: string;
 	accessor_fn?: (row: T) => any;
 	allow_swap: boolean;
@@ -25,14 +26,14 @@ export type FilterOperation = {
 	label_multi?: string;
 };
 
-export type FilterFunction<T> = (
-	row: Row<T>,
+export type FilterFunction<T extends RowData> = (
+	row: AppRow<T>,
 	column_id: keyof T,
 	filter_def: FilterDef<T>,
 	filter_value: TableSearchFilter["value"],
 ) => boolean;
 
-export type FilterDefinitions<T> = Record<string, FilterDef<T>>;
+export type FilterDefinitions<T extends RowData> = Record<string, FilterDef<T>>;
 
 export type IconDefinition = {
 	component: Component<any>;

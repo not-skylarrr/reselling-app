@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { Column, Table } from "@tanstack/svelte-table";
+	import type { AppColumn, AppTable } from "$lib/table/init.svelte";
+	import type { FilterDef } from "../lib/filters/types";
 	import FilterPill from "./filters/FilterPill.svelte";
 	import FilterPillLeading from "./filters/FilterPillLeading.svelte";
 	import FilterPillOperation from "./filters/FilterPillOperation.svelte";
@@ -15,7 +16,7 @@
 
 	type Props = {
 		filters: TableSearchFilter[];
-		table: Table<any>;
+		table: AppTable<any>;
 	};
 
 	let { filters = $bindable(), table }: Props = $props();
@@ -26,12 +27,11 @@
 	const table_columns = $derived(table.getAllColumns());
 	const visible_filters = $derived(filters.filter((f) => f.silent !== true));
 
-	function GetColumnFilterDef(column: Column<any>) {
-		// @ts-expect-error type meta eventually
-		if (!column.columnDef.meta.filter) throw new Error("No filter config found");
+	function GetColumnFilterDef(column: AppColumn<any>): FilterDef<any> {
+		const filter = column.columnDef.meta?.filter;
+		if (!filter) throw new Error("No filter config found");
 
-		// @ts-expect-error type meta eventually
-		return column.columnDef.meta.filter as FilterDef<any>;
+		return filter;
 	}
 
 	function GetFilterKey(filter: TableSearchFilter, index: number) {

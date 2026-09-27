@@ -6,12 +6,12 @@
 	} from "$lib/components/ui/dropdown-menu";
 	import DropdownMenuContent from "$lib/components/ui/dropdown-menu/dropdown-menu-content.svelte";
 	import { cn } from "$lib/utils";
-	import type { Column } from "@tanstack/svelte-table";
+	import type { AppColumn } from "$lib/table/init.svelte";
 	import type { FilterDef } from "../../lib/filters/types";
 
 	type Props = {
 		def: FilterDef<any>;
-		options: Column<any>[];
+		options: AppColumn<any>[];
 		onFilterIdUpdate: (new_id: string) => void;
 	};
 

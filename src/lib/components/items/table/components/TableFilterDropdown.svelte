@@ -11,7 +11,7 @@
 		DropdownMenuTrigger,
 	} from "$lib/components/ui/dropdown-menu";
 	import { LucideFunnelPlus } from "@lucide/svelte";
-	import type { Table } from "@tanstack/svelte-table";
+	import type { AppTable } from "$lib/table/init.svelte";
 	import type { FilterDef } from "../lib/filters/types";
 	import AddFilterOptionRenderer from "./filters/AddFilterOptionRenderer.svelte";
 	import { CreateTableFilter } from "../lib/filters/lib/utils";
@@ -20,7 +20,7 @@
 
 	type Props = {
 		label?: string;
-		table: Table<any>;
+		table: AppTable<any>;
 		table_state: TableState;
 	};
 

@@ -395,6 +395,10 @@ export type AppRow<TData extends RowData> = import("@tanstack/svelte-table").Row
 	DefaultTableFeatures,
 	TData
 >;
+export type AppColumn<
+	TData extends RowData,
+	TValue = unknown,
+> = import("@tanstack/svelte-table").Column<DefaultTableFeatures, TData, TValue>;
 
 type DefaultTableOptions<TData extends RowData> = TableOptions<DefaultTableFeatures, TData>;
 

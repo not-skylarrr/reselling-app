@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { type Row } from "@tanstack/svelte-table";
 	import { cn } from "$lib/utils";
 	import { onDestroy } from "svelte";
 	import type { InventoryItemData } from "$lib/collections/query-collections";
@@ -8,6 +7,7 @@
 	import LocationBadge from "$lib/components/locations/LocationBadge.svelte";
 	import { Field, FieldLabel } from "$lib/components/ui/field";
 	import type { FullItem } from "$lib/server/db/schema";
+	import type { AppRow } from "$lib/table/init.svelte";
 
 	type Props = {
 		focused: boolean;
@@ -17,7 +17,7 @@
 		onFocus: () => void;
 		onFocusBlock: () => void;
 		onFocusUnblock: () => void;
-		row: Row<FullItem>;
+		row: AppRow<FullItem>;
 		strictColVisibility?: boolean;
 	};
 

@@ -5,6 +5,7 @@
 		DropdownMenu,
 		DropdownMenuContent,
 		DropdownMenuItem,
+		DropdownMenuSeparator,
 		DropdownMenuTrigger,
 	} from "$lib/components/ui/dropdown-menu";
 	import type { ItemWithLabels } from "$lib/server/db/schema";
@@ -13,6 +14,8 @@
 		LucideArchiveRestore,
 		LucideChevronDown,
 		LucideDollarSign,
+		LucideList,
+		LucidePlus,
 	} from "@lucide/svelte";
 	import { OpenItemDialog } from "../dialogs/dialog-state.svelte";
 
@@ -21,6 +24,16 @@
 	};
 
 	let { item }: Props = $props();
+
+	const has_primary_actions = $derived(item.status_int < 2);
+
+	function HandleCreateListing() {
+		OpenItemDialog(item, "list");
+	}
+
+	function HandleViewListings() {
+		OpenItemDialog(item, "listing-history");
+	}
 
 	function HandleMarkAsSold() {
 		OpenItemDialog(item, "sell", { listing_id: undefined });
@@ -44,10 +57,24 @@
 		{/snippet}
 	</DropdownMenuTrigger>
 	<DropdownMenuContent align="end">
+		{#if item.status_int < 2}
+			<DropdownMenuItem onSelect={() => HandleCreateListing()}
+				><LucidePlus /> Create Listing</DropdownMenuItem
+			>
+
+			<DropdownMenuSeparator />
+		{/if}
+
 		{#if item.status == "listed"}
 			<DropdownMenuItem onSelect={() => HandleMarkAsSold()}
 				><LucideDollarSign /> Mark as Sold</DropdownMenuItem
 			>
+
+			<DropdownMenuItem onSelect={() => HandleViewListings()}
+				><LucideList /> View Listings</DropdownMenuItem
+			>
+
+			<DropdownMenuSeparator />
 		{/if}
 
 		<DropdownMenuItem onSelect={() => ToggleItemArchived()}>

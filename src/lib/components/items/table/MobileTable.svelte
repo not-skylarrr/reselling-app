@@ -1,15 +1,14 @@
 <script lang="ts">
-	import type { Table } from "@tanstack/svelte-table";
 	import { createVirtualizer } from "@tanstack/svelte-virtual";
 	import MobileTableRow from "./components/MobileTableRow.svelte";
 	import MobileTableHeader from "./components/MobileTableHeader.svelte";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppTable } from "$lib/table/init.svelte";
 	import type { FullItem } from "$lib/server/db/schema";
 
 	type Props = {
 		onRowDouble?: () => void;
 		onRowFocus: (item: FullItem) => void;
-		table: Table<FullItem>;
+		table: AppTable<FullItem>;
 	};
 
 	let { onRowFocus, onRowDouble, table }: Props = $props();

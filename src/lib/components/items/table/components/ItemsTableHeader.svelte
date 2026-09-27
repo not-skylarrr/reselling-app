@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { cn } from "$lib/utils.js";
 	import { LucideChevronDown } from "@lucide/svelte";
-	import { FlexRender, type SortingState, type Table } from "@tanstack/svelte-table";
+	import { FlexRender, type SortingState } from "@tanstack/svelte-table";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import type { InventoryItemData } from "$lib/collections/query-collections";
 	import { GetColumnSizingCssVarWithFallback } from "$lib/table/utils";
-	import { GetTableContext } from "$lib/table/init.svelte";
+	import { GetTableContext, type AppTable } from "$lib/table/init.svelte";
 	import type { FullItem } from "$lib/server/db/schema";
 
 	type Props = {
-		table: Table<FullItem>;
+		table: AppTable<FullItem>;
 	};
 
 	let { table }: Props = $props();
