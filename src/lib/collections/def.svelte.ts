@@ -8,7 +8,7 @@ import {
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
 import { ParseSubsetOptions, ParseWhereFilters } from "$lib/utils/ts-db";
 import { query_client } from "$lib/queries/client.svelte";
-import { trpc_client } from "$lib/trpc/client";
+import { trpc_client, trpc_client_batched } from "$lib/trpc/client";
 
 export const ItemsCollection = createCollection(
 	queryCollectionOptions({
@@ -380,7 +380,7 @@ export const BundleItemsCollection = createCollection(
 		queryFn: async (ctx) => {
 			const { limit, sorts, where } = ParseSubsetOptions(ctx.meta?.loadSubsetOptions);
 
-			const bundles = await trpc_client.bundles.items.get_ts_db.query({
+			const bundles = await trpc_client_batched.bundles.items.get_ts_db.query({
 				where: where,
 				orderBy: sorts,
 				limit: limit,

@@ -22,6 +22,7 @@ const TrpcHandle: Handle = async ({ event, resolve }) => {
 		req: event.request,
 		endpoint: "/trpc",
 		createContext: () => createContext(event),
+		allowMethodOverride: true,
 	});
 };
 
