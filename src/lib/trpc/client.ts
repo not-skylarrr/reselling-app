@@ -23,6 +23,7 @@ export const trpc_client_batched = createTRPCClient<Router>({
 					credentials: "include",
 				});
 			},
+			maxURLLength: 2000,
 			transformer: superjson,
 		}),
 	],

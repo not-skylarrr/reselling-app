@@ -170,7 +170,7 @@
 				<CommandGroup>
 					{#each bundles_query.data as bundle (bundle.id)}
 						<CommandItem
-							class="h-16 gap-4 px-4"
+							class="h-16 gap-4 px-4 data-selected:bg-accent/75"
 							onSelect={() => (bundle_id = bundle.id)}
 							value={bundle.name}
 						>
@@ -218,7 +218,7 @@
 				<CommandGroup>
 					{#each selected_bundle.items as item (item.id)}
 						<CommandItem
-							class="h-12 gap-4 px-4"
+							class="h-12 gap-4 px-4 data-selected:bg-accent/75"
 							onSelect={() => (item_id = item.id)}
 							value={item.name}
 						>
