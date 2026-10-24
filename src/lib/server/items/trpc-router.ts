@@ -199,6 +199,8 @@ export const items_router = router({
 
 			const { workspace_id } = GetSessionWorkspaceID(session_data.session);
 
+			console.log(opts.input);
+
 			const { where, orderBy, limit } = CreateDrizzleFilters(
 				{
 					orderBy: opts.input.orderBy,

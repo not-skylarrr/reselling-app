@@ -26,7 +26,7 @@ import { CalculateItemProfit } from "$lib/items/utils";
 import { trpc_client } from "$lib/trpc/client";
 import LabelMarkers from "../../labels/LabelMarkers.svelte";
 import LocationMarker from "../../locations/LocationMarker.svelte";
-import type { FullItem, WorkspaceLabel } from "$lib/server/db/schema";
+import type { FullItem, WorkspaceLabel, WorkspaceLocation } from "$lib/server/db/schema";
 import { DefaultTableFeatures } from "$lib/table/init.svelte";
 
 const column = createColumnHelper<DefaultTableFeatures, FullItem>();
@@ -150,7 +150,7 @@ export const ItemTableColumns = [
 						value: location.id,
 					}));
 				},
-				getKey: (id: string) => id,
+				getKey: (loc: WorkspaceLocation) => loc.id,
 			}),
 		},
 		minSize: 184,
