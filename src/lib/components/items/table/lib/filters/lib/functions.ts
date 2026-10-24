@@ -130,12 +130,13 @@ export const OptionFilter = <T>({
 			if (!filter_value_validation.success) return true;
 
 			const column_value = NavigateDataObject(row.original, col_id);
-			const parsed_filter_value = filter_value_validation.data;
+			const parsed_filter_value = [...filter_value_validation.data];
 
 			if (Array.isArray(column_value)) {
 				const key_arr = column_value.map((data) => getKey(data));
 
 				if (value.operator == "option:includes") {
+					console.log(key_arr.some((val) => parsed_filter_value.includes(val)));
 					return key_arr.some((val) => parsed_filter_value.includes(val));
 				}
 
