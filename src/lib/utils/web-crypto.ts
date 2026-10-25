@@ -32,6 +32,10 @@ export function GenerateQuickId() {
 	return GenerateRandomString(Alphabet("a-z", "A-Z", "0-9"), 24);
 }
 
+export function GenerateSku() {
+	return GenerateRandomString(Alphabet("A-Z", "0-9"), 10);
+}
+
 export function GenerateRandomIntNumber(max: number) {
 	return Number(GenerateRandomInt(BigInt(max)));
 }

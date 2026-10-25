@@ -23,6 +23,7 @@ export const items = pgTable("items", {
 	status: text("status").notNull().$type<ItemStatus>(),
 	status_int: integer("status_int").notNull(),
 	workspace_id: text("workspace_id").notNull(),
+	sku: text("sku").notNull().default("N/A"),
 
 	// Dates
 	added_at: timestamp("added_at").notNull().defaultNow(),
@@ -62,6 +63,7 @@ export const new_item_schema = createInsertSchema(items, {
 	refund_type: true,
 	refund_reason: true,
 	refunded_at: true,
+	sku: true,
 });
 
 export const update_item_schema = createUpdateSchema(items, {

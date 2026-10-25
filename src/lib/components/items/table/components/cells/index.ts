@@ -7,6 +7,7 @@ import CellLocation from "./CellLocation.svelte";
 import CellLocationLazy from "./CellLocationLazy.svelte";
 import CellString from "./CellString.svelte";
 import CellItemName from "./CellItemName.svelte";
+import CellDate from "./CellDate.svelte";
 
 export {
 	CellCurrency,
@@ -18,4 +19,5 @@ export {
 	CellLocationLazy,
 	CellString,
 	CellItemName,
+	CellDate,
 };

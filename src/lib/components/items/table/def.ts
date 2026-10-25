@@ -2,6 +2,7 @@ import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import {
 	CellCurrency,
 	CellCurrencyRange,
+	CellDate,
 	CellItemName,
 	CellLabels,
 	CellLocation,
@@ -9,9 +10,15 @@ import {
 	CellStatus,
 	CellString,
 } from "./components/cells";
-import { BooleanFilter, OptionFilter, StringFilter } from "./lib/filters/lib/functions";
+import {
+	BooleanFilter,
+	DateFilter,
+	OptionFilter,
+	StringFilter,
+} from "./lib/filters/lib/functions";
 import {
 	LucideArchive,
+	LucideCalendar,
 	LucideCircle,
 	LucideCircleCheck,
 	LucideDollarSign,
@@ -295,4 +302,16 @@ export const ItemTableColumns = [
 			minSize: 160,
 		},
 	),
+	column.accessor("added_at", {
+		header: "Added At",
+		cell: (info) => renderComponent(CellDate, { value: info.getValue() }),
+		meta: {
+			filter: DateFilter({
+				icon: { component: LucideCalendar },
+				name: "Added At",
+			}),
+		},
+		minSize: 160,
+		filterFn: AdvancedFilter,
+	}),
 ];
