@@ -4,9 +4,13 @@ import { TsDbOrderByNode, TsDbWhereNode } from "../ts-db/validator";
 import { CreateDrizzleFilters } from "../ts-db/filters";
 import {
 	item_associations,
+	item_fees,
+	item_listings,
 	item_metadata,
+	item_metadata_definition,
 	items,
 	label_join_table,
+	metadata_label_join,
 	new_item_association_schema,
 	new_item_metadata_schema,
 	new_item_schema,
@@ -277,6 +281,48 @@ export const items_router = router({
 		await db
 			.delete(items)
 			.where(and(inArray(items.id, opts.input), eq(items.workspace_id, workspace_id)));
+
+		await db
+			.delete(item_listings)
+			.where(
+				and(
+					inArray(item_listings.item_id, opts.input),
+					eq(item_listings.workspace_id, workspace_id),
+				),
+			);
+
+		await db
+			.delete(item_fees)
+			.where(
+				and(inArray(item_fees.item_id, opts.input), eq(item_fees.workspace_id, workspace_id)),
+			);
+
+		await db
+			.delete(label_join_table)
+			.where(
+				and(
+					inArray(label_join_table.subject_id, opts.input),
+					eq(label_join_table.workspace_id, workspace_id),
+				),
+			);
+
+		await db
+			.delete(item_metadata)
+			.where(
+				and(
+					inArray(item_metadata.item_id, opts.input),
+					eq(item_metadata.workspace_id, workspace_id),
+				),
+			);
+
+		await db
+			.delete(item_associations)
+			.where(
+				and(
+					inArray(item_associations.item_id, opts.input),
+					eq(item_associations.workspace_id, workspace_id),
+				),
+			);
 	}),
 
 	export_items_csv: auth_procedure.query(async (opts) => {

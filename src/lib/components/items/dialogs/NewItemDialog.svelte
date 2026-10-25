@@ -29,7 +29,7 @@
 	import PurchaseDatePopover from "./components/PurchaseDatePopover.svelte";
 	import LabelsPopover from "./components/LabelsPopover.svelte";
 	import LocationPopover from "./components/LocationPopover.svelte";
-	import { GenerateQuickId } from "$lib/utils/web-crypto";
+	import { GenerateQuickId, GenerateSku } from "$lib/utils/web-crypto";
 	import type { Item } from "$lib/server/db/schema";
 	import { eq, inArray, and, createTransaction, useLiveQuery } from "@tanstack/svelte-db";
 	import { ApplyTsDbMutation } from "$lib/utils/ts-db/trpc-map";
@@ -67,6 +67,7 @@
 				id: GenerateQuickId(),
 				status: "unlisted",
 				status_int: 0,
+				sku: GenerateSku(),
 				name: value.name,
 				storage_location: value.storage_location,
 				purchase_price: value.purchase_price,
@@ -77,6 +78,7 @@
 				refund_reason: null,
 				workspace_id: session_state.workspace_id,
 				refunded_at: null,
+				archived: false,
 			};
 
 			const metadata_fields = GetCurrentMetadataFields();

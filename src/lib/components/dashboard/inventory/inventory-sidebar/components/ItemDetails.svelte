@@ -5,11 +5,13 @@
 	import LabelDisplay from "$lib/components/labels/LabelDisplay.svelte";
 	import SidebarLabelSelector from "$lib/components/labels/SidebarLabelSelector.svelte";
 	import SidebarLocationSelector from "$lib/components/locations/SidebarLocationSelector.svelte";
+	import Button from "$lib/components/ui/button/button.svelte";
 	import { Item, ItemActions, ItemContent, ItemTitle } from "$lib/components/ui/item";
 	import { GetStatusFriendlyName } from "$lib/items/utils";
 	import type { Item as DbItem, ItemWithLabels, WorkspaceLabel } from "$lib/server/db/schema";
 	import { FormatCurrency } from "$lib/utils/formatting";
 	import { session_state } from "$lib/utils/session.svelte";
+	import { toast } from "svelte-sonner";
 
 	type Props = {
 		item: ItemWithLabels;
@@ -46,10 +48,28 @@
 			LabelJoinsCollection.delete(GetItemLabelJoinId(item.id, label_id));
 		}
 	}
+
+	function CopyItemSku() {
+		navigator.clipboard.writeText(item.sku);
+
+		toast.success("Copied item SKU!");
+	}
 </script>
 
 {#if item}
 	<div class="flex flex-col gap-1 px-4 py-2 pr-2">
+		<Item class="h-7 p-0">
+			<ItemContent>
+				<ItemTitle class="text-sm font-normal text-muted-foreground">SKU</ItemTitle>
+			</ItemContent>
+
+			<ItemActions>
+				<Button class="text-sm font-normal" onclick={CopyItemSku} variant="ghost" size="xs"
+					>{item.sku}</Button
+				>
+			</ItemActions>
+		</Item>
+
 		<Item class="h-7 p-0">
 			<ItemContent>
 				<ItemTitle class="text-sm font-normal text-muted-foreground">Status</ItemTitle>

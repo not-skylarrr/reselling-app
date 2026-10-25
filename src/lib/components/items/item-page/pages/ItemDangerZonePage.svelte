@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	import { ItemsCollection } from "$lib/collections/def.svelte";
 	import FormCard from "$lib/components/settings/form/FormCard.svelte";
 	import FormCardSection from "$lib/components/settings/form/FormCardSection.svelte";
 	import { SettingsGroup, SettingsLayout } from "$lib/components/settings/layout";
@@ -22,8 +23,10 @@
 	} from "$lib/components/ui/field";
 	import FieldControl from "$lib/components/ui/field/field-control.svelte";
 	import { Select, SelectContent, SelectItem, SelectTrigger } from "$lib/components/ui/select";
+	import { OpenDestructiveActionDialog } from "$lib/components/utils/dialogs/destructive-dialog-state.svelte";
 	import { GetStatusFriendlyName } from "$lib/items/utils";
 	import type { ItemWithLabels } from "$lib/server/db/schema";
+	import { toast } from "svelte-sonner";
 
 	type Props = {
 		item: ItemWithLabels;
@@ -41,6 +44,28 @@
 		show_warning_dialog = false;
 
 		goto(`/dashboard/inventory/items/${item.id}`);
+	}
+
+	function HandleItemDelete() {
+		OpenDestructiveActionDialog({
+			title: "Are you sure?",
+			description: "This action is permanent and cannot be undone",
+			onConfirm: async () => {
+				const deletion_promise = ItemsCollection.delete(item.id);
+
+				try {
+					await deletion_promise.isPersisted.promise;
+
+					goto("/dashboard/inventory");
+
+					toast.success("Item deleted successfully!");
+				} catch (e) {
+					console.error(e);
+
+					toast.error("Failed to delete item");
+				}
+			},
+		});
 	}
 </script>
 
@@ -114,7 +139,7 @@
 						</FieldContent>
 
 						<FieldControl>
-							<Button variant="destructive">Delete Item</Button>
+							<Button onclick={HandleItemDelete} variant="destructive">Delete Item</Button>
 						</FieldControl>
 					</Field>
 				</FieldGroup>

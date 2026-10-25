@@ -1,6 +1,7 @@
 import type { FilterDef, FilterOperation, IconDefinition } from "../types";
 import { z } from "zod";
 import { NavigateDataObject } from "./utils";
+import type { RowData } from "@tanstack/svelte-table";
 
 type BaseFilterOptions<T> = {
 	accessor_fn?: (row: T) => any;
@@ -85,7 +86,7 @@ export type OptionFilterOption = {
 	value: string;
 };
 
-export const OptionFilter = <T>({
+export const OptionFilter = <T extends RowData>({
 	accessor_fn,
 	columnArray = false,
 	multiLabel,
@@ -125,6 +126,8 @@ export const OptionFilter = <T>({
 			name: name,
 		},
 		func: (row, col_id, _filter, value) => {
+			// Is this really needed?? Can I just validate the data and throw an error if it is incorrecta
+			// Might be throwing away perf for 0
 			const filter_value_validation = z.array(z.string()).safeParse(value.value);
 
 			if (!filter_value_validation.success) return true;
@@ -136,7 +139,6 @@ export const OptionFilter = <T>({
 				const key_arr = column_value.map((data) => getKey(data));
 
 				if (value.operator == "option:includes") {
-					console.log(key_arr.some((val) => parsed_filter_value.includes(val)));
 					return key_arr.some((val) => parsed_filter_value.includes(val));
 				}
 
@@ -156,9 +158,6 @@ export const OptionFilter = <T>({
 			}
 
 			if (!column_value) return false;
-
-			const operation_avail = available_operations.findIndex((o) => o.id == value.operator);
-			if (operation_avail == -1) return false;
 
 			if (value.operator == "option:includes") {
 				// @ts-expect-error Fix this later
