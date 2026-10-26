@@ -162,6 +162,16 @@ export const ItemTableColumns = [
 		},
 		minSize: 184,
 		filterFn: AdvancedFilter,
+		sortFn: (a, b, dir) => {
+			if (!a.original.location && !b.original.location) return 0;
+			if (a.original.location && b.original.location)
+				return a.original.location.name.localeCompare(b.original.location.name);
+
+			if (a.original.location) return 1;
+			if (b.original.location) return -1;
+
+			return 0;
+		},
 	}),
 	column.accessor(
 		(row) => {
