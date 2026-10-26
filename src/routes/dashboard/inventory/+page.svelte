@@ -33,6 +33,7 @@
 	import type { FullItem } from "$lib/server/db/schema";
 	import { Input } from "$lib/components/ui/input";
 	import Plural from "$lib/components/utils/Plural.svelte";
+	import BulkUpdatePopover from "$lib/components/items/table/BulkUpdatePopover.svelte";
 
 	const table_state = new TableState({
 		key: "inventory-table",
@@ -56,6 +57,8 @@
 
 	let focused_item = $derived(processed_items.find((i) => i.id == focused_item_id));
 	let show_details = $state(GetLocalDetailsOpenState());
+
+	const selected_item_ids = $derived(Object.keys(table_state.row_selection));
 
 	const table = createTable<DefaultTableFeatures, FullItem>({
 		columns: ItemTableColumns,
@@ -233,4 +236,8 @@
 	</DashboardLayoutRoot>
 
 	<ItemInventorySidebar item={focused_item} open={show_details} />
+
+	{#if selected_item_ids.length > 1}
+		<BulkUpdatePopover item_ids={selected_item_ids} />
+	{/if}
 </div>
